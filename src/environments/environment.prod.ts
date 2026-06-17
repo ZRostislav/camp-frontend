@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.mysite.com/api',
+  apiUrl: 'https://camp-backend-eq2z.onrender.com/api',
 };
