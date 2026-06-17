@@ -116,7 +116,7 @@
       <li *ngIf="auth.isAdmin()">
         <a routerLink="/settings" routerLinkActive="active-link">Настройки</a>
       </li>
-      <li *ngIf="auth.isSuperAdmin()">
+      <li *ngIf="auth.isAdmin()">
         <a routerLink="/users" routerLinkActive="active-link">Пользователи</a>
       </li>
     </ul>
