@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { MediaUrlPipe } from '../../pipes/media-url.pipe';
 
 // "Мой домик" — страница для участника (его собственный домик) и
 // вожатого/помощника (домик, закреплённый за ним через house_responsible).
@@ -11,7 +12,7 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-my-house',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MediaUrlPipe],
   templateUrl: './my-house.component.html',
 })
 export class MyHouseComponent implements OnInit {

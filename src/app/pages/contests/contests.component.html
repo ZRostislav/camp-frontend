@@ -148,9 +148,9 @@
           "
         >
           <ng-container *ngIf="f.file_type === 'image'">
-            <a [href]="f.file_path" target="_blank">
+            <a [href]="f.file_path | mediaUrl" target="_blank">
               <img
-                [src]="f.file_path"
+                [src]="f.file_path | mediaUrl"
                 [alt]="f.original_name"
                 style="
                   height: 40px;
@@ -316,7 +316,7 @@
       <span>{{ fileIcon(f) }}</span>
       <ng-container *ngIf="f.file_type === 'image'">
         <img
-          [src]="f.file_path"
+          [src]="f.file_path | mediaUrl"
           [alt]="f.original_name"
           style="
             height: 36px;

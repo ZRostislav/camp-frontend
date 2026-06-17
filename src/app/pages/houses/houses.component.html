@@ -1,52 +1,127 @@
 <h2>Домики</h2>
-<div *ngIf="error" style="color:red;margin-bottom:8px">{{ error }}</div>
-<div *ngIf="msg"   style="color:green;margin-bottom:8px">{{ msg }}</div>
+<div *ngIf="error" style="color: red; margin-bottom: 8px">{{ error }}</div>
+<div *ngIf="msg" style="color: green; margin-bottom: 8px">{{ msg }}</div>
 
 <!-- ── Форма создания ──────────────────────────────────────────────────── -->
-<div *ngIf="auth.isAdmin()" style="border:1px solid #ccc;padding:12px;margin-bottom:12px;border-radius:4px">
-  <h3 style="margin-top:0">Добавить домик</h3>
+<div
+  *ngIf="auth.isAdmin()"
+  style="
+    border: 1px solid #ccc;
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 4px;
+  "
+>
+  <h3 style="margin-top: 0">Добавить домик</h3>
 
-  <div style="margin-bottom:8px">
-    Название: <input [(ngModel)]="form.name" style="width:220px">
+  <div style="margin-bottom: 8px">
+    Название: <input [(ngModel)]="form.name" style="width: 220px" />
   </div>
-  <div style="margin-bottom:8px">
-    Описание: <input [(ngModel)]="form.description" style="width:300px">
+  <div style="margin-bottom: 8px">
+    Описание: <input [(ngModel)]="form.description" style="width: 300px" />
   </div>
 
   <!-- Аватарка: эмодзи или картинка -->
-  <div style="margin-bottom:8px">
-    <label style="font-size:13px;color:#555;display:block;margin-bottom:4px">Аватарка домика</label>
-    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+  <div style="margin-bottom: 8px">
+    <label
+      style="font-size: 13px; color: #555; display: block; margin-bottom: 4px"
+      >Аватарка домика</label
+    >
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
       <!-- Превью -->
-      <div style="width:48px;height:48px;border:1px solid #ddd;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f5f5f5;flex-shrink:0">
-        <img *ngIf="formFiles.length" [src]="formFiles[0] | objectUrl" style="width:100%;height:100%;object-fit:cover">
-        <span *ngIf="!formFiles.length && form.emoji" style="font-size:26px">{{ form.emoji }}</span>
-        <span *ngIf="!formFiles.length && !form.emoji" style="font-size:22px;color:#ccc">🏠</span>
+      <div
+        style="
+          width: 48px;
+          height: 48px;
+          border: 1px solid #ddd;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          background: #f5f5f5;
+          flex-shrink: 0;
+        "
+      >
+        <img
+          *ngIf="formFiles.length"
+          [src]="formFiles[0] | objectUrl"
+          style="width: 100%; height: 100%; object-fit: cover"
+        />
+        <span *ngIf="!formFiles.length && form.emoji" style="font-size: 26px">{{
+          form.emoji
+        }}</span>
+        <span
+          *ngIf="!formFiles.length && !form.emoji"
+          style="font-size: 22px; color: #ccc"
+          >🏠</span
+        >
       </div>
 
       <!-- Эмодзи пикер -->
       <div class="emoji-field">
         <div class="emoji-input-wrap">
-          <span class="emoji-preview" (click)="toggleFormEmojiPicker($event)">{{ form.emoji || '😀' }}</span>
-          <input [(ngModel)]="form.emoji" placeholder="эмодзи" class="emoji-text-input" [disabled]="formFiles.length > 0">
-          <button class="emoji-btn" (click)="toggleFormEmojiPicker($event)" [disabled]="formFiles.length > 0">☺</button>
+          <span class="emoji-preview" (click)="toggleFormEmojiPicker($event)">{{
+            form.emoji || "😀"
+          }}</span>
+          <input
+            [(ngModel)]="form.emoji"
+            placeholder="эмодзи"
+            class="emoji-text-input"
+            [disabled]="formFiles.length > 0"
+          />
+          <button
+            class="emoji-btn"
+            (click)="toggleFormEmojiPicker($event)"
+            [disabled]="formFiles.length > 0"
+          >
+            ☺
+          </button>
         </div>
-        <div class="emoji-picker-wrap" *ngIf="showFormEmojiPicker" (click)="$event.stopPropagation()">
-          <emoji-mart (emojiSelect)="onFormEmojiSelect($event)" [showPreview]="false"
-            [i18n]="{ search: 'Поиск', categories: { search: 'Результаты', recent: 'Частые' } }"></emoji-mart>
+        <div
+          class="emoji-picker-wrap"
+          *ngIf="showFormEmojiPicker"
+          (click)="$event.stopPropagation()"
+        >
+          <emoji-mart
+            (emojiSelect)="onFormEmojiSelect($event)"
+            [showPreview]="false"
+            [i18n]="{
+              search: 'Поиск',
+              categories: { search: 'Результаты', recent: 'Частые' },
+            }"
+          ></emoji-mart>
         </div>
       </div>
 
-      <span style="color:#aaa;font-size:13px">или</span>
+      <span style="color: #aaa; font-size: 13px">или</span>
 
       <!-- Картинка -->
-      <label style="cursor:pointer;padding:4px 10px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+      <label
+        style="
+          cursor: pointer;
+          padding: 4px 10px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          font-size: 13px;
+        "
+      >
         📁 Выбрать картинку
-        <input type="file" accept="image/*" (change)="onFormAvatarChange($event)" style="display:none">
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onFormAvatarChange($event)"
+          style="display: none"
+        />
       </label>
-      <span *ngIf="formFiles.length" style="font-size:12px;color:#555">
+      <span *ngIf="formFiles.length" style="font-size: 12px; color: #555">
         {{ formFiles[0].name }} ({{ fileSize(formFiles[0]) }})
-        <button (click)="removeFormAvatar()" style="color:red;border:none;background:none;cursor:pointer">✕</button>
+        <button
+          (click)="removeFormAvatar()"
+          style="color: red; border: none; background: none; cursor: pointer"
+        >
+          ✕
+        </button>
       </span>
     </div>
   </div>
@@ -55,10 +130,14 @@
 </div>
 
 <!-- ── Таблица домиков ─────────────────────────────────────────────────── -->
-<table border="1" cellpadding="4" style="border-collapse:collapse;width:100%">
+<table
+  border="1"
+  cellpadding="4"
+  style="border-collapse: collapse; width: 100%"
+>
   <thead>
     <tr>
-      <th style="width:56px">Аватар</th>
+      <th style="width: 56px">Аватар</th>
       <th>Название</th>
       <th>Баллов</th>
       <th>Участников</th>
@@ -67,14 +146,40 @@
   </thead>
   <tbody>
     <tr *ngFor="let h of houses">
-      <td style="text-align:center;padding:6px">
-        <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#f5f5f5;margin:auto">
-          <img *ngIf="h.avatar_path" [src]="h.avatar_path" style="width:100%;height:100%;object-fit:cover">
-          <span *ngIf="!h.avatar_path && h.emoji" style="font-size:22px">{{ h.emoji }}</span>
-          <span *ngIf="!h.avatar_path && !h.emoji" style="font-size:20px;color:#ccc">🏠</span>
+      <td style="text-align: center; padding: 6px">
+        <div
+          style="
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f5f5;
+            margin: auto;
+          "
+        >
+          <img
+            *ngIf="h.avatar_path"
+            [src]="h.avatar_path | mediaUrl"
+            style="width: 100%; height: 100%; object-fit: cover"
+          />
+          <span *ngIf="!h.avatar_path && h.emoji" style="font-size: 22px">{{
+            h.emoji
+          }}</span>
+          <span
+            *ngIf="!h.avatar_path && !h.emoji"
+            style="font-size: 20px; color: #ccc"
+            >🏠</span
+          >
         </div>
       </td>
-      <td><a href="#" (click)="select(h);$event.preventDefault()">{{ h.name }}</a></td>
+      <td>
+        <a href="#" (click)="select(h); $event.preventDefault()">{{
+          h.name
+        }}</a>
+      </td>
       <td>{{ h.house_points }}</td>
       <td>{{ h.participants_count }}</td>
       <td *ngIf="auth.isAdmin()">
@@ -86,98 +191,258 @@
 </table>
 
 <!-- ── Форма редактирования ───────────────────────────────────────────── -->
-<div *ngIf="editItem" style="margin-top:16px;border:1px solid #ccc;padding:12px;border-radius:4px">
-  <h4 style="margin-top:0">Редактирование: {{ editItem.name }}</h4>
+<div
+  *ngIf="editItem"
+  style="
+    margin-top: 16px;
+    border: 1px solid #ccc;
+    padding: 12px;
+    border-radius: 4px;
+  "
+>
+  <h4 style="margin-top: 0">Редактирование: {{ editItem.name }}</h4>
 
-  <div style="margin-bottom:8px">Название: <input [(ngModel)]="editItem.name" style="width:220px"></div>
-  <div style="margin-bottom:8px">Описание: <input [(ngModel)]="editItem.description" style="width:300px"></div>
+  <div style="margin-bottom: 8px">
+    Название: <input [(ngModel)]="editItem.name" style="width: 220px" />
+  </div>
+  <div style="margin-bottom: 8px">
+    Описание: <input [(ngModel)]="editItem.description" style="width: 300px" />
+  </div>
 
   <!-- Аватарка в редактировании -->
-  <div style="margin-bottom:8px">
-    <label style="font-size:13px;color:#555;display:block;margin-bottom:4px">Аватарка</label>
-    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+  <div style="margin-bottom: 8px">
+    <label
+      style="font-size: 13px; color: #555; display: block; margin-bottom: 4px"
+      >Аватарка</label
+    >
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
       <!-- Текущая аватарка -->
-      <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#f5f5f5;flex-shrink:0;border:1px solid #ddd">
-        <img *ngIf="editFiles.length" [src]="editFiles[0] | objectUrl" style="width:100%;height:100%;object-fit:cover">
-        <img *ngIf="!editFiles.length && editItem.avatar_path" [src]="editItem.avatar_path" style="width:100%;height:100%;object-fit:cover">
-        <span *ngIf="!editFiles.length && !editItem.avatar_path && editItem.emoji" style="font-size:26px">{{ editItem.emoji }}</span>
-        <span *ngIf="!editFiles.length && !editItem.avatar_path && !editItem.emoji" style="font-size:22px;color:#ccc">🏠</span>
+      <div
+        style="
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #f5f5f5;
+          flex-shrink: 0;
+          border: 1px solid #ddd;
+        "
+      >
+        <img
+          *ngIf="editFiles.length"
+          [src]="editFiles[0] | objectUrl"
+          style="width: 100%; height: 100%; object-fit: cover"
+        />
+        <img
+          *ngIf="!editFiles.length && editItem.avatar_path"
+          [src]="editItem.avatar_path | mediaUrl"
+          style="width: 100%; height: 100%; object-fit: cover"
+        />
+        <span
+          *ngIf="!editFiles.length && !editItem.avatar_path && editItem.emoji"
+          style="font-size: 26px"
+          >{{ editItem.emoji }}</span
+        >
+        <span
+          *ngIf="!editFiles.length && !editItem.avatar_path && !editItem.emoji"
+          style="font-size: 22px; color: #ccc"
+          >🏠</span
+        >
       </div>
 
       <!-- Эмодзи пикер -->
       <div class="emoji-field">
         <div class="emoji-input-wrap">
-          <span class="emoji-preview" (click)="toggleEditEmojiPicker($event)">{{ editItem.emoji || '😀' }}</span>
-          <input [(ngModel)]="editItem.emoji" placeholder="эмодзи" class="emoji-text-input" [disabled]="editFiles.length > 0 || !!editItem.avatar_path">
-          <button class="emoji-btn" (click)="toggleEditEmojiPicker($event)" [disabled]="editFiles.length > 0 || !!editItem.avatar_path">☺</button>
+          <span class="emoji-preview" (click)="toggleEditEmojiPicker($event)">{{
+            editItem.emoji || "😀"
+          }}</span>
+          <input
+            [(ngModel)]="editItem.emoji"
+            placeholder="эмодзи"
+            class="emoji-text-input"
+            [disabled]="editFiles.length > 0 || !!editItem.avatar_path"
+          />
+          <button
+            class="emoji-btn"
+            (click)="toggleEditEmojiPicker($event)"
+            [disabled]="editFiles.length > 0 || !!editItem.avatar_path"
+          >
+            ☺
+          </button>
         </div>
-        <div class="emoji-picker-wrap" *ngIf="showEditEmojiPicker" (click)="$event.stopPropagation()">
-          <emoji-mart (emojiSelect)="onEditEmojiSelect($event)" [showPreview]="false"
-            [i18n]="{ search: 'Поиск', categories: { search: 'Результаты', recent: 'Частые' } }"></emoji-mart>
+        <div
+          class="emoji-picker-wrap"
+          *ngIf="showEditEmojiPicker"
+          (click)="$event.stopPropagation()"
+        >
+          <emoji-mart
+            (emojiSelect)="onEditEmojiSelect($event)"
+            [showPreview]="false"
+            [i18n]="{
+              search: 'Поиск',
+              categories: { search: 'Результаты', recent: 'Частые' },
+            }"
+          ></emoji-mart>
         </div>
       </div>
 
-      <span style="color:#aaa;font-size:13px">или</span>
+      <span style="color: #aaa; font-size: 13px">или</span>
 
       <!-- Загрузить новую картинку -->
-      <label style="cursor:pointer;padding:4px 10px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+      <label
+        style="
+          cursor: pointer;
+          padding: 4px 10px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          font-size: 13px;
+        "
+      >
         📁 Новая картинка
-        <input type="file" accept="image/*" (change)="onEditAvatarChange($event)" style="display:none">
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onEditAvatarChange($event)"
+          style="display: none"
+        />
       </label>
-      <span *ngIf="editFiles.length" style="font-size:12px;color:#555">
+      <span *ngIf="editFiles.length" style="font-size: 12px; color: #555">
         {{ editFiles[0].name }}
-        <button (click)="removeEditAvatar()" style="color:red;border:none;background:none;cursor:pointer">✕</button>
+        <button
+          (click)="removeEditAvatar()"
+          style="color: red; border: none; background: none; cursor: pointer"
+        >
+          ✕
+        </button>
       </span>
-      <button *ngIf="editItem.avatar_path && !editFiles.length" (click)="deleteAvatar(editItem.id)"
-        style="color:red;border:none;background:none;cursor:pointer;font-size:13px">✕ удалить фото</button>
+      <button
+        *ngIf="editItem.avatar_path && !editFiles.length"
+        (click)="deleteAvatar(editItem.id)"
+        style="
+          color: red;
+          border: none;
+          background: none;
+          cursor: pointer;
+          font-size: 13px;
+        "
+      >
+        ✕ удалить фото
+      </button>
     </div>
   </div>
 
   <button (click)="saveEdit()">Сохранить</button>
-  <button (click)="editItem=null;editFiles=[]" style="margin-left:8px">Отмена</button>
+  <button (click)="editItem = null; editFiles = []" style="margin-left: 8px">
+    Отмена
+  </button>
 </div>
 
 <!-- ── Детали домика ──────────────────────────────────────────────────── -->
-<div *ngIf="selectedHouse" style="margin-top:20px;border:1px solid #ccc;padding:12px;border-radius:4px">
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
-    <div style="width:52px;height:52px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#f5f5f5;border:1px solid #ddd;flex-shrink:0">
-      <img *ngIf="selectedHouse.avatar_path" [src]="selectedHouse.avatar_path" style="width:100%;height:100%;object-fit:cover">
-      <span *ngIf="!selectedHouse.avatar_path && selectedHouse.emoji" style="font-size:28px">{{ selectedHouse.emoji }}</span>
-      <span *ngIf="!selectedHouse.avatar_path && !selectedHouse.emoji" style="font-size:24px;color:#ccc">🏠</span>
+<div
+  *ngIf="selectedHouse"
+  style="
+    margin-top: 20px;
+    border: 1px solid #ccc;
+    padding: 12px;
+    border-radius: 4px;
+  "
+>
+  <div
+    style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px"
+  >
+    <div
+      style="
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        flex-shrink: 0;
+      "
+    >
+      <img
+        *ngIf="selectedHouse.avatar_path"
+        [src]="selectedHouse.avatar_path | mediaUrl"
+        style="width: 100%; height: 100%; object-fit: cover"
+      />
+      <span
+        *ngIf="!selectedHouse.avatar_path && selectedHouse.emoji"
+        style="font-size: 28px"
+        >{{ selectedHouse.emoji }}</span
+      >
+      <span
+        *ngIf="!selectedHouse.avatar_path && !selectedHouse.emoji"
+        style="font-size: 24px; color: #ccc"
+        >🏠</span
+      >
     </div>
     <div>
-      <h3 style="margin:0">{{ selectedHouse.name }}</h3>
-      <div style="color:#666;font-size:13px">{{ selectedHouse.description }}</div>
+      <h3 style="margin: 0">{{ selectedHouse.name }}</h3>
+      <div style="color: #666; font-size: 13px">
+        {{ selectedHouse.description }}
+      </div>
     </div>
-    <strong style="margin-left:auto">Баллы: {{ selectedHouse.house_points }}</strong>
+    <strong style="margin-left: auto"
+      >Баллы: {{ selectedHouse.house_points }}</strong
+    >
   </div>
 
   <h4>Ответственные</h4>
-  <table border="1" cellpadding="4" style="border-collapse:collapse">
-    <thead><tr><th>ФИО</th><th>Роль</th><th>Уровень</th><th *ngIf="auth.isAdmin()">Удалить</th></tr></thead>
+  <table border="1" cellpadding="4" style="border-collapse: collapse">
+    <thead>
+      <tr>
+        <th>ФИО</th>
+        <th>Роль</th>
+        <th>Уровень</th>
+        <th *ngIf="auth.isAdmin()">Удалить</th>
+      </tr>
+    </thead>
     <tbody>
       <tr *ngFor="let r of selectedHouse.responsible">
         <td>{{ r.full_name }}</td>
         <td>{{ r.role }}</td>
         <td>{{ r.rank_level }}</td>
-        <td *ngIf="auth.isAdmin()"><button (click)="removeResponsible(r.id)">🗑️</button></td>
+        <td *ngIf="auth.isAdmin()">
+          <button (click)="removeResponsible(r.id)">🗑️</button>
+        </td>
       </tr>
     </tbody>
   </table>
 
-  <div *ngIf="auth.isAdmin() && users.length" style="margin-top:8px">
+  <div *ngIf="auth.isAdmin() && users.length" style="margin-top: 8px">
     Добавить:
     <select [(ngModel)]="responsibleForm.userId">
       <option value="">— выбрать —</option>
-      <option *ngFor="let u of users" [value]="u.id">{{ u.full_name }} ({{ u.role }})</option>
+      <option *ngFor="let u of users" [value]="u.id">
+        {{ u.full_name }} ({{ u.role }})
+      </option>
     </select>
-    Уровень: <input type="number" [(ngModel)]="responsibleForm.rankLevel" style="width:50px">
+    Уровень:
+    <input
+      type="number"
+      [(ngModel)]="responsibleForm.rankLevel"
+      style="width: 50px"
+    />
     <button (click)="addResponsible()">Добавить</button>
   </div>
 
   <h4>Участники</h4>
-  <table border="1" cellpadding="4" style="border-collapse:collapse">
-    <thead><tr><th>ФИО</th><th>Пол</th><th>Возраст</th><th>Баллы</th></tr></thead>
+  <table border="1" cellpadding="4" style="border-collapse: collapse">
+    <thead>
+      <tr>
+        <th>ФИО</th>
+        <th>Пол</th>
+        <th>Возраст</th>
+        <th>Баллы</th>
+      </tr>
+    </thead>
     <tbody>
       <tr *ngFor="let p of selectedHouse.participants">
         <td>{{ p.last_name }} {{ p.first_name }}</td>

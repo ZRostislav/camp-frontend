@@ -5,11 +5,12 @@ import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { ObjectUrlPipe } from '../../pipes/object-url.pipe';
+import { MediaUrlPipe } from '../../pipes/media-url.pipe';
 
 @Component({
   selector: 'app-houses',
   standalone: true,
-  imports: [CommonModule, FormsModule, PickerComponent, ObjectUrlPipe],
+  imports: [CommonModule, FormsModule, PickerComponent, ObjectUrlPipe, MediaUrlPipe],
   templateUrl: './houses.component.html',
 })
 export class HousesComponent implements OnInit {

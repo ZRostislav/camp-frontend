@@ -1,68 +1,195 @@
 <h2>Настройки</h2>
-<div *ngIf="error" style="color:red;margin-bottom:8px">{{ error }}</div>
-<div *ngIf="msg"   style="color:green;margin-bottom:8px">{{ msg }}</div>
+<div *ngIf="error" style="color: red; margin-bottom: 8px">{{ error }}</div>
+<div *ngIf="msg" style="color: green; margin-bottom: 8px">{{ msg }}</div>
 
-<div *ngIf="auth.isAdmin()" style="display:flex;flex-direction:column;gap:16px;max-width:560px">
-
+<div
+  *ngIf="auth.isAdmin()"
+  style="display: flex; flex-direction: column; gap: 16px; max-width: 560px"
+>
   <!-- ── Информация о заезде ────────────────────────────────────────── -->
-  <section style="border:1px solid #ccc;border-radius:6px;padding:16px">
-    <h3 style="margin-top:0">Информация о заезде</h3>
+  <section style="border: 1px solid #ccc; border-radius: 6px; padding: 16px">
+    <h3 style="margin-top: 0">Информация о заезде</h3>
 
-    <div style="margin-bottom:10px">
-      <label style="display:block;font-size:13px;color:#555;margin-bottom:3px">Название заезда</label>
-      <input [(ngModel)]="campName" style="width:100%;box-sizing:border-box" placeholder="Лагерь «Солнышко»">
+    <div style="margin-bottom: 10px">
+      <label
+        style="display: block; font-size: 13px; color: #555; margin-bottom: 3px"
+        >Название заезда</label
+      >
+      <input
+        [(ngModel)]="campName"
+        style="width: 100%; box-sizing: border-box"
+        placeholder="Лагерь «Солнышко»"
+      />
     </div>
 
-    <div style="margin-bottom:10px">
-      <label style="display:block;font-size:13px;color:#555;margin-bottom:3px">Организация</label>
-      <input [(ngModel)]="campOrganization" style="width:100%;box-sizing:border-box" placeholder="МБОУ «Школа №1»">
+    <div style="margin-bottom: 10px">
+      <label
+        style="display: block; font-size: 13px; color: #555; margin-bottom: 3px"
+        >Организация</label
+      >
+      <input
+        [(ngModel)]="campOrganization"
+        style="width: 100%; box-sizing: border-box"
+        placeholder="МБОУ «Школа №1»"
+      />
     </div>
 
     <!-- Иконка: эмодзи или картинка -->
-    <div style="margin-bottom:10px">
-      <label style="display:block;font-size:13px;color:#555;margin-bottom:6px">Иконка лагеря (эмодзи или картинка)</label>
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <div style="margin-bottom: 10px">
+      <label
+        style="display: block; font-size: 13px; color: #555; margin-bottom: 6px"
+        >Иконка лагеря (эмодзи или картинка)</label
+      >
+      <div
+        style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap"
+      >
         <!-- Превью -->
-        <div style="width:56px;height:56px;border:1px solid #ddd;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f9f9f9">
-          <img *ngIf="campLogoPath" [src]="campLogoPath" style="width:100%;height:100%;object-fit:cover">
-          <span *ngIf="!campLogoPath && campEmoji" style="font-size:32px">{{ campEmoji }}</span>
-          <span *ngIf="!campLogoPath && !campEmoji" style="font-size:24px;color:#ccc">🏕️</span>
+        <div
+          style="
+            width: 56px;
+            height: 56px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f9f9f9;
+          "
+        >
+          <img
+            *ngIf="campLogoPath"
+            [src]="campLogoPath | mediaUrl"
+            style="width: 100%; height: 100%; object-fit: cover"
+          />
+          <span *ngIf="!campLogoPath && campEmoji" style="font-size: 32px">{{
+            campEmoji
+          }}</span>
+          <span
+            *ngIf="!campLogoPath && !campEmoji"
+            style="font-size: 24px; color: #ccc"
+            >🏕️</span
+          >
         </div>
-        <div style="display:flex;flex-direction:column;gap:6px">
-          <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:13px;color:#555">Эмодзи:</span>
-            <input [(ngModel)]="campEmoji" style="width:80px" placeholder="🏕️" [disabled]="!!campLogoPath">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; align-items: center; gap: 6px">
+            <span style="font-size: 13px; color: #555">Эмодзи:</span>
+            <input
+              [(ngModel)]="campEmoji"
+              style="width: 80px"
+              placeholder="🏕️"
+              [disabled]="!!campLogoPath"
+            />
           </div>
-          <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:13px;color:#555">Картинка:</span>
-            <label style="cursor:pointer;padding:4px 10px;border:1px solid #ccc;border-radius:4px;font-size:13px;background:#fff">
-              {{ logoUploading ? 'Загрузка...' : 'Выбрать файл' }}
-              <input type="file" accept="image/*" (change)="onLogoChange($event)" style="display:none" [disabled]="logoUploading">
+          <div style="display: flex; align-items: center; gap: 6px">
+            <span style="font-size: 13px; color: #555">Картинка:</span>
+            <label
+              style="
+                cursor: pointer;
+                padding: 4px 10px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                font-size: 13px;
+                background: #fff;
+              "
+            >
+              {{ logoUploading ? "Загрузка..." : "Выбрать файл" }}
+              <input
+                type="file"
+                accept="image/*"
+                (change)="onLogoChange($event)"
+                style="display: none"
+                [disabled]="logoUploading"
+              />
             </label>
-            <button *ngIf="campLogoPath" (click)="deleteLogo()" style="color:red;border:none;background:none;cursor:pointer;font-size:13px">✕ удалить</button>
+            <button
+              *ngIf="campLogoPath"
+              (click)="deleteLogo()"
+              style="
+                color: red;
+                border: none;
+                background: none;
+                cursor: pointer;
+                font-size: 13px;
+              "
+            >
+              ✕ удалить
+            </button>
           </div>
-          <div style="font-size:11px;color:#999">Картинка заменяет эмодзи. Выберите что-то одно.</div>
+          <div style="font-size: 11px; color: #999">
+            Картинка заменяет эмодзи. Выберите что-то одно.
+          </div>
         </div>
       </div>
     </div>
 
-    <div style="margin-bottom:10px">
-      <label style="display:block;font-size:13px;color:#555;margin-bottom:3px">Цвет акцента</label>
-      <div style="display:flex;align-items:center;gap:10px">
-        <input type="color" [(ngModel)]="campColor" style="width:48px;height:36px;cursor:pointer;border:1px solid #ccc;border-radius:4px;padding:2px">
-        <input [(ngModel)]="campColor" style="width:100px" placeholder="#4f7ef8">
-        <div style="width:36px;height:36px;border-radius:6px;border:1px solid #ddd" [style.background]="campColor"></div>
+    <div style="margin-bottom: 10px">
+      <label
+        style="display: block; font-size: 13px; color: #555; margin-bottom: 3px"
+        >Цвет акцента</label
+      >
+      <div style="display: flex; align-items: center; gap: 10px">
+        <input
+          type="color"
+          [(ngModel)]="campColor"
+          style="
+            width: 48px;
+            height: 36px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 2px;
+          "
+        />
+        <input
+          [(ngModel)]="campColor"
+          style="width: 100px"
+          placeholder="#4f7ef8"
+        />
+        <div
+          style="
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+          "
+          [style.background]="campColor"
+        ></div>
       </div>
     </div>
 
-    <div style="display:flex;gap:12px;margin-bottom:10px">
-      <div style="flex:1">
-        <label style="display:block;font-size:13px;color:#555;margin-bottom:3px">Дата начала</label>
-        <input type="date" [(ngModel)]="campDateStart" style="width:100%;box-sizing:border-box">
+    <div style="display: flex; gap: 12px; margin-bottom: 10px">
+      <div style="flex: 1">
+        <label
+          style="
+            display: block;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 3px;
+          "
+          >Дата начала</label
+        >
+        <input
+          type="date"
+          [(ngModel)]="campDateStart"
+          style="width: 100%; box-sizing: border-box"
+        />
       </div>
-      <div style="flex:1">
-        <label style="display:block;font-size:13px;color:#555;margin-bottom:3px">Дата окончания</label>
-        <input type="date" [(ngModel)]="campDateEnd" style="width:100%;box-sizing:border-box">
+      <div style="flex: 1">
+        <label
+          style="
+            display: block;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 3px;
+          "
+          >Дата окончания</label
+        >
+        <input
+          type="date"
+          [(ngModel)]="campDateEnd"
+          style="width: 100%; box-sizing: border-box"
+        />
       </div>
     </div>
 
@@ -70,97 +197,176 @@
   </section>
 
   <!-- ── Баллы участников (глобально) ──────────────────────────────── -->
-  <section style="border:1px solid #ccc;border-radius:6px;padding:16px">
-    <h3 style="margin-top:0">Система баллов участников</h3>
-    <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-      <input type="checkbox" [(ngModel)]="participantPointsEnabled">
+  <section style="border: 1px solid #ccc; border-radius: 6px; padding: 16px">
+    <h3 style="margin-top: 0">Система баллов участников</h3>
+    <label
+      style="display: flex; align-items: center; gap: 8px; cursor: pointer"
+    >
+      <input type="checkbox" [(ngModel)]="participantPointsEnabled" />
       Включена (участники могут получать/терять баллы)
     </label>
-    <button (click)="saveParticipantPoints()" style="margin-top:10px">Сохранить</button>
+    <button (click)="saveParticipantPoints()" style="margin-top: 10px">
+      Сохранить
+    </button>
   </section>
 
   <!-- ── Баллы за посещение ─────────────────────────────────────────── -->
-  <section style="border:1px solid #ccc;border-radius:6px;padding:16px">
-    <h3 style="margin-top:0">Баллы за посещение (статус «был»)</h3>
-    <p style="font-size:13px;color:#666;margin-top:0">
-      При отметке участника как «был» в перекличке автоматически начисляются баллы.
-      При изменении статуса баллы корректируются.
+  <section style="border: 1px solid #ccc; border-radius: 6px; padding: 16px">
+    <h3 style="margin-top: 0">Баллы за посещение (статус «был»)</h3>
+    <p style="font-size: 13px; color: #666; margin-top: 0">
+      При отметке участника как «был» в перекличке автоматически начисляются
+      баллы. При изменении статуса баллы корректируются.
     </p>
-    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:10px">
-      <input type="checkbox" [(ngModel)]="attendanceEnabled">
+    <label
+      style="
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        margin-bottom: 10px;
+      "
+    >
+      <input type="checkbox" [(ngModel)]="attendanceEnabled" />
       Включено
     </label>
     <div>
-      <label style="font-size:13px;color:#555">Баллов за посещение:
-        <input type="number" [(ngModel)]="attendanceValue" style="width:80px;margin-left:8px" [disabled]="!attendanceEnabled">
+      <label style="font-size: 13px; color: #555"
+        >Баллов за посещение:
+        <input
+          type="number"
+          [(ngModel)]="attendanceValue"
+          style="width: 80px; margin-left: 8px"
+          [disabled]="!attendanceEnabled"
+        />
       </label>
     </div>
-    <button (click)="saveAttendancePoints()" style="margin-top:10px">Сохранить</button>
+    <button (click)="saveAttendancePoints()" style="margin-top: 10px">
+      Сохранить
+    </button>
   </section>
 
   <!-- ── Баллы за опоздание ─────────────────────────────────────────── -->
-  <section style="border:1px solid #ccc;border-radius:6px;padding:16px">
-    <h3 style="margin-top:0">Баллы за опоздание (статус «опоздал»)</h3>
-    <p style="font-size:13px;color:#666;margin-top:0">
-      Обычно отрицательное число (штраф). Может быть и положительным — на усмотрение.
+  <section style="border: 1px solid #ccc; border-radius: 6px; padding: 16px">
+    <h3 style="margin-top: 0">Баллы за опоздание (статус «опоздал»)</h3>
+    <p style="font-size: 13px; color: #666; margin-top: 0">
+      Обычно отрицательное число (штраф). Может быть и положительным — на
+      усмотрение.
     </p>
-    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:10px">
-      <input type="checkbox" [(ngModel)]="lateEnabled">
+    <label
+      style="
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        margin-bottom: 10px;
+      "
+    >
+      <input type="checkbox" [(ngModel)]="lateEnabled" />
       Включено
     </label>
     <div>
-      <label style="font-size:13px;color:#555">Баллов за опоздание:
-        <input type="number" [(ngModel)]="lateValue" style="width:80px;margin-left:8px" [disabled]="!lateEnabled">
+      <label style="font-size: 13px; color: #555"
+        >Баллов за опоздание:
+        <input
+          type="number"
+          [(ngModel)]="lateValue"
+          style="width: 80px; margin-left: 8px"
+          [disabled]="!lateEnabled"
+        />
       </label>
     </div>
-    <button (click)="saveLatePoints()" style="margin-top:10px">Сохранить</button>
+    <button (click)="saveLatePoints()" style="margin-top: 10px">
+      Сохранить
+    </button>
   </section>
 
   <!-- ── Баллы домику за перекличку ────────────────────────────────── -->
-  <section style="border:1px solid #ccc;border-radius:6px;padding:16px">
-    <h3 style="margin-top:0">Баллы домику за перекличку</h3>
-    <p style="font-size:13px;color:#666;margin-top:0">
-      Начисляются домику, когда подтверждено, что все его дети отмечены на перекличке
-      (кнопка «Подтвердить домик»).
+  <section style="border: 1px solid #ccc; border-radius: 6px; padding: 16px">
+    <h3 style="margin-top: 0">Баллы домику за перекличку</h3>
+    <p style="font-size: 13px; color: #666; margin-top: 0">
+      Начисляются домику, когда подтверждено, что все его дети отмечены на
+      перекличке (кнопка «Подтвердить домик»).
     </p>
-    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:10px">
-      <input type="checkbox" [(ngModel)]="houseAttendanceEnabled">
+    <label
+      style="
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        margin-bottom: 10px;
+      "
+    >
+      <input type="checkbox" [(ngModel)]="houseAttendanceEnabled" />
       Включено
     </label>
     <div>
-      <label style="font-size:13px;color:#555">Баллов домику за подтверждение:
-        <input type="number" [(ngModel)]="houseAttendanceValue" style="width:80px;margin-left:8px" [disabled]="!houseAttendanceEnabled">
+      <label style="font-size: 13px; color: #555"
+        >Баллов домику за подтверждение:
+        <input
+          type="number"
+          [(ngModel)]="houseAttendanceValue"
+          style="width: 80px; margin-left: 8px"
+          [disabled]="!houseAttendanceEnabled"
+        />
       </label>
     </div>
-    <button (click)="saveHouseAttendancePoints()" style="margin-top:10px">Сохранить</button>
+    <button (click)="saveHouseAttendancePoints()" style="margin-top: 10px">
+      Сохранить
+    </button>
   </section>
 
   <!-- ── Штраф домику за опоздавших ────────────────────────────────── -->
-  <section style="border:1px solid #ccc;border-radius:6px;padding:16px">
-    <h3 style="margin-top:0">Штраф домику за опоздавших</h3>
-    <p style="font-size:13px;color:#666;margin-top:0">
-      Если доля опоздавших детей домика на перекличке достигает заданного порога,
-      администратор может вручную выдать домику штраф (кнопка «Штраф» на странице «Перекличка»).
-      Штраф не списывается автоматически.
+  <section style="border: 1px solid #ccc; border-radius: 6px; padding: 16px">
+    <h3 style="margin-top: 0">Штраф домику за опоздавших</h3>
+    <p style="font-size: 13px; color: #666; margin-top: 0">
+      Если доля опоздавших детей домика на перекличке достигает заданного
+      порога, администратор может вручную выдать домику штраф (кнопка «Штраф» на
+      странице «Перекличка»). Штраф не списывается автоматически.
     </p>
-    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:10px">
-      <input type="checkbox" [(ngModel)]="housePenaltyEnabled">
+    <label
+      style="
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        margin-bottom: 10px;
+      "
+    >
+      <input type="checkbox" [(ngModel)]="housePenaltyEnabled" />
       Включено
     </label>
-    <div style="margin-bottom:8px">
-      <label style="font-size:13px;color:#555">Порог опозданий, %:
-        <input type="number" min="0" max="100" [(ngModel)]="housePenaltyThreshold" style="width:80px;margin-left:8px" [disabled]="!housePenaltyEnabled">
+    <div style="margin-bottom: 8px">
+      <label style="font-size: 13px; color: #555"
+        >Порог опозданий, %:
+        <input
+          type="number"
+          min="0"
+          max="100"
+          [(ngModel)]="housePenaltyThreshold"
+          style="width: 80px; margin-left: 8px"
+          [disabled]="!housePenaltyEnabled"
+        />
       </label>
     </div>
     <div>
-      <label style="font-size:13px;color:#555">Размер штрафа (баллов):
-        <input type="number" min="0" [(ngModel)]="housePenaltyValue" style="width:80px;margin-left:8px" [disabled]="!housePenaltyEnabled">
+      <label style="font-size: 13px; color: #555"
+        >Размер штрафа (баллов):
+        <input
+          type="number"
+          min="0"
+          [(ngModel)]="housePenaltyValue"
+          style="width: 80px; margin-left: 8px"
+          [disabled]="!housePenaltyEnabled"
+        />
       </label>
     </div>
-    <button (click)="saveHouseLatePenalty()" style="margin-top:10px">Сохранить</button>
+    <button (click)="saveHouseLatePenalty()" style="margin-top: 10px">
+      Сохранить
+    </button>
   </section>
-
 </div>
 
 <!-- Для не-админов — только читаем -->
-<div *ngIf="!auth.isAdmin()" style="color:#888">Настройки доступны только администратору.</div>
+<div *ngIf="!auth.isAdmin()" style="color: #888">
+  Настройки доступны только администратору.
+</div>
