@@ -1,0 +1,10 @@
+* { box-sizing: border-box; }
+body { font-family: Arial, sans-serif; font-size: 14px; margin: 0; }
+a { color: #0066cc; }
+nav a { display: block; padding: 4px 0; text-decoration: none; color: #333; }
+nav a:hover { text-decoration: underline; }
+nav a.active-link { font-weight: bold; color: #000; }
+input, select, textarea { border: 1px solid #aaa; padding: 3px 6px; font-size: 13px; }
+button { padding: 4px 10px; cursor: pointer; font-size: 13px; }
+table { font-size: 13px; }
+h2 { margin-top: 0; }

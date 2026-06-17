@@ -1,0 +1,34 @@
+<h2>Новости</h2>
+<div *ngIf="error" style="color:red">{{ error }}</div>
+<div *ngIf="msg" style="color:green">{{ msg }}</div>
+
+<div *ngIf="auth.isAdmin()" style="border:1px solid #ccc;padding:12px;margin-bottom:16px">
+  <h3>Добавить новость</h3>
+  <div>Заголовок: <input [(ngModel)]="form.title" style="width:300px"></div>
+  <div>Текст: <textarea [(ngModel)]="form.text" rows="3" style="width:100%"></textarea></div>
+  <div>Закрепить: <input type="checkbox" [(ngModel)]="form.pinned"></div>
+  <button (click)="create()">Создать</button>
+</div>
+
+<div *ngFor="let n of news" style="border:1px solid #ccc;padding:10px;margin-bottom:10px">
+  <div style="display:flex;justify-content:space-between;align-items:start">
+    <div>
+      <strong>{{ n.pinned ? '📌 ' : '' }}{{ n.title }}</strong>
+      <div style="white-space:pre-wrap;margin-top:4px">{{ n.text }}</div>
+      <div style="font-size:11px;color:#666;margin-top:4px">{{ n.created_by_name }} · {{ n.created_at | date:'dd.MM.yyyy HH:mm' }}</div>
+    </div>
+    <div *ngIf="auth.isAdmin()">
+      <button (click)="startEdit(n)">✏️</button>
+      <button (click)="remove(n.id)">🗑️</button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="editItem" style="margin-top:16px;border:1px solid #ccc;padding:12px">
+  <h4>Редактирование</h4>
+  <div>Заголовок: <input [(ngModel)]="editItem.title" style="width:300px"></div>
+  <div>Текст: <textarea [(ngModel)]="editItem.text" rows="4" style="width:100%"></textarea></div>
+  <div>Закрепить: <input type="checkbox" [(ngModel)]="editItem.pinned"></div>
+  <button (click)="saveEdit()">Сохранить</button>
+  <button (click)="editItem=null" style="margin-left:8px">Отмена</button>
+</div>

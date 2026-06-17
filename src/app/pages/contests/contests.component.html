@@ -1,0 +1,378 @@
+<h2>Конкурсы</h2>
+<div *ngIf="error" style="color: red">{{ error }}</div>
+<div *ngIf="msg" style="color: green">{{ msg }}</div>
+
+<!-- Форма создания -->
+<div
+  *ngIf="auth.isAdmin()"
+  style="margin-top: 12px; border: 1px solid #ccc; padding: 12px"
+>
+  <h3>Добавить конкурс</h3>
+
+  <!-- Эмодзи с пикером -->
+  <div class="emoji-field">
+    <label>Эмодзи:</label>
+    <div class="emoji-input-wrap">
+      <span class="emoji-preview" (click)="toggleFormEmojiPicker($event)">
+        {{ form.emoji || "😀" }}
+      </span>
+      <input
+        [(ngModel)]="form.emoji"
+        placeholder="или введите вручную"
+        class="emoji-text-input"
+      />
+      <button class="emoji-btn" (click)="toggleFormEmojiPicker($event)">
+        ☺
+      </button>
+    </div>
+    <div
+      class="emoji-picker-wrap"
+      *ngIf="showFormEmojiPicker"
+      (click)="$event.stopPropagation()"
+    >
+      <emoji-mart
+        (emojiSelect)="onFormEmojiSelect($event)"
+        [showPreview]="false"
+        [i18n]="{
+          search: 'Поиск',
+          categories: { search: 'Результаты', recent: 'Частые' },
+        }"
+      ></emoji-mart>
+    </div>
+  </div>
+
+  <div>Название: <input [(ngModel)]="form.title" /></div>
+  <div>
+    Описание: <textarea [(ngModel)]="form.description" rows="3"></textarea>
+  </div>
+
+  <!-- YouTube ссылки -->
+  <div style="margin-top: 8px">
+    <strong>YouTube ссылки:</strong>
+    <button (click)="addFormLink()" style="margin-left: 8px">➕</button>
+    <div
+      *ngFor="let l of formLinks; let i = index"
+      style="display: flex; align-items: center; gap: 6px; margin-top: 4px"
+    >
+      <input
+        [(ngModel)]="l.url"
+        placeholder="https://youtu.be/..."
+        style="width: 260px"
+      />
+      <input
+        [(ngModel)]="l.label"
+        placeholder="Подпись (необязательно)"
+        style="width: 160px"
+      />
+      <button
+        (click)="removeFormLink(i)"
+        style="color: red; border: none; background: none; cursor: pointer"
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+
+  <!-- Файлы -->
+  <div style="margin-top: 8px">
+    Файлы (изображения и видео):
+    <input
+      type="file"
+      accept="image/*,video/*"
+      multiple
+      (change)="onFormFilesChange($event)"
+    />
+  </div>
+  <div
+    *ngIf="formFiles.length"
+    style="margin-top: 6px; padding: 6px; background: #f5f5f5"
+  >
+    <div
+      *ngFor="let f of formFiles; let i = index"
+      style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px"
+    >
+      <span>{{ fileIcon(f) }}</span>
+      <span>{{ fileName(f) }}</span>
+      <span style="color: #888; font-size: 12px">({{ fileSize(f) }})</span>
+      <button
+        (click)="removeFormFile(i)"
+        style="color: red; border: none; background: none; cursor: pointer"
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+
+  <button (click)="create()" style="margin-top: 8px">Создать</button>
+</div>
+
+<!-- Таблица -->
+<table
+  border="1"
+  cellpadding="4"
+  style="border-collapse: collapse; margin-top: 12px; width: 100%"
+>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Эмодзи</th>
+      <th>Название</th>
+      <th>Описание</th>
+      <th>YouTube</th>
+      <th>Файлы</th>
+      <th>Создан</th>
+      <th *ngIf="auth.isAdmin()">Действия</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let c of contests">
+      <td>{{ c.id }}</td>
+      <td style="font-size: 24px; text-align: center">{{ c.emoji }}</td>
+      <td>{{ c.title }}</td>
+      <td>{{ c.description }}</td>
+      <td style="min-width: 140px">
+        <div *ngIf="!c.youtube_links?.length" style="color: #999">—</div>
+        <div *ngFor="let l of c.youtube_links" style="margin-bottom: 2px">
+          <a [href]="l.url" target="_blank">{{ l.label || l.url }}</a>
+        </div>
+      </td>
+      <td style="min-width: 160px">
+        <div *ngIf="!c.files?.length" style="color: #999">—</div>
+        <div
+          *ngFor="let f of c.files"
+          style="
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+          "
+        >
+          <ng-container *ngIf="f.file_type === 'image'">
+            <a [href]="f.file_path" target="_blank">
+              <img
+                [src]="f.file_path"
+                [alt]="f.original_name"
+                style="
+                  height: 40px;
+                  width: 40px;
+                  object-fit: cover;
+                  border-radius: 3px;
+                "
+              />
+            </a>
+          </ng-container>
+          <ng-container *ngIf="f.file_type === 'video'">
+            <a
+              [href]="f.file_path"
+              target="_blank"
+              style="font-size: 22px; text-decoration: none"
+              >🎬</a
+            >
+          </ng-container>
+          <span
+            style="
+              font-size: 11px;
+              color: #555;
+              max-width: 90px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            "
+            [title]="f.original_name"
+          >
+            {{ f.original_name }}
+          </span>
+          <button
+            *ngIf="auth.isAdmin()"
+            (click)="deleteFile(c.id, f.id)"
+            style="
+              color: red;
+              border: none;
+              background: none;
+              cursor: pointer;
+              font-size: 11px;
+            "
+          >
+            ✕
+          </button>
+        </div>
+      </td>
+      <td>{{ c.created_at | date: "dd.MM.yyyy" }}</td>
+      <td *ngIf="auth.isAdmin()">
+        <button (click)="startEdit(c)">✏️</button>
+        <button (click)="remove(c.id)">🗑️</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- Редактирование -->
+<div
+  *ngIf="editItem"
+  style="margin-top: 16px; border: 1px solid #ccc; padding: 12px"
+>
+  <h4>Редактирование: {{ editItem.title }}</h4>
+
+  <!-- Эмодзи с пикером -->
+  <div class="emoji-field">
+    <label>Эмодзи:</label>
+    <div class="emoji-input-wrap">
+      <span class="emoji-preview" (click)="toggleEditEmojiPicker($event)">
+        {{ editItem.emoji || "😀" }}
+      </span>
+      <input
+        [(ngModel)]="editItem.emoji"
+        placeholder="или введите вручную"
+        class="emoji-text-input"
+      />
+      <button class="emoji-btn" (click)="toggleEditEmojiPicker($event)">
+        ☺
+      </button>
+    </div>
+    <div
+      class="emoji-picker-wrap"
+      *ngIf="showEditEmojiPicker"
+      (click)="$event.stopPropagation()"
+    >
+      <emoji-mart
+        (emojiSelect)="onEditEmojiSelect($event)"
+        [showPreview]="false"
+        [i18n]="{
+          search: 'Поиск',
+          categories: { search: 'Результаты', recent: 'Частые' },
+        }"
+      ></emoji-mart>
+    </div>
+  </div>
+
+  <div>Название: <input [(ngModel)]="editItem.title" /></div>
+  <div>
+    Описание: <textarea [(ngModel)]="editItem.description" rows="3"></textarea>
+  </div>
+
+  <!-- Существующие YouTube ссылки -->
+  <div style="margin-top: 8px">
+    <strong>YouTube ссылки:</strong>
+    <div
+      *ngIf="!editItem.youtube_links?.length"
+      style="color: #999; font-size: 12px"
+    >
+      нет
+    </div>
+    <div
+      *ngFor="let l of editItem.youtube_links"
+      style="display: flex; align-items: center; gap: 8px; margin-top: 4px"
+    >
+      <span>🔗</span>
+      <a
+        [href]="l.url"
+        target="_blank"
+        style="
+          font-size: 12px;
+          max-width: 220px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        "
+      >
+        {{ l.label || l.url }}
+      </a>
+      <button
+        (click)="deleteYoutubeLink(editItem.id, l.id)"
+        style="color: red; border: none; background: none; cursor: pointer"
+      >
+        ✕
+      </button>
+    </div>
+    <button (click)="addEditLink()" style="margin-top: 6px">
+      ➕ Добавить ссылку
+    </button>
+    <div
+      *ngFor="let l of editNewLinks; let i = index"
+      style="display: flex; align-items: center; gap: 6px; margin-top: 4px"
+    >
+      <input
+        [(ngModel)]="l.url"
+        placeholder="https://youtu.be/..."
+        style="width: 240px"
+      />
+      <input [(ngModel)]="l.label" placeholder="Подпись" style="width: 140px" />
+      <button
+        (click)="removeEditNewLink(i)"
+        style="color: red; border: none; background: none; cursor: pointer"
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+
+  <!-- Существующие файлы -->
+  <div *ngIf="editItem.files?.length" style="margin-top: 8px">
+    <strong>Загруженные файлы:</strong>
+    <div
+      *ngFor="let f of editItem.files"
+      style="display: flex; align-items: center; gap: 8px; margin-top: 4px"
+    >
+      <span>{{ fileIcon(f) }}</span>
+      <ng-container *ngIf="f.file_type === 'image'">
+        <img
+          [src]="f.file_path"
+          [alt]="f.original_name"
+          style="
+            height: 36px;
+            width: 36px;
+            object-fit: cover;
+            border-radius: 3px;
+          "
+        />
+      </ng-container>
+      <span style="font-size: 12px">{{ f.original_name }}</span>
+      <button
+        (click)="deleteFile(editItem.id, f.id)"
+        style="color: red; border: none; background: none; cursor: pointer"
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+
+  <!-- Добавить файлы -->
+  <div style="margin-top: 8px">
+    Добавить файлы:
+    <input
+      type="file"
+      accept="image/*,video/*"
+      multiple
+      (change)="onEditFilesChange($event)"
+    />
+  </div>
+  <div
+    *ngIf="editFiles.length"
+    style="margin-top: 4px; padding: 6px; background: #f5f5f5"
+  >
+    <div
+      *ngFor="let f of editFiles; let i = index"
+      style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px"
+    >
+      <span>{{ fileIcon(f) }}</span>
+      <span style="font-size: 12px">{{ fileName(f) }}</span>
+      <span style="color: #888; font-size: 11px">({{ fileSize(f) }})</span>
+      <button
+        (click)="removeEditFile(i)"
+        style="color: red; border: none; background: none; cursor: pointer"
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+
+  <div style="margin-top: 10px">
+    <button (click)="saveEdit()">Сохранить</button>
+    <button
+      (click)="editItem = null; editFiles = []; editNewLinks = []"
+      style="margin-left: 8px"
+    >
+      Отмена
+    </button>
+  </div>
+</div>

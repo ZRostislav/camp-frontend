@@ -1,0 +1,60 @@
+.emoji-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.emoji-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.emoji-preview {
+  font-size: 26px;
+  cursor: pointer;
+  line-height: 1;
+  user-select: none;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.emoji-preview:hover {
+  background: #f0f0f0;
+}
+
+.emoji-text-input {
+  width: 80px;
+}
+
+.emoji-btn {
+  font-size: 16px;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 2px 6px;
+  line-height: 1.4;
+}
+
+.emoji-btn:hover {
+  background: #f0f0f0;
+}
+
+.emoji-btn:disabled,
+.emoji-preview:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.emoji-picker-wrap {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  margin-top: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  border-radius: 8px;
+  overflow: hidden;
+}

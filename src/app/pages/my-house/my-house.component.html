@@ -1,0 +1,73 @@
+<h2>Мой домик</h2>
+<div *ngIf="error" style="color: red; margin-bottom: 8px">{{ error }}</div>
+
+<div *ngIf="loading">Загрузка...</div>
+
+<div *ngIf="!loading && house">
+  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px">
+    <div
+      style="width: 52px; height: 52px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border: 1px solid #ddd; flex-shrink: 0"
+    >
+      <img
+        *ngIf="house.avatar_path"
+        [src]="house.avatar_path"
+        style="width: 100%; height: 100%; object-fit: cover"
+      />
+      <span *ngIf="!house.avatar_path && house.emoji" style="font-size: 28px">{{
+        house.emoji
+      }}</span>
+      <span
+        *ngIf="!house.avatar_path && !house.emoji"
+        style="font-size: 24px; color: #ccc"
+        >🏠</span
+      >
+    </div>
+    <div>
+      <h3 style="margin: 0">{{ house.name }}</h3>
+      <div style="color: #666; font-size: 13px">{{ house.description }}</div>
+    </div>
+    <strong style="margin-left: auto">Баллы: {{ house.house_points }}</strong>
+  </div>
+
+  <h4>Ответственные</h4>
+  <table border="1" cellpadding="4" style="border-collapse: collapse">
+    <thead>
+      <tr>
+        <th>ФИО</th>
+        <th>Роль</th>
+        <th>Уровень</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let r of house.responsible">
+        <td>{{ r.full_name }}</td>
+        <td>{{ r.role }}</td>
+        <td>{{ r.rank_level }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4>Участники ({{ house.participants_count }})</h4>
+  <table border="1" cellpadding="4" style="border-collapse: collapse">
+    <thead>
+      <tr>
+        <th>ФИО</th>
+        <th>Пол</th>
+        <th>Возраст</th>
+        <th>Баллы</th>
+        <th *ngIf="auth.isCounselorOrHelper()">Код</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of house.participants">
+        <td>{{ p.last_name }} {{ p.first_name }}</td>
+        <td>{{ p.gender }}</td>
+        <td>{{ p.age }}</td>
+        <td>{{ p.total_points }}</td>
+        <td *ngIf="auth.isCounselorOrHelper()">{{ p.access_code }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div *ngIf="!loading && !house && !error">За вами не закреплён домик.</div>

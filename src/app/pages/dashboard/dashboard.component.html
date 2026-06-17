@@ -1,0 +1,35 @@
+<h2>Главная</h2>
+<div *ngIf="loading">Загрузка...</div>
+
+<div *ngIf="!loading">
+  <h3>Домики (рейтинг)</h3>
+  <table border="1" cellpadding="4" style="border-collapse:collapse">
+    <thead><tr><th>#</th><th>Домик</th><th>Баллов</th><th>Участников</th></tr></thead>
+    <tbody>
+      <tr *ngFor="let h of houses; let i=index">
+        <td>{{ i+1 }}</td>
+        <td><a [routerLink]="['/houses']">{{ h.name }}</a></td>
+        <td>{{ h.house_points }}</td>
+        <td>{{ h.participants_count }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 style="margin-top:16px">Последние новости</h3>
+  <div *ngFor="let n of news" style="border:1px solid #ccc;padding:8px;margin-bottom:8px">
+    <strong>{{ n.pinned ? '📌 ' : '' }}{{ n.title }}</strong>
+    <div>{{ n.text }}</div>
+    <div style="font-size:11px;color:#666">{{ n.created_by_name }} · {{ n.created_at | date:'dd.MM.yyyy HH:mm' }}</div>
+  </div>
+
+  <h3 style="margin-top:16px">Расписание дня</h3>
+  <table border="1" cellpadding="4" style="border-collapse:collapse">
+    <thead><tr><th>Время</th><th>Мероприятие</th></tr></thead>
+    <tbody>
+      <tr *ngFor="let s of schedule">
+        <td>{{ s.time }}</td>
+        <td>{{ s.emoji }} {{ s.title }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

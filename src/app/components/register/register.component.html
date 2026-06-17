@@ -1,0 +1,31 @@
+<div style="max-width:400px;margin:80px auto;padding:20px;border:1px solid #ccc;border-radius:4px">
+  <h2>Лагерь — Регистрация</h2>
+
+  <div *ngIf="!success">
+    <div><label>ФИО<br><input [(ngModel)]="fullName" style="width:100%"></label></div>
+    <div style="margin-top:8px"><label>Логин<br><input [(ngModel)]="username" style="width:100%"></label></div>
+    <div style="margin-top:8px"><label>Пароль<br><input type="password" [(ngModel)]="password" style="width:100%"></label></div>
+    <div style="margin-top:8px"><label>Повторите пароль<br><input type="password" [(ngModel)]="passwordConfirm" style="width:100%"></label></div>
+    <div style="margin-top:8px">
+      <label>Желаемая роль<br>
+        <select [(ngModel)]="requestedRole" style="width:100%">
+          <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+        </select>
+      </label>
+    </div>
+
+    <div style="margin-top:12px">
+      <button (click)="submit()" [disabled]="loading">{{ loading ? 'Отправка...' : 'Зарегистрироваться' }}</button>
+    </div>
+
+    <div *ngIf="error" style="color:red;margin-top:8px">{{ error }}</div>
+  </div>
+
+  <div *ngIf="success" style="color:green;margin-top:8px">
+    {{ success }}
+  </div>
+
+  <div style="margin-top:16px">
+    <a href="javascript:void(0)" (click)="goToLogin()">Уже есть аккаунт? Войти</a>
+  </div>
+</div>

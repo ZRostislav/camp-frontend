@@ -1,0 +1,253 @@
+<h2>Перекличка</h2>
+<div *ngIf="error" style="color: red">{{ error }}</div>
+<div *ngIf="msg" style="color: green">{{ msg }}</div>
+
+<!-- Переключатель дня -->
+<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px">
+  <button (click)="shiftDay(-1)">←</button>
+  <input type="date" [(ngModel)]="filterDate" (ngModelChange)="load()" />
+  <button (click)="shiftDay(1)">→</button>
+  <span style="margin-left: 16px"
+    >Домик (фильтр отображения):
+    <select [(ngModel)]="filterHouseId">
+      <option value="">Все</option>
+      <option *ngFor="let h of houses" [value]="h.id">{{ h.name }}</option>
+    </select>
+  </span>
+  <button
+    *ngIf="auth.isAdmin()"
+    style="margin-left: auto"
+    (click)="showCreateForm = !showCreateForm"
+  >
+    {{ showCreateForm ? "Скрыть" : "+ Новая перекличка" }}
+  </button>
+</div>
+
+<!-- Панель создания переклички -->
+<div
+  *ngIf="showCreateForm && auth.isAdmin()"
+  style="margin-bottom: 12px; border: 1px solid #ccc; padding: 12px"
+>
+  <h3>Создать перекличку (для всех домиков)</h3>
+  <div>
+    Название (например "Утро" / "Вечер"):
+    <input [(ngModel)]="createForm.title" />
+  </div>
+  <div>Дата: <input type="date" [(ngModel)]="createForm.date" /></div>
+  <button (click)="create()">Создать</button>
+</div>
+
+<!-- Вкладки переключения переклички за выбранный день -->
+<div
+  *ngIf="rollcalls.length"
+  style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px"
+>
+  <button
+    *ngFor="let r of rollcalls"
+    (click)="selectTab(r)"
+    [style.fontWeight]="r.id === selectedId ? 'bold' : 'normal'"
+    [style.borderColor]="r.id === selectedId ? '#333' : '#ccc'"
+    [style.background]="r.status === 'завершена' ? '#eee' : '#fff'"
+    style="
+      padding: 6px 12px;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+      cursor: pointer;
+    "
+  >
+    {{ r.title }}
+    <span *ngIf="r.status === 'активна'" style="color: green"> ● активна</span>
+    <span *ngIf="r.status === 'завершена'" style="color: #888">
+      ✓ завершена</span
+    >
+  </button>
+</div>
+<div *ngIf="!rollcalls.length" style="color: #888; margin-bottom: 12px">
+  На эту дату переклички не созданы.
+</div>
+
+<!-- Подсказка об автоначислении баллов -->
+<div
+  *ngIf="attendanceEnabled || lateEnabled"
+  style="
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    background: #f0f7ff;
+    border: 1px solid #c3d9f5;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #444;
+  "
+>
+  <strong>Автоначисление баллов:</strong>
+  <span *ngIf="attendanceEnabled">
+    ✅ «был» → <strong>+{{ attendanceValue }}</strong> б.</span
+  >
+  <span *ngIf="lateEnabled">
+    ⏰ «опоздал» →
+    <strong>{{ lateValue > 0 ? "+" : "" }}{{ lateValue }}</strong> б.</span
+  >
+  <span style="color: #888; margin-left: 8px"
+    >(настраивается в Настройках)</span
+  >
+</div>
+
+<!-- Подсказка о штрафе домику за опоздавших -->
+<div
+  *ngIf="housePenaltyEnabled"
+  style="
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    background: #fff4f4;
+    border: 1px solid #f3c3c3;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #444;
+  "
+>
+  <strong>Штраф домику за опоздавших:</strong> при доле опоздавших
+  ≥ {{ housePenaltyThreshold }}% администратор может вручную выдать домику
+  штраф −{{ housePenaltyValue }} б. (кнопка «Штраф» у каждого домика ниже).
+  <span style="color: #888; margin-left: 8px"
+    >(настраивается в Настройках)</span
+  >
+</div>
+
+<!-- Активная перекличка: панель с детьми по группам -->
+<div *ngIf="selected">
+  <div
+    style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px"
+  >
+    <h3 style="margin: 0">{{ selected.title }} — {{ selected.date }}</h3>
+    <span *ngIf="selected.status === 'активна'" style="color: green">
+      Осталось {{ selected.minutes_left }} мин до автозавершения
+    </span>
+    <span *ngIf="selected.status === 'завершена'" style="color: #888">
+      Перекличка завершена, редактирование заблокировано
+    </span>
+    <button
+      *ngIf="auth.isAdmin() && selected.status === 'активна'"
+      (click)="complete(selected.id)"
+      style="margin-left: auto"
+    >
+      Завершить досрочно
+    </button>
+    <button *ngIf="auth.isAdmin()" (click)="remove(selected.id)">
+      🗑️ Удалить
+    </button>
+  </div>
+
+  <div
+    *ngFor="let group of groupedEntries()"
+    style="
+      margin-bottom: 16px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+    "
+  >
+    <div
+      style="
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+      "
+    >
+      <h4 style="margin: 0">{{ group.houseName }}</h4>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span
+          *ngIf="housePenaltyEnabled"
+          style="font-size: 12px; color: #888"
+        >
+          Опоздало: {{ latePercent(group) }}% (порог {{ housePenaltyThreshold }}%)
+        </span>
+        <span
+          *ngIf="isHousePenalized(group.houseId)"
+          style="font-size: 12px; color: #d33"
+        >
+          ⚠️ Штраф выдан
+        </span>
+        <button
+          *ngIf="auth.isAdmin() && housePenaltyEnabled && !isHousePenalized(group.houseId)"
+          (click)="penalizeHouse(group.houseId)"
+          [disabled]="!canPenalize(group.houseId)"
+          style="
+            padding: 4px 10px;
+            border: 1px solid #d33;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #d33;
+            background: #fff;
+          "
+          title="Списать домику штраф за опоздавших"
+        >
+          ⚠️ Штраф (−{{ housePenaltyValue }})
+        </button>
+        <span
+          *ngIf="isHouseConfirmed(group.houseId)"
+          style="font-size: 12px; color: green"
+        >
+          ✅ Подтверждено
+        </span>
+        <button
+          *ngIf="
+            auth.isAdmin() &&
+            selected.status === 'активна' &&
+            !isHouseConfirmed(group.houseId)
+          "
+          (click)="confirmHouse(group.houseId)"
+          [disabled]="
+            !houseAttendanceEnabled ||
+            !group.entries ||
+            group.entries.length === 0
+          "
+          style="
+            padding: 4px 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            cursor: pointer;
+          "
+          title="Зачислить баллы домику после отметки всех детей"
+        >
+          Подтвердить домик
+        </button>
+      </div>
+    </div>
+    <div
+      *ngFor="let e of group.entries"
+      style="
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 0;
+        border-bottom: 1px solid #f0f0f0;
+      "
+    >
+      <div style="min-width: 180px">{{ e.last_name }} {{ e.first_name }}</div>
+
+      <div style="display: flex; gap: 4px">
+        <button
+          *ngFor="let s of statuses"
+          (click)="mark(e.participant_id, s)"
+          [disabled]="isLocked()"
+          [style.background]="e.status === s ? '#333' : '#f5f5f5'"
+          [style.color]="e.status === s ? '#fff' : '#000'"
+          style="
+            padding: 4px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+          "
+        >
+          {{ s }}
+        </button>
+      </div>
+      <div style="color: #888; font-size: 12px; margin-left: 8px">
+        {{ e.marked_by_name || "—" }}
+        <span *ngIf="e.marked_at">· {{ e.marked_at | date: "HH:mm" }}</span>
+      </div>
+    </div>
+  </div>
+</div>

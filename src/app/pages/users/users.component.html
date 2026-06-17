@@ -1,0 +1,137 @@
+<h2>Пользователи (персонал)</h2>
+<div *ngIf="error" style="color: red">{{ error }}</div>
+<div *ngIf="msg" style="color: green">{{ msg }}</div>
+
+<h3>Добавить</h3>
+<div>ФИО: <input [(ngModel)]="form.fullName" /></div>
+<div>Логин: <input [(ngModel)]="form.username" /></div>
+<div>
+  Роль:
+  <select [(ngModel)]="form.role">
+    <option *ngFor="let r of roles">{{ r }}</option>
+  </select>
+</div>
+<div>Пароль: <input type="password" [(ngModel)]="form.password" /></div>
+<button (click)="create()">Создать</button>
+
+<h3 style="margin-top: 16px">Список</h3>
+<table border="1" cellpadding="4" style="border-collapse: collapse">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>ФИО</th>
+      <th>Логин</th>
+      <th>Роль</th>
+      <th>Активен</th>
+      <th>Пароль</th>
+      <th>Действия</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let u of users">
+      <td>{{ u.id }}</td>
+      <td>{{ u.full_name }}</td>
+      <td>{{ u.username }}</td>
+      <td>{{ u.role }}</td>
+      <td>{{ u.is_active ? "Да" : "Нет" }}</td>
+      <td>{{ u.password_plain || "----" }}</td>
+      <td>
+        <button (click)="startEdit(u)">✏️</button>
+        <button (click)="remove(u.id)" [disabled]="u.role === 'superadmin'">
+          🗑️
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div
+  *ngIf="editUser"
+  style="margin-top: 16px; border: 1px solid #ccc; padding: 12px"
+>
+  <h4>Редактирование: {{ editUser.username }}</h4>
+  <div>ФИО: <input [(ngModel)]="editUser.full_name" /></div>
+  <div>Логин: <input [(ngModel)]="editUser.username" /></div>
+  <div>
+    Роль:
+    <select [(ngModel)]="editUser.role">
+      <option *ngFor="let r of roles">{{ r }}</option>
+    </select>
+  </div>
+  <div>Активен: <input type="checkbox" [(ngModel)]="editUser.is_active" /></div>
+  <div>
+    Новый пароль (оставьте пустым, чтобы не менять):
+    <input type="password" [(ngModel)]="newPassword" />
+  </div>
+  <button (click)="saveEdit()">Сохранить</button>
+  <button (click)="editUser = null; newPassword = ''" style="margin-left: 8px">
+    Отмена
+  </button>
+</div>
+
+<!-- ═══════════ Заявки на регистрацию (только admin / superadmin) ═══════════ -->
+<div *ngIf="auth.isAdmin()" style="margin-top: 32px">
+  <h3>Заявки на регистрацию</h3>
+
+  <div style="margin-bottom: 8px">
+    Статус:
+    <select
+      [(ngModel)]="registrationsStatus"
+      (ngModelChange)="onRegistrationsStatusChange()"
+    >
+      <option value="pending">Ожидают</option>
+      <option value="approved">Одобренные</option>
+      <option value="rejected">Отклонённые</option>
+      <option value="all">Все</option>
+    </select>
+  </div>
+
+  <table border="1" cellpadding="4" style="border-collapse: collapse">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>ФИО</th>
+        <th>Логин</th>
+        <th>Запрошенная роль</th>
+        <th>Статус</th>
+        <th>Создана</th>
+        <th *ngIf="registrationsStatus === 'pending'">Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let r of registrations">
+        <td>{{ r.id }}</td>
+        <td>{{ r.full_name }}</td>
+        <td>{{ r.username }}</td>
+        <td>{{ r.requested_role }}</td>
+        <td>{{ r.status }}</td>
+        <td>{{ r.created_at | date: "short" }}</td>
+        <td *ngIf="registrationsStatus === 'pending'">
+          <select
+            [(ngModel)]="regOverrideRole[r.id]"
+            [ngModelOptions]="{ standalone: true }"
+          >
+            <option [value]="r.requested_role">
+              {{ r.requested_role }} (запрошено)
+            </option>
+            <option *ngFor="let role of roles" [value]="role">
+              {{ role }}
+            </option>
+          </select>
+          <button (click)="approve(r)" style="margin-left: 8px">
+            ✅ Одобрить
+          </button>
+          <button (click)="reject(r)" style="margin-left: 4px">
+            ❌ Отклонить
+          </button>
+          <button (click)="deleteRegistration(r.id)" style="margin-left: 4px">
+            🗑️
+          </button>
+        </td>
+      </tr>
+      <tr *ngIf="!registrations.length">
+        <td colspan="7">Нет заявок</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

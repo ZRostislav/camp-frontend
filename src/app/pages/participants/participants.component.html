@@ -1,0 +1,105 @@
+<h2>Участники</h2>
+<div *ngIf="error" style="color: red">{{ error }}</div>
+<div *ngIf="msg" style="color: green">{{ msg }}</div>
+
+<div>
+  Поиск: <input [(ngModel)]="searchQuery" (ngModelChange)="load()" /> Домик:
+  <select [(ngModel)]="filterHouseId" (ngModelChange)="load()">
+    <option value="">Все</option>
+    <option *ngFor="let h of houses" [value]="h.id">{{ h.name }}</option>
+  </select>
+</div>
+
+<div
+  *ngIf="auth.isAdmin()"
+  style="margin-top: 12px; border: 1px solid #ccc; padding: 12px"
+>
+  <h3>Добавить участника</h3>
+  <div>Фамилия: <input [(ngModel)]="form.lastName" /></div>
+  <div>Имя: <input [(ngModel)]="form.firstName" /></div>
+  <div>Дата рождения: <input type="date" [(ngModel)]="form.birthDate" /></div>
+  <div>
+    Пол:
+    <select [(ngModel)]="form.gender">
+      <option value="м">М</option>
+      <option value="ж">Ж</option>
+    </select>
+  </div>
+  <div>Город: <input [(ngModel)]="form.city" /></div>
+  <div>
+    Домик:
+    <select [(ngModel)]="form.houseId">
+      <option value="">—</option>
+      <option *ngFor="let h of houses" [value]="h.id">{{ h.name }}</option>
+    </select>
+  </div>
+  <div>Баллы: <input type="checkbox" [(ngModel)]="form.hasPoints" /></div>
+  <button (click)="create()">Создать</button>
+</div>
+
+<table
+  border="1"
+  cellpadding="4"
+  style="border-collapse: collapse; margin-top: 12px"
+>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>ФИО</th>
+      <th>Пол</th>
+      <th>Возраст</th>
+      <th>Город</th>
+      <th>Домик</th>
+      <th>Баллы</th>
+      <th *ngIf="!auth.isCounselorOrHelper()">Код</th>
+      <th>Действия</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let p of participants">
+      <td>{{ p.id }}</td>
+      <td>{{ p.last_name }} {{ p.first_name }}</td>
+      <td>{{ p.gender }}</td>
+      <td>{{ p.age }}</td>
+      <td>{{ p.city }}</td>
+      <td>{{ p.house_name }}</td>
+      <td>{{ p.total_points }}</td>
+      <td *ngIf="!auth.isCounselorOrHelper()">{{ p.access_code }}</td>
+      <td *ngIf="auth.isAdmin()">
+        <button (click)="startEdit(p)">✏️</button>
+        <button (click)="resetCode(p.id)">🔑</button>
+        <button (click)="remove(p.id)">🗑️</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div
+  *ngIf="editItem"
+  style="margin-top: 16px; border: 1px solid #ccc; padding: 12px"
+>
+  <h4>Редактирование: {{ editItem.last_name }} {{ editItem.first_name }}</h4>
+  <div>Фамилия: <input [(ngModel)]="editItem.last_name" /></div>
+  <div>Имя: <input [(ngModel)]="editItem.first_name" /></div>
+  <div>
+    Дата рождения: <input type="date" [(ngModel)]="editItem.birth_date" />
+  </div>
+  <div>
+    Пол:
+    <select [(ngModel)]="editItem.gender">
+      <option value="м">М</option>
+      <option value="ж">Ж</option>
+    </select>
+  </div>
+  <div>Город: <input [(ngModel)]="editItem.city" /></div>
+  <div>
+    Домик:
+    <select [(ngModel)]="editItem.houseId">
+      <option value="">—</option>
+      <option *ngFor="let h of houses" [value]="h.id">{{ h.name }}</option>
+    </select>
+  </div>
+  <div>Баллы: <input type="checkbox" [(ngModel)]="editItem.has_points" /></div>
+  <button (click)="saveEdit()">Сохранить</button>
+  <button (click)="editItem = null" style="margin-left: 8px">Отмена</button>
+</div>

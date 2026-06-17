@@ -1,0 +1,72 @@
+<div
+  style="
+    max-width: 400px;
+    margin: 80px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  "
+>
+  <h2>Лагерь — Вход</h2>
+
+  <div style="margin-bottom: 12px">
+    <button (click)="mode = 'staff'" [disabled]="mode === 'staff'">
+      Персонал
+    </button>
+    <button
+      (click)="mode = 'participant'"
+      [disabled]="mode === 'participant'"
+      style="margin-left: 8px"
+    >
+      Участник
+    </button>
+  </div>
+
+  <div *ngIf="mode === 'staff'">
+    <div>
+      <label
+        >Логин<br /><input [(ngModel)]="username" style="width: 100%"
+      /></label>
+    </div>
+    <div style="margin-top: 8px">
+      <label
+        >Пароль<br /><input
+          type="password"
+          [(ngModel)]="password"
+          style="width: 100%"
+      /></label>
+    </div>
+  </div>
+
+  <div *ngIf="mode === 'participant'">
+    <div>
+      <label
+        >Фамилия<br /><input [(ngModel)]="lastName" style="width: 100%"
+      /></label>
+    </div>
+    <div style="margin-top: 8px">
+      <label
+        >Имя<br /><input [(ngModel)]="firstName" style="width: 100%"
+      /></label>
+    </div>
+    <div style="margin-top: 8px">
+      <label
+        >Код доступа<br /><input [(ngModel)]="accessCode" style="width: 100%"
+      /></label>
+    </div>
+  </div>
+
+  <div style="margin-top: 12px">
+    <button (click)="login()" [disabled]="loading">
+      {{ loading ? "Вход..." : "Войти" }}
+    </button>
+  </div>
+
+  <div *ngIf="error" style="color: red; margin-top: 8px">{{ error }}</div>
+
+  <div *ngIf="mode === 'staff'" style="margin-top: 16px">
+    <a href="javascript:void(0)" (click)="goToRegister()"
+      >Нет аккаунта? Зарегистрироваться</a
+    >
+  </div>
+</div>
