@@ -8,5 +8,12 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
+    // provideAnimations() removed: login/register now use plain Tailwind
+    // animate-* classes (see tailwind.config.js keyframes) instead of
+    // @angular/animations triggers, so the animations package is no
+    // longer required by these components. Keep this removed only if no
+    // other part of the app still relies on BrowserAnimationsModule /
+    // @Component({ animations: [...] }) triggers — grep for "trigger(" or
+    // "animations:" elsewhere before deleting the import for good.
   ],
 };

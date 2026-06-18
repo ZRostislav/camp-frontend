@@ -1,72 +1,215 @@
 <div
-  style="
-    max-width: 400px;
-    margin: 80px auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  "
+  class="min-h-screen flex flex-col items-center justify-center px-5 py-10 bg-camp font-nunito relative overflow-hidden"
 >
-  <h2>Лагерь — Вход</h2>
+  <!-- Background blobs -->
+  <div
+    class="absolute -top-20 -right-20 w-80 h-80 rounded-full pointer-events-none animate-blob"
+    style="
+      background: radial-gradient(
+        circle,
+        rgba(255, 122, 40, 0.12) 0%,
+        transparent 70%
+      );
+    "
+  ></div>
+  <div
+    class="absolute -bottom-15 -left-15 w-[280px] h-[280px] rounded-full pointer-events-none animate-blob-delay"
+    style="
+      background: radial-gradient(
+        circle,
+        rgba(255, 203, 164, 0.25) 0%,
+        transparent 70%
+      );
+    "
+  ></div>
 
-  <div style="margin-bottom: 12px">
-    <button (click)="mode = 'staff'" [disabled]="mode === 'staff'">
-      Персонал
-    </button>
+  <!-- Header -->
+  <div class="text-center mb-7 relative z-10 animate-fade-in-down">
+    <div class="relative inline-block mb-2">
+      <span
+        class="block text-7xl leading-none drop-shadow-[0_6px_20px_rgba(255,122,40,0.3)]"
+        >⛺</span
+      >
+      <span class="absolute -top-2 -right-[18px] text-2xl animate-bounce-slow"
+        >☀️</span
+      >
+      <span class="absolute -bottom-1 -left-[22px] text-xl">🌲</span>
+      <span class="absolute -bottom-1 -right-[22px] text-xl">🌲</span>
+    </div>
+    <h1
+      class="font-baloo text-[2rem] font-black text-camp-stone -tracking-wide mb-1"
+    >
+      Лагерь
+    </h1>
+    <p class="text-[0.78rem] font-bold text-camp-subtle tracking-wide">
+      Система управления · 2026
+    </p>
+  </div>
+
+  <!-- Card -->
+  <div
+    class="bg-white rounded-[28px] p-7 px-6 w-full max-w-[400px] shadow-camp relative z-10 animate-fade-in-up"
+  >
+    <!-- Mode tabs -->
+    <div class="flex bg-camp-muted rounded-[14px] p-1 mb-[22px] gap-1">
+      <button
+        type="button"
+        class="flex-1 flex items-center justify-center gap-1.5 py-[10px] px-3 rounded-[10px] text-[0.82rem] font-bold transition-all duration-200"
+        [class]="
+          mode === 'staff'
+            ? 'bg-white text-camp-orange shadow-camp-tab'
+            : 'bg-transparent text-camp-subtle'
+        "
+        (click)="mode = 'staff'"
+      >
+        <app-icon name="shield" [size]="16"></app-icon>
+        Персонал
+      </button>
+      <button
+        type="button"
+        class="flex-1 flex items-center justify-center gap-1.5 py-[10px] px-3 rounded-[10px] text-[0.82rem] font-bold transition-all duration-200"
+        [class]="
+          mode === 'participant'
+            ? 'bg-white text-camp-orange shadow-camp-tab'
+            : 'bg-transparent text-camp-subtle'
+        "
+        (click)="mode = 'participant'"
+      >
+        <app-icon name="tent" [size]="16"></app-icon>
+        Участник
+      </button>
+    </div>
+
+    <!-- Staff fields -->
+    <div *ngIf="mode === 'staff'" class="animate-fade-in-up">
+      <div class="mb-3.5">
+        <label
+          class="flex items-center gap-1.5 text-[0.78rem] font-bold text-camp-gray mb-1.5 uppercase tracking-wide"
+        >
+          <app-icon name="user" [size]="14" class="text-camp-orange"></app-icon>
+          Логин
+        </label>
+        <input
+          class="w-full px-[14px] py-[11px] bg-camp-muted border-2 border-transparent rounded-xl text-[0.9rem] font-medium text-camp-stone outline-none transition-colors duration-200 focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(255,122,40,0.12)] focus:bg-white placeholder:text-[#c7bfb8]"
+          [(ngModel)]="username"
+          placeholder="Введите логин"
+          autocomplete="username"
+        />
+      </div>
+
+      <div class="mb-3.5">
+        <label
+          class="flex items-center gap-1.5 text-[0.78rem] font-bold text-camp-gray mb-1.5 uppercase tracking-wide"
+        >
+          <app-icon name="lock" [size]="14" class="text-camp-orange"></app-icon>
+          Пароль
+        </label>
+        <div class="relative">
+          <input
+            class="w-full pl-[14px] pr-[44px] py-[11px] bg-camp-muted border-2 border-transparent rounded-xl text-[0.9rem] font-medium text-camp-stone outline-none transition-colors duration-200 focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(255,122,40,0.12)] focus:bg-white placeholder:text-[#c7bfb8]"
+            [type]="showPassword ? 'text' : 'password'"
+            [(ngModel)]="password"
+            placeholder="Введите пароль"
+            autocomplete="current-password"
+          />
+          <button
+            class="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-camp-subtle flex items-center transition-colors hover:text-camp-orange p-0"
+            (click)="showPassword = !showPassword"
+            type="button"
+          >
+            <app-icon
+              [name]="showPassword ? 'eye-off' : 'eye'"
+              [size]="16"
+            ></app-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Participant fields -->
+    <div *ngIf="mode === 'participant'" class="animate-fade-in-up">
+      <div class="mb-3.5">
+        <label
+          class="flex items-center gap-1.5 text-[0.78rem] font-bold text-camp-gray mb-1.5 uppercase tracking-wide"
+        >
+          <app-icon name="user" [size]="14" class="text-camp-orange"></app-icon>
+          Имя и фамилия
+        </label>
+        <input
+          class="w-full px-[14px] py-[11px] bg-camp-muted border-2 border-transparent rounded-xl text-[0.9rem] font-medium text-camp-stone outline-none transition-colors duration-200 focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(255,122,40,0.12)] focus:bg-white placeholder:text-[#c7bfb8]"
+          [(ngModel)]="fullName"
+          placeholder="Введите имя и фамилию"
+          autocomplete="name"
+        />
+      </div>
+
+      <div class="mb-3.5">
+        <label
+          class="flex items-center gap-1.5 text-[0.78rem] font-bold text-camp-gray mb-1.5 uppercase tracking-wide"
+        >
+          <app-icon name="lock" [size]="14" class="text-camp-orange"></app-icon>
+          Код доступа
+        </label>
+        <div class="flex gap-2.5 justify-center">
+          <input
+            *ngFor="
+              let digit of accessCodeDigits;
+              let i = index;
+              trackBy: trackByIndex
+            "
+            #codeCell
+            type="text"
+            maxlength="1"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            [(ngModel)]="accessCodeDigits[i]"
+            class="w-[52px] h-[52px] text-center bg-camp-muted border-2 border-transparent rounded-xl text-[1.3rem] font-bold text-camp-stone outline-none transition-colors duration-200 focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(255,122,40,0.12)] focus:bg-white"
+            [value]="digit"
+            (input)="onCodeInput(i)"
+            (focus)="onCodeFocus($event)"
+            (keydown)="onCodeKeydown(i, $event)"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div
+      *ngIf="error"
+      class="flex items-center gap-[7px] bg-camp-errorBg text-camp-error rounded-[10px] px-[14px] py-[10px] text-[0.82rem] font-bold mb-3.5 animate-shake"
+    >
+      <app-icon name="circle-alert" [size]="15"></app-icon>
+      {{ error }}
+    </div>
+
+    <!-- Submit -->
     <button
-      (click)="mode = 'participant'"
-      [disabled]="mode === 'participant'"
-      style="margin-left: 8px"
+      class="w-full py-[14px] bg-camp-orange text-white border-none rounded-2xl text-[0.95rem] font-extrabold cursor-pointer transition-all duration-200 shadow-camp-btn mt-1 hover:bg-camp-orangeHover hover:shadow-camp-btn-hover hover:-translate-y-px active:translate-y-0 active:scale-[0.98] disabled:bg-camp-border disabled:text-camp-subtle disabled:shadow-none disabled:cursor-not-allowed"
+      (click)="login()"
+      [disabled]="loading"
     >
-      Участник
+      <span *ngIf="!loading" class="flex items-center justify-center gap-2">
+        <app-icon name="log-in" [size]="18"></app-icon>
+        Войти
+      </span>
+      <span *ngIf="loading" class="flex items-center justify-center gap-2">
+        <span
+          class="w-[18px] h-[18px] border-[2.5px] border-white/35 border-t-white rounded-full inline-block animate-spin-btn"
+        ></span>
+        Вход...
+      </span>
     </button>
-  </div>
 
-  <div *ngIf="mode === 'staff'">
-    <div>
-      <label
-        >Логин<br /><input [(ngModel)]="username" style="width: 100%"
-      /></label>
+    <!-- Register link -->
+    <div *ngIf="mode === 'staff'" class="text-center mt-[18px]">
+      <a
+        class="inline-flex items-center gap-1 text-[0.82rem] font-bold text-camp-subtle cursor-pointer no-underline transition-colors duration-200 hover:text-camp-orange"
+        (click)="goToRegister()"
+      >
+        Нет аккаунта?
+        <span class="text-camp-orange">Зарегистрироваться</span>
+        <app-icon name="arrow-right" [size]="13"></app-icon>
+      </a>
     </div>
-    <div style="margin-top: 8px">
-      <label
-        >Пароль<br /><input
-          type="password"
-          [(ngModel)]="password"
-          style="width: 100%"
-      /></label>
-    </div>
-  </div>
-
-  <div *ngIf="mode === 'participant'">
-    <div>
-      <label
-        >Фамилия<br /><input [(ngModel)]="lastName" style="width: 100%"
-      /></label>
-    </div>
-    <div style="margin-top: 8px">
-      <label
-        >Имя<br /><input [(ngModel)]="firstName" style="width: 100%"
-      /></label>
-    </div>
-    <div style="margin-top: 8px">
-      <label
-        >Код доступа<br /><input [(ngModel)]="accessCode" style="width: 100%"
-      /></label>
-    </div>
-  </div>
-
-  <div style="margin-top: 12px">
-    <button (click)="login()" [disabled]="loading">
-      {{ loading ? "Вход..." : "Войти" }}
-    </button>
-  </div>
-
-  <div *ngIf="error" style="color: red; margin-top: 8px">{{ error }}</div>
-
-  <div *ngIf="mode === 'staff'" style="margin-top: 16px">
-    <a href="javascript:void(0)" (click)="goToRegister()"
-      >Нет аккаунта? Зарегистрироваться</a
-    >
   </div>
 </div>

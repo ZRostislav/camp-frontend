@@ -1,10 +1,71 @@
-* { box-sizing: border-box; }
-body { font-family: Arial, sans-serif; font-size: 14px; margin: 0; }
-a { color: #0066cc; }
-nav a { display: block; padding: 4px 0; text-decoration: none; color: #333; }
-nav a:hover { text-decoration: underline; }
-nav a.active-link { font-weight: bold; color: #000; }
-input, select, textarea { border: 1px solid #aaa; padding: 3px 6px; font-size: 13px; }
-button { padding: 4px 10px; cursor: pointer; font-size: 13px; }
-table { font-size: 13px; }
-h2 { margin-top: 0; }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: "Nunito", sans-serif;
+  }
+}
+
+@layer utilities {
+  .font-nunito {
+    font-family: "Nunito", sans-serif;
+  }
+  .font-baloo {
+    font-family: "Baloo 2", sans-serif;
+  }
+
+  /* Camp gradient background */
+  .bg-camp {
+    background: linear-gradient(160deg, #fffcf0 0%, #ffe8cc 50%, #fffcf0 100%);
+  }
+
+  /* Bounce animation for sun emoji */
+  .animate-bounce-slow {
+    animation: bounceSlow 2s ease-in-out infinite;
+  }
+  @keyframes bounceSlow {
+    0%,
+    100% {
+      transform: translateY(0) rotate(-5deg);
+    }
+    50% {
+      transform: translateY(-6px) rotate(5deg);
+    }
+  }
+
+  /* Spin star for register */
+  .animate-spin-slow {
+    animation: spinSlow 6s linear infinite;
+  }
+  @keyframes spinSlow {
+    0% {
+      transform: rotate(0deg) scale(1);
+    }
+    50% {
+      transform: rotate(180deg) scale(1.2);
+    }
+    100% {
+      transform: rotate(360deg) scale(1);
+    }
+  }
+
+  /* Blob pulse */
+  .animate-blob {
+    animation: blobPulse 8s ease-in-out infinite;
+  }
+  .animate-blob-delay {
+    animation: blobPulse 8s ease-in-out infinite;
+    animation-delay: -4s;
+  }
+  @keyframes blobPulse {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.12);
+    }
+  }
+}
