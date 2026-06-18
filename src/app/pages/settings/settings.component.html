@@ -17,6 +17,7 @@
       >
       <input
         [(ngModel)]="campName"
+        (ngModelChange)="onCampNameChange($event)"
         style="width: 100%; box-sizing: border-box"
         placeholder="Лагерь «Солнышко»"
       />
@@ -29,6 +30,7 @@
       >
       <input
         [(ngModel)]="campOrganization"
+        (ngModelChange)="onOrganizationChange($event)"
         style="width: 100%; box-sizing: border-box"
         placeholder="МБОУ «Школа №1»"
       />
@@ -76,6 +78,7 @@
             <span style="font-size: 13px; color: #555">Эмодзи:</span>
             <input
               [(ngModel)]="campEmoji"
+              (ngModelChange)="onEmojiChange($event)"
               style="width: 80px"
               placeholder="🏕️"
               [disabled]="!!campLogoPath"
@@ -132,6 +135,7 @@
         <input
           type="color"
           [(ngModel)]="campColor"
+          (ngModelChange)="onColorChange($event)"
           style="
             width: 48px;
             height: 36px;
@@ -143,6 +147,7 @@
         />
         <input
           [(ngModel)]="campColor"
+          (ngModelChange)="onColorChange($event)"
           style="width: 100px"
           placeholder="#4f7ef8"
         />
@@ -172,6 +177,7 @@
         <input
           type="date"
           [(ngModel)]="campDateStart"
+          (ngModelChange)="onDateStartChange($event)"
           style="width: 100%; box-sizing: border-box"
         />
       </div>
@@ -188,6 +194,7 @@
         <input
           type="date"
           [(ngModel)]="campDateEnd"
+          (ngModelChange)="onDateEndChange($event)"
           style="width: 100%; box-sizing: border-box"
         />
       </div>

@@ -1,0 +1,15 @@
+/* ─── Sidebar nav link: hover ─────────────────────────────────────── */
+.sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ─── Sidebar nav link: active (routerLinkActive) ─────────────────── */
+.sidebar-active {
+  background-color: var(--camp-color, #f59e0b) !important;
+  color: #1c1917 !important;
+  font-weight: 700;
+}
+
+.sidebar-active app-icon {
+  opacity: 1 !important;
+}

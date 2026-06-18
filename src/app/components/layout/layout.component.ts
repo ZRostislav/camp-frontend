@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
-import { ApiService } from '../../services/api.service';
+import { SettingsService, CampSettings } from '../../services/settings.service';
 import { MediaUrlPipe } from '../../pipes/media-url.pipe';
+import { IconComponent } from '../../shared/icon.component';
 
 @Component({
   selector: 'app-layout',
@@ -14,40 +16,75 @@ import { MediaUrlPipe } from '../../pipes/media-url.pipe';
     RouterLink,
     RouterLinkActive,
     MediaUrlPipe,
+    IconComponent,
   ],
   templateUrl: './layout.component.html',
+  styleUrl: './layout.component.css',
 })
-export class LayoutComponent implements OnInit {
+export class LayoutComponent implements OnInit, OnDestroy {
   campName = '';
   campOrganization = '';
   campEmoji = '';
   campLogoPath: string | null = null;
-  campColor = '#4f7ef8';
+  campColor = '#F59E0B';
   campDateStart = '';
   campDateEnd = '';
 
+  mobileMenuOpen = false;
+
+  private liveSub?: Subscription;
+
   constructor(
     public auth: AuthService,
-    private api: ApiService,
+    private settingsService: SettingsService,
   ) {}
 
   ngOnInit() {
-    this.api.get('/settings').subscribe({
-      next: (d: any) => {
-        this.campName = d['camp_name'] ?? '';
-        this.campOrganization = d['camp_organization'] ?? '';
-        this.campEmoji = d['camp_emoji'] ?? '';
-        this.campLogoPath = d['camp_logo_path'] ?? null;
-        this.campColor = d['camp_color'] ?? '#4f7ef8';
-        this.campDateStart = d['camp_date_start']
-          ? d['camp_date_start'].slice(0, 10)
-          : '';
-        this.campDateEnd = d['camp_date_end']
-          ? d['camp_date_end'].slice(0, 10)
-          : '';
-      },
+    // Первичная загрузка: memory → localStorage → HTTP
+    this.settingsService.get().subscribe({
+      next: (d) => this.applySettings(d),
       error: () => {},
     });
+
+    // Живые обновления — срабатывает при каждом patch() из любого компонента.
+    // BehaviorSubject стартует с {} — пропускаем пустой начальный эмит.
+    this.liveSub = this.settingsService.live$.subscribe((d) => {
+      if (Object.keys(d).length > 0) {
+        this.applySettings(d as CampSettings);
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.liveSub?.unsubscribe();
+  }
+
+  private applySettings(d: Partial<CampSettings>): void {
+    if (d['camp_name'] != null) this.campName = d['camp_name'] as string;
+    if (d['camp_organization'] != null)
+      this.campOrganization = d['camp_organization'] as string;
+    if (d['camp_emoji'] != null) this.campEmoji = d['camp_emoji'] as string;
+    if (d['camp_logo_path'] != null)
+      this.campLogoPath = d['camp_logo_path'] as string | null;
+    if (d['camp_color'] != null) this.campColor = d['camp_color'] as string;
+    const start = d['camp_date_start'] as string | undefined;
+    const end = d['camp_date_end'] as string | undefined;
+    if (start !== undefined)
+      this.campDateStart = start ? start.slice(0, 10) : '';
+    if (end !== undefined) this.campDateEnd = end ? end.slice(0, 10) : '';
+  }
+
+  getUserInitials(): string {
+    const name =
+      this.auth.currentUser()?.fullName ||
+      this.auth.currentUser()?.full_name ||
+      '';
+    return name
+      .split(' ')
+      .map((n: string) => n[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
   }
 
   formatDate(iso: string): string {

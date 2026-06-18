@@ -1,0 +1,108 @@
+/* ── Container ───────────────────────────────────────────────────────────── */
+
+/*
+ * position: fixed so the emojis stay put even when the inner card
+ * scrolls, and survive router transitions completely intact.
+ */
+.auth-bg-emojis {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+  background: linear-gradient(135deg, #1a5c38 0%, #2d8a5a 40%, #38bdf8 100%);
+}
+
+/* ── Base emoji style ────────────────────────────────────────────────────── */
+
+.auth-bg-emoji {
+  position: absolute;
+  opacity: 0.1;
+  /* user-select: none keeps the emoji from being accidentally selected */
+  user-select: none;
+  will-change: transform; /* hint the browser to promote to its own layer */
+}
+
+/* ── Individual positions & sizes ────────────────────────────────────────── */
+
+.auth-bg-emoji--tree1 {
+  top: 40px;
+  left: 32px;
+  font-size: 72px;
+  transform: rotate(12deg);
+  animation: floatA 7s ease-in-out infinite;
+}
+
+.auth-bg-emoji--camp {
+  top: 112px;
+  right: 40px;
+  font-size: 52px;
+  transform: rotate(-6deg);
+  animation: floatB 9s ease-in-out infinite;
+  animation-delay: -3s; /* start mid-cycle so it's out of phase with tree */
+}
+
+.auth-bg-emoji--tent {
+  bottom: 96px;
+  left: 40px;
+  font-size: 60px;
+  transform: rotate(3deg);
+  animation: floatC 8s ease-in-out infinite;
+  animation-delay: -5s;
+}
+
+.auth-bg-emoji--fire {
+  bottom: 40px;
+  right: 32px;
+  font-size: 40px;
+  transform: rotate(-12deg);
+  animation: floatA 6s ease-in-out infinite;
+  animation-delay: -1.5s;
+}
+
+/* ── Keyframes ───────────────────────────────────────────────────────────── */
+
+/*
+ * Three distinct shapes so adjacent emojis never move in sync.
+ * Each animation incorporates the element's base rotation so the
+ * rotate() set on the element itself is always preserved.
+ */
+
+/* Gentle vertical bob with a slight tilt */
+@keyframes floatA {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(12deg) scale(1);
+  }
+  30% {
+    transform: translateY(-10px) rotate(14deg) scale(1.03);
+  }
+  60% {
+    transform: translateY(-5px) rotate(10deg) scale(1.01);
+  }
+}
+
+/* Wider arc, more horizontal sway */
+@keyframes floatB {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(-6deg) scale(1);
+  }
+  40% {
+    transform: translateY(-14px) rotate(-3deg) scale(1.04);
+  }
+  70% {
+    transform: translateY(-6px) rotate(-8deg) scale(1.01);
+  }
+}
+
+/* Slow drift with a slight counter-rotation */
+@keyframes floatC {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(3deg) scale(1);
+  }
+  50% {
+    transform: translateY(-12px) rotate(6deg) scale(1.03);
+  }
+}

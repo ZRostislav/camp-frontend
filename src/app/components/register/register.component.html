@@ -1,59 +1,62 @@
 <div
-  class="min-h-screen flex flex-col items-center justify-center px-5 py-10 font-nunito relative overflow-hidden"
-  style="background: linear-gradient(135deg, #1A5C38 0%, #2D8A5A 40%, #38BDF8 100%);"
+  class="min-h-screen flex flex-col items-center justify-center px-4 py-6 sm:px-5 sm:py-10 font-nunito relative z-10"
+  [style.--camp-color]="campColor"
 >
-  <!-- Decorative background emoji -->
-  <div class="absolute inset-0 overflow-hidden pointer-events-none">
-    <span class="absolute top-10 left-8 text-7xl opacity-10 rotate-12">🌲</span>
-    <span class="absolute top-28 right-10 text-5xl opacity-10 -rotate-6">🏕️</span>
-    <span class="absolute bottom-24 left-10 text-6xl opacity-10 rotate-3">⛺</span>
-    <span class="absolute bottom-10 right-8 text-4xl opacity-10 -rotate-12">🔥</span>
-  </div>
-
   <!-- Header -->
-  <div class="text-center mb-5 relative z-10 animate-fade-in-down">
-    <div class="relative inline-block mb-1.5">
+  <div class="text-center mb-3 sm:mb-5 relative z-10 animate-fade-in-down">
+    <div class="relative inline-block mb-1 sm:mb-1.5">
       <span
-        class="block text-[60px] leading-none drop-shadow-[0_5px_16px_rgba(0,0,0,0.25)]"
+        class="block text-[44px] sm:text-[60px] leading-none drop-shadow-[0_5px_16px_rgba(0,0,0,0.25)]"
         >🏕️</span
       >
-      <span class="absolute -top-1.5 -right-3.5 text-[22px] animate-spin-slow"
+      <span
+        class="absolute -top-1 -right-3 sm:-top-1.5 sm:-right-3.5 text-[18px] sm:text-[22px] animate-spin-slow"
+        [style.color]="campColor"
         >⭐</span
       >
     </div>
     <h1
-      class="font-display text-[1.8rem] font-black text-white -tracking-wide mb-1"
+      class="font-display text-[1.5rem] sm:text-[1.8rem] font-black text-white -tracking-wide mb-1"
     >
       Регистрация
     </h1>
-    <p class="text-[0.76rem] font-bold text-white/70 tracking-wide">
+    <p
+      class="text-[0.7rem] sm:text-[0.76rem] font-bold text-white/70 tracking-wide"
+    >
       Подайте заявку · Ожидайте одобрения
     </p>
   </div>
 
   <!-- Card -->
   <div
-    class="bg-white rounded-[28px] p-6 px-[22px] w-full max-w-[420px] shadow-camp relative z-10 animate-fade-in-up"
+    class="bg-white rounded-[22px] sm:rounded-[28px] p-4 sm:p-6 sm:px-[22px] w-full max-w-[420px] shadow-camp relative z-10 animate-fade-in-up"
   >
     <!-- Success state -->
     <div
       *ngIf="success"
-      class="flex flex-col items-center text-center py-4 px-2 gap-2.5 animate-pop-in"
+      class="flex flex-col items-center text-center py-3 sm:py-4 px-2 gap-2 sm:gap-2.5 animate-pop-in"
     >
       <div
-        class="w-[72px] h-[72px] bg-camp-successBg rounded-full flex items-center justify-center text-camp-success"
+        class="w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] rounded-full flex items-center justify-center"
+        [style.backgroundColor]="campColorBg"
+        [style.color]="campColor"
       >
-        <app-icon name="circle-check" [size]="36"></app-icon>
+        <app-icon name="circle-check" [size]="32"></app-icon>
       </div>
-      <p class="text-[1.1rem] font-black text-camp-stone">Заявка отправлена!</p>
-      <p class="text-[0.84rem] font-semibold text-camp-gray leading-relaxed">
+      <p class="text-[1rem] sm:text-[1.1rem] font-black text-camp-stone">
+        Заявка отправлена!
+      </p>
+      <p
+        class="text-[0.8rem] sm:text-[0.84rem] font-semibold text-camp-gray leading-relaxed"
+      >
         {{ success }}
       </p>
       <button
-        class="flex items-center gap-[7px] mt-2 py-[11px] px-6 bg-camp-orange text-white border-none rounded-xl text-[0.88rem] font-extrabold cursor-pointer transition-all duration-200 shadow-camp-btn hover:bg-camp-orangeHover hover:-translate-y-px"
+        class="flex items-center gap-[7px] mt-1 sm:mt-2 py-[10px] sm:py-[11px] px-5 sm:px-6 text-white border-none rounded-xl text-[0.84rem] sm:text-[0.88rem] font-extrabold cursor-pointer transition-all duration-200 hover:-translate-y-px"
+        [style.backgroundColor]="campColor"
         (click)="goToLogin()"
       >
-        <app-icon name="log-in" [size]="16"></app-icon>
+        <app-icon name="log-in" [size]="15"></app-icon>
         Перейти ко входу
       </button>
     </div>
@@ -61,117 +64,158 @@
     <!-- Form -->
     <div *ngIf="!success">
       <!-- Step indicator -->
-      <div class="mb-[18px]">
-        <div class="flex items-center justify-between mb-2.5">
+      <div class="mb-3 sm:mb-[18px]">
+        <div class="flex items-center justify-between mb-2">
           <div
-            class="flex items-center gap-1.5 text-[0.8rem] font-extrabold text-camp-stone"
+            class="flex items-center gap-1.5 text-[0.75rem] sm:text-[0.8rem] font-extrabold text-camp-stone"
           >
             <app-icon
               [name]="stepMeta[currentStep].icon"
-              [size]="14"
-              class="text-camp-orange"
+              [size]="13"
+              [style.color]="campColor"
             ></app-icon>
             {{ stepMeta[currentStep].label }}
           </div>
           <span
-            class="text-[0.72rem] font-bold text-camp-orange bg-camp-light rounded-full py-[3px] px-[10px]"
-            >Шаг {{ currentStep }} из {{ totalSteps }}</span
+            class="text-[0.68rem] sm:text-[0.72rem] font-bold rounded-full py-[3px] px-[9px] sm:px-[10px]"
+            [style.color]="campColor"
+            [style.backgroundColor]="campColorBg"
           >
+            Шаг {{ currentStep }} из {{ totalSteps }}
+          </span>
         </div>
-        <div class="flex gap-1.5 pb-[14px] border-b-[1.5px] border-camp-muted">
+        <div
+          class="flex gap-1.5 pb-3 sm:pb-[14px] border-b-[1.5px] border-camp-muted"
+        >
           <div
             *ngFor="let s of steps"
             class="flex-1 h-1.5 rounded-full transition-all duration-300"
-            [class]="s <= currentStep ? 'bg-camp-orange' : 'bg-camp-muted'"
+            [style.backgroundColor]="s <= currentStep ? campColor : '#F5F5F0'"
           ></div>
         </div>
       </div>
 
       <!-- Step 1: name + login -->
       <div *ngIf="currentStep === 1" class="animate-fade-in-up">
-        <div class="flex gap-2.5 mb-3">
+        <div class="flex gap-2 sm:gap-2.5 mb-2.5 sm:mb-3">
           <div class="flex-1">
             <label
-              class="flex items-center gap-[5px] text-[0.73rem] font-bold text-camp-gray mb-[5px] uppercase tracking-wide"
+              class="flex items-center gap-[5px] text-[0.68rem] sm:text-[0.73rem] font-bold text-camp-gray mb-[5px] uppercase tracking-wide"
             >
               <app-icon
                 name="id-card"
-                [size]="14"
-                class="text-camp-orange"
+                [size]="13"
+                [style.color]="campColor"
               ></app-icon>
               Имя
             </label>
             <input
-              class="w-full px-[13px] py-[10px] bg-camp-input border-2 border-transparent rounded-xl text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(245,158,11,0.12)] focus:bg-white placeholder:text-[#c7bfb8]"
+              class="w-full px-3 sm:px-[13px] py-[8px] sm:py-[10px] bg-camp-input border-2 rounded-xl text-[0.84rem] sm:text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 placeholder:text-[#c7bfb8]"
+              style="border-color: transparent"
               [(ngModel)]="firstName"
               placeholder="Иван"
               autocomplete="given-name"
+              (focus)="
+                $any($event.target).style.borderColor = campColor;
+                $any($event.target).style.backgroundColor = 'white'
+              "
+              (blur)="
+                $any($event.target).style.borderColor = 'transparent';
+                $any($event.target).style.backgroundColor = ''
+              "
             />
           </div>
           <div class="flex-1">
             <label
-              class="flex items-center gap-[5px] text-[0.73rem] font-bold text-camp-gray mb-[5px] uppercase tracking-wide"
+              class="flex items-center gap-[5px] text-[0.68rem] sm:text-[0.73rem] font-bold text-camp-gray mb-[5px] uppercase tracking-wide"
             >
               <app-icon
                 name="id-card"
-                [size]="14"
-                class="text-camp-orange"
+                [size]="13"
+                [style.color]="campColor"
               ></app-icon>
               Фамилия
             </label>
             <input
-              class="w-full px-[13px] py-[10px] bg-camp-input border-2 border-transparent rounded-xl text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(245,158,11,0.12)] focus:bg-white placeholder:text-[#c7bfb8]"
+              class="w-full px-3 sm:px-[13px] py-[8px] sm:py-[10px] bg-camp-input border-2 rounded-xl text-[0.84rem] sm:text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 placeholder:text-[#c7bfb8]"
+              style="border-color: transparent"
               [(ngModel)]="lastName"
               placeholder="Иванов"
               autocomplete="family-name"
+              (focus)="
+                $any($event.target).style.borderColor = campColor;
+                $any($event.target).style.backgroundColor = 'white'
+              "
+              (blur)="
+                $any($event.target).style.borderColor = 'transparent';
+                $any($event.target).style.backgroundColor = ''
+              "
             />
           </div>
         </div>
-
         <div class="mb-0">
           <label
-            class="flex items-center gap-[5px] text-[0.73rem] font-bold text-camp-gray mb-[5px] uppercase tracking-wide"
+            class="flex items-center gap-[5px] text-[0.68rem] sm:text-[0.73rem] font-bold text-camp-gray mb-[5px] uppercase tracking-wide"
           >
             <app-icon
               name="user"
-              [size]="14"
-              class="text-camp-orange"
+              [size]="13"
+              [style.color]="campColor"
             ></app-icon>
             Логин
           </label>
           <input
-            class="w-full px-[13px] py-[10px] bg-camp-input border-2 border-transparent rounded-xl text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(245,158,11,0.12)] focus:bg-white placeholder:text-[#c7bfb8]"
+            class="w-full px-3 sm:px-[13px] py-[8px] sm:py-[10px] bg-camp-input border-2 rounded-xl text-[0.84rem] sm:text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 placeholder:text-[#c7bfb8]"
+            style="border-color: transparent"
             [(ngModel)]="username"
             placeholder="Введите логин"
             autocomplete="username"
+            (focus)="
+              $any($event.target).style.borderColor = campColor;
+              $any($event.target).style.backgroundColor = 'white'
+            "
+            (blur)="
+              $any($event.target).style.borderColor = 'transparent';
+              $any($event.target).style.backgroundColor = ''
+            "
           />
         </div>
       </div>
 
       <!-- Step 2: password -->
       <div *ngIf="currentStep === 2" class="animate-fade-in-up">
-        <div class="flex gap-2.5 mb-0">
+        <div class="flex gap-2 sm:gap-2.5 mb-0">
           <div class="flex-1">
             <label
-              class="flex items-center gap-[5px] text-[0.73rem] font-bold text-camp-gray mb-[5px] uppercase tracking-wide"
+              class="flex items-center gap-[5px] text-[0.68rem] sm:text-[0.73rem] font-bold text-camp-gray mb-[5px] uppercase tracking-wide"
             >
               <app-icon
                 name="lock"
-                [size]="14"
-                class="text-camp-orange"
+                [size]="13"
+                [style.color]="campColor"
               ></app-icon>
               Пароль
             </label>
             <div class="relative">
               <input
-                class="w-full pl-[13px] pr-[38px] py-[10px] bg-camp-input border-2 border-transparent rounded-xl text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(245,158,11,0.12)] focus:bg-white placeholder:text-[#c7bfb8]"
+                class="w-full pl-3 sm:pl-[13px] pr-9 sm:pr-[38px] py-[8px] sm:py-[10px] bg-camp-input border-2 rounded-xl text-[0.84rem] sm:text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 placeholder:text-[#c7bfb8]"
+                style="border-color: transparent"
                 [type]="showPassword ? 'text' : 'password'"
                 [(ngModel)]="password"
                 placeholder="Пароль"
                 autocomplete="new-password"
+                (focus)="
+                  $any($event.target).style.borderColor = campColor;
+                  $any($event.target).style.backgroundColor = 'white'
+                "
+                (blur)="
+                  $any($event.target).style.borderColor = 'transparent';
+                  $any($event.target).style.backgroundColor = ''
+                "
               />
               <button
-                class="absolute right-[10px] top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-camp-subtle flex items-center transition-colors hover:text-camp-orange p-0"
+                class="absolute right-[10px] top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer flex items-center p-0 transition-colors"
+                [style.color]="campColor"
                 (click)="showPassword = !showPassword"
                 type="button"
               >
@@ -182,32 +226,43 @@
               </button>
             </div>
           </div>
-
           <div class="flex-1">
             <label
-              class="flex items-center gap-[5px] text-[0.73rem] font-bold text-camp-gray mb-[5px] uppercase tracking-wide"
+              class="flex items-center gap-[5px] text-[0.68rem] sm:text-[0.73rem] font-bold text-camp-gray mb-[5px] uppercase tracking-wide"
             >
               <app-icon
                 name="lock"
-                [size]="14"
-                class="text-camp-orange"
+                [size]="13"
+                [style.color]="campColor"
               ></app-icon>
               Повтор
             </label>
             <div class="relative">
               <input
-                class="w-full pl-[13px] pr-[38px] py-[10px] border-2 rounded-xl text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 focus:bg-white placeholder:text-[#c7bfb8]"
-                [class]="
+                class="w-full pl-3 sm:pl-[13px] pr-9 sm:pr-[38px] py-[8px] sm:py-[10px] bg-camp-input border-2 rounded-xl text-[0.84rem] sm:text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 placeholder:text-[#c7bfb8]"
+                [style.borderColor]="
                   passwordConfirm && password !== passwordConfirm
-                    ? 'bg-camp-input border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.1)]'
+                    ? '#EF4444'
                     : passwordConfirm && password === passwordConfirm
-                      ? 'bg-camp-input border-camp-success shadow-[0_0_0_3px_rgba(22,163,74,0.1)]'
-                      : 'bg-camp-input border-transparent focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(245,158,11,0.12)]'
+                      ? '#22C55E'
+                      : 'transparent'
                 "
+                [style.backgroundColor]="passwordConfirm ? 'white' : ''"
                 [type]="showPassword ? 'text' : 'password'"
                 [(ngModel)]="passwordConfirm"
                 placeholder="Повторите"
                 autocomplete="new-password"
+                (focus)="
+                  !passwordConfirm &&
+                    ($any($event.target).style.borderColor = campColor);
+                  $any($event.target).style.backgroundColor = 'white'
+                "
+                (blur)="
+                  !passwordConfirm &&
+                    ($any($event.target).style.borderColor = 'transparent');
+                  !passwordConfirm &&
+                    ($any($event.target).style.backgroundColor = '')
+                "
               />
               <app-icon
                 *ngIf="passwordConfirm && password === passwordConfirm"
@@ -224,24 +279,31 @@
       <div *ngIf="currentStep === 3" class="animate-fade-in-up">
         <div class="mb-0">
           <label
-            class="flex items-center gap-[5px] text-[0.73rem] font-bold text-camp-gray mb-[5px] uppercase tracking-wide"
+            class="flex items-center gap-[5px] text-[0.68rem] sm:text-[0.73rem] font-bold text-camp-gray mb-[5px] uppercase tracking-wide"
           >
             <app-icon
               name="briefcase"
-              [size]="14"
-              class="text-camp-orange"
+              [size]="13"
+              [style.color]="campColor"
             ></app-icon>
             Желаемая роль
           </label>
-          <div class="grid grid-cols-2 gap-2">
+          <div class="grid grid-cols-2 gap-1.5 sm:gap-2">
             <button
               *ngFor="let r of roles"
               type="button"
-              class="flex items-center gap-[7px] py-[9px] px-[13px] border-2 rounded-xl text-[0.82rem] font-bold cursor-pointer transition-all duration-200 text-left"
-              [class]="
+              class="flex items-center gap-[6px] sm:gap-[7px] py-[8px] sm:py-[9px] px-[10px] sm:px-[13px] border-2 rounded-xl text-[0.78rem] sm:text-[0.82rem] font-bold cursor-pointer transition-all duration-200 text-left"
+              [style.borderColor]="
+                requestedRole === r.value ? campColor : '#F5F5F0'
+              "
+              [style.backgroundColor]="
+                requestedRole === r.value ? campColorBg : '#F5F5F0'
+              "
+              [style.color]="requestedRole === r.value ? campColor : '#78716C'"
+              [style.boxShadow]="
                 requestedRole === r.value
-                  ? 'border-camp-orange bg-camp-light text-camp-orange shadow-[0_2px_10px_rgba(245,158,11,0.18)]'
-                  : 'border-camp-muted bg-camp-muted text-camp-gray hover:border-camp-mid hover:bg-camp-light hover:text-camp-orange'
+                  ? '0 2px 10px ' + campColorLight
+                  : 'none'
               "
               (click)="requestedRole = r.value"
             >
@@ -255,50 +317,54 @@
       <!-- Error -->
       <div
         *ngIf="error"
-        class="flex items-center gap-[7px] bg-camp-errorBg text-camp-error rounded-[10px] px-[14px] py-[10px] text-[0.82rem] font-bold mt-3 animate-shake"
+        class="flex items-center gap-[7px] bg-camp-errorBg text-camp-error rounded-[10px] px-3 sm:px-[14px] py-[8px] sm:py-[10px] text-[0.76rem] sm:text-[0.82rem] font-bold mt-2.5 sm:mt-3 animate-shake"
       >
-        <app-icon name="circle-alert" [size]="15"></app-icon>
+        <app-icon name="circle-alert" [size]="14"></app-icon>
         {{ error }}
       </div>
 
       <!-- Navigation -->
-      <div class="flex gap-2.5 mt-3.5">
+      <div class="flex gap-2 sm:gap-2.5 mt-3 sm:mt-3.5">
         <button
           *ngIf="currentStep > 1"
           type="button"
-          class="flex items-center justify-center gap-1.5 py-[13px] px-5 bg-camp-muted text-camp-gray border-none rounded-2xl text-[0.92rem] font-extrabold cursor-pointer transition-all duration-200 hover:bg-camp-mid active:scale-[0.98]"
+          class="flex items-center justify-center gap-1.5 py-[11px] sm:py-[13px] px-4 sm:px-5 bg-camp-muted text-camp-gray border-none rounded-2xl text-[0.86rem] sm:text-[0.92rem] font-extrabold cursor-pointer transition-all duration-200 hover:bg-camp-mid active:scale-[0.98]"
           (click)="prevStep()"
         >
-          <app-icon name="arrow-left" [size]="16"></app-icon>
+          <app-icon name="arrow-left" [size]="15"></app-icon>
           Назад
         </button>
 
         <button
           *ngIf="currentStep < totalSteps"
           type="button"
-          class="flex-1 py-[13px] bg-camp-orange text-white border-none rounded-2xl text-[0.92rem] font-extrabold cursor-pointer transition-all duration-200 shadow-camp-btn hover:bg-camp-orangeHover hover:shadow-camp-btn-hover hover:-translate-y-px active:translate-y-0 active:scale-[0.98]"
+          class="flex-1 py-[11px] sm:py-[13px] text-white border-none rounded-2xl text-[0.86rem] sm:text-[0.92rem] font-extrabold cursor-pointer transition-all duration-200 hover:-translate-y-px active:translate-y-0 active:scale-[0.98]"
+          [style.backgroundColor]="campColor"
+          [style.boxShadow]="'0 4px 18px ' + campColorLight"
           (click)="nextStep()"
         >
           <span class="flex items-center justify-center gap-2">
             Далее
-            <app-icon name="arrow-right" [size]="17"></app-icon>
+            <app-icon name="arrow-right" [size]="16"></app-icon>
           </span>
         </button>
 
         <button
           *ngIf="currentStep === totalSteps"
           type="button"
-          class="flex-1 py-[13px] bg-camp-orange text-white border-none rounded-2xl text-[0.92rem] font-extrabold cursor-pointer transition-all duration-200 shadow-camp-btn hover:bg-camp-orangeHover hover:shadow-camp-btn-hover hover:-translate-y-px active:translate-y-0 active:scale-[0.98] disabled:bg-camp-border disabled:text-camp-subtle disabled:shadow-none disabled:cursor-not-allowed"
+          class="flex-1 py-[11px] sm:py-[13px] text-white border-none rounded-2xl text-[0.86rem] sm:text-[0.92rem] font-extrabold cursor-pointer transition-all duration-200 hover:-translate-y-px active:translate-y-0 active:scale-[0.98] disabled:bg-camp-border disabled:text-camp-subtle disabled:shadow-none disabled:cursor-not-allowed"
+          [style.backgroundColor]="loading ? '' : campColor"
+          [style.boxShadow]="'0 4px 18px ' + campColorLight"
           (click)="submit()"
           [disabled]="loading"
         >
           <span *ngIf="!loading" class="flex items-center justify-center gap-2">
-            <app-icon name="send" [size]="17"></app-icon>
+            <app-icon name="send" [size]="16"></app-icon>
             Отправить заявку
           </span>
           <span *ngIf="loading" class="flex items-center justify-center gap-2">
             <span
-              class="w-[17px] h-[17px] border-[2.5px] border-white/35 border-t-white rounded-full inline-block animate-spin-btn"
+              class="w-[16px] h-[16px] border-[2.5px] border-white/35 border-t-white rounded-full inline-block animate-spin-btn"
             ></span>
             Отправка...
           </span>
@@ -307,13 +373,17 @@
     </div>
 
     <!-- Back link -->
-    <div class="text-center mt-4">
+    <div class="text-center mt-3 sm:mt-4">
       <a
-        class="inline-flex items-center gap-1 text-[0.82rem] font-bold text-camp-subtle cursor-pointer no-underline transition-colors duration-200 hover:text-camp-orange"
+        class="inline-flex items-center gap-1 text-[0.76rem] sm:text-[0.82rem] font-bold text-camp-subtle cursor-pointer no-underline transition-colors duration-200"
         (click)="goToLogin()"
       >
-        <app-icon name="arrow-left" [size]="13"></app-icon>
-        Уже есть аккаунт? <span class="text-camp-orange">Войти</span>
+        <app-icon
+          name="arrow-left"
+          [size]="13"
+          [style.color]="campColor"
+        ></app-icon>
+        Уже есть аккаунт? <span [style.color]="campColor">Войти</span>
       </a>
     </div>
   </div>

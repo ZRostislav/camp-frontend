@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IconComponent } from '../../shared/icon.component';
 import { AuthService } from '../../services/auth.service';
+import { SettingsService } from '../../services/settings.service';
 
 type Step = 1 | 2 | 3;
 
@@ -13,13 +14,11 @@ type Step = 1 | 2 | 3;
   imports: [CommonModule, FormsModule, IconComponent],
   templateUrl: './register.component.html',
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   currentStep: Step = 1;
   readonly totalSteps = 3;
   readonly steps: Step[] = [1, 2, 3];
 
-  // Step labels/icons shown in the header — kept in one place so the
-  // template and the step logic can't drift out of sync.
   readonly stepMeta: Record<Step, { icon: string; label: string }> = {
     1: { icon: 'user-plus', label: 'Имя и логин' },
     2: { icon: 'lock', label: 'Пароль' },
@@ -33,6 +32,8 @@ export class RegisterComponent {
   passwordConfirm = '';
   requestedRole = 'helper';
   showPassword = false;
+
+  campColor = '#F59E0B';
 
   roles = [
     { value: 'admin', label: 'Администратор', emoji: '👑' },
@@ -48,12 +49,33 @@ export class RegisterComponent {
   constructor(
     private auth: AuthService,
     private router: Router,
+    private settings: SettingsService,
   ) {}
 
-  /** Validates the current step and, if it passes, advances to the next one. */
+  ngOnInit() {
+    this.settings.get().subscribe({
+      next: (d) => {
+        this.campColor = (d['camp_color'] as string) ?? '#F59E0B';
+      },
+      error: () => {},
+    });
+  }
+
+  get campColorLight(): string {
+    return this.hexToRgba(this.campColor, 0.12);
+  }
+
+  get campColorBg(): string {
+    return this.hexToRgba(this.campColor, 0.08);
+  }
+
+  private hexToRgba(hex: string, alpha: number): string {
+    const num = parseInt(hex.replace('#', ''), 16);
+    return `rgba(${(num >> 16) & 255},${(num >> 8) & 255},${num & 255},${alpha})`;
+  }
+
   nextStep() {
     this.error = '';
-
     if (this.currentStep === 1) {
       if (
         !this.firstName.trim() ||
@@ -66,29 +88,22 @@ export class RegisterComponent {
       this.currentStep = 2;
       return;
     }
-
     if (this.currentStep === 2) {
-      const passwordError = this.validatePassword();
-      if (passwordError) {
-        this.error = passwordError;
+      const err = this.validatePassword();
+      if (err) {
+        this.error = err;
         return;
       }
       this.currentStep = 3;
     }
   }
 
-  /** Goes back one step, clearing any error from the step being left. */
   prevStep() {
     if (this.currentStep === 1) return;
     this.error = '';
     this.currentStep = (this.currentStep - 1) as Step;
   }
 
-  /**
-   * Checks the password fields and returns a human-readable problem
-   * description, or '' if everything is fine. Kept separate from
-   * nextStep() so submit() can re-run the same check as a safety net.
-   */
   private validatePassword(): string {
     if (!this.password) return 'Введите пароль';
     if (this.password.length < 6)
@@ -100,20 +115,14 @@ export class RegisterComponent {
   submit() {
     this.error = '';
     this.success = '';
-
-    // Defensive re-check: if the passwords somehow don't match by the
-    // time we reach the final step, send the user back to the password
-    // step instead of letting a bad request hit the server.
-    const passwordError = this.validatePassword();
-    if (passwordError) {
-      this.error = passwordError;
+    const err = this.validatePassword();
+    if (err) {
+      this.error = err;
       this.currentStep = 2;
       return;
     }
-
     this.loading = true;
     const fullName = `${this.lastName.trim()} ${this.firstName.trim()}`.trim();
-
     this.auth
       .register(fullName, this.username, this.password, this.requestedRole)
       .subscribe({
@@ -128,15 +137,8 @@ export class RegisterComponent {
           this.loading = false;
           const message = e.error?.error || 'Ошибка отправки заявки';
           this.error = message;
-
-          // Route the user back to whichever step the server-side
-          // problem actually belongs to, so they see the message next
-          // to the field that caused it.
-          if (/парол/i.test(message)) {
-            this.currentStep = 2;
-          } else if (/логин/i.test(message)) {
-            this.currentStep = 1;
-          }
+          if (/парол/i.test(message)) this.currentStep = 2;
+          else if (/логин/i.test(message)) this.currentStep = 1;
         },
       });
   }
@@ -153,5 +155,12 @@ export class RegisterComponent {
 
   goToLogin() {
     this.router.navigate(['/login']);
+  }
+
+  @HostListener('document:keydown.enter')
+  onEnter() {
+    if (this.loading || this.success) return;
+    if (this.currentStep < this.totalSteps) this.nextStep();
+    else this.submit();
   }
 }

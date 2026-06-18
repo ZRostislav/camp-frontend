@@ -69,3 +69,10 @@
     }
   }
 }
+
+app-login,
+app-register {
+  position: relative;
+  z-index: 1;
+  display: block;
+}

@@ -1,6 +1,7 @@
 import {
   Component,
   ElementRef,
+  HostListener,
   OnInit,
   QueryList,
   ViewChildren,
@@ -10,7 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IconComponent } from '../../shared/icon.component';
 import { AuthService } from '../../services/auth.service';
-import { ApiService } from '../../services/api.service';
+import { SettingsService } from '../../services/settings.service';
 
 @Component({
   selector: 'app-login',
@@ -22,16 +23,12 @@ export class LoginComponent implements OnInit {
   mode: 'staff' | 'participant' = 'staff';
   username = '';
   password = '';
-
-  // Combined "Имя и фамилия" field — split into first/last on submit.
   fullName = '';
-
-  // 4-digit access code, stored as one string per cell for the PIN panel.
   accessCodeDigits: string[] = ['', '', '', ''];
 
-  // Заезд/организация, подтягиваются из /settings — отображаются в шапке.
   campName = '';
   campOrganization = '';
+  campColor = '#F59E0B';
 
   @ViewChildren('codeCell') codeCells!: QueryList<ElementRef<HTMLInputElement>>;
 
@@ -42,96 +39,99 @@ export class LoginComponent implements OnInit {
   constructor(
     private auth: AuthService,
     private router: Router,
-    private api: ApiService,
+    private settings: SettingsService,
   ) {
     if (auth.isLoggedIn) this.router.navigate(['/']);
   }
 
   ngOnInit() {
-    this.api.get('/settings').subscribe({
-      next: (d: any) => {
-        this.campName = d['camp_name'] ?? '';
-        this.campOrganization = d['camp_organization'] ?? '';
+    this.settings.get().subscribe({
+      next: (d) => {
+        this.campName = (d['camp_name'] as string) ?? '';
+        this.campOrganization = (d['camp_organization'] as string) ?? '';
+        this.campColor = (d['camp_color'] as string) ?? '#F59E0B';
       },
       error: () => {},
     });
+  }
+
+  /** Returns a hex color slightly darker than campColor for hover states */
+  get campColorHover(): string {
+    return this.shadeColor(this.campColor, -15);
+  }
+
+  /** Returns the camp color with low opacity for focus rings / light backgrounds */
+  get campColorLight(): string {
+    return this.hexToRgba(this.campColor, 0.12);
+  }
+
+  /** Returns the camp color with very low opacity for light fill backgrounds */
+  get campColorBg(): string {
+    return this.hexToRgba(this.campColor, 0.08);
+  }
+
+  private shadeColor(hex: string, percent: number): string {
+    const num = parseInt(hex.replace('#', ''), 16);
+    const r = Math.min(255, Math.max(0, (num >> 16) + percent));
+    const g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + percent));
+    const b = Math.min(255, Math.max(0, (num & 0xff) + percent));
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+
+  private hexToRgba(hex: string, alpha: number): string {
+    const num = parseInt(hex.replace('#', ''), 16);
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return `rgba(${r},${g},${b},${alpha})`;
   }
 
   get accessCode(): string {
     return this.accessCodeDigits.join('');
   }
 
-  /**
-   * Without this, *ngFor diffs accessCodeDigits by value ('5' vs '')
-   * and treats every digit change as "remove old item, insert new
-   * item" — which destroys and recreates the <input> DOM node. A
-   * recreated input loses focus immediately, so the very next
-   * keystroke (a second Backspace, a digit, anything) lands on
-   * nothing. Tracking by index keeps the same four <input> elements
-   * alive for the whole lifetime of the component; only their value
-   * changes, which Angular can update in place without touching focus.
-   */
   trackByIndex(index: number): number {
     return index;
   }
 
-  /** Handles typing into a PIN cell: keeps only the last digit typed, auto-advances. */
   onCodeInput(index: number) {
     const value = this.accessCodeDigits[index]?.replace(/\D/g, '').slice(-1);
-
     this.accessCodeDigits[index] = value;
-
-    if (value && index < 3) {
-      this.focusCell(index + 1);
-    }
+    if (value && index < 3) this.focusCell(index + 1);
   }
+
   onCodeKeydown(index: number, event: KeyboardEvent) {
     if (event.key === 'Backspace') {
-      // Если текущая ячейка не пустая —
-      // пусть браузер удаляет символ сам
-      if (this.accessCodeDigits[index]) {
-        return;
-      }
-
-      // Если пустая — переходим назад
+      if (this.accessCodeDigits[index]) return;
       if (index > 0) {
         event.preventDefault();
-
         this.focusCell(index - 1);
-
-        // очищаем предыдущую
         this.accessCodeDigits[index - 1] = '';
       }
     }
-
     if (event.key === 'ArrowLeft' && index > 0) {
       event.preventDefault();
       this.focusCell(index - 1);
     }
-
     if (event.key === 'ArrowRight' && index < 3) {
       event.preventDefault();
       this.focusCell(index + 1);
     }
   }
 
-  /** Selects the cell's content on focus so typing always replaces, never appends. */
   onCodeFocus(event: FocusEvent) {
     (event.target as HTMLInputElement).select();
   }
 
-  /** Supports pasting a full 4-digit code into any cell. */
   onCodePaste(event: ClipboardEvent) {
     const text = event.clipboardData?.getData('text') ?? '';
     const digits = text.replace(/\D/g, '').slice(0, 4).split('');
     if (!digits.length) return;
     event.preventDefault();
-
     digits.forEach((d, i) => {
       this.accessCodeDigits[i] = d;
     });
-    const nextIndex = Math.min(digits.length, this.accessCodeDigits.length - 1);
-    this.focusCell(nextIndex, true);
+    this.focusCell(Math.min(digits.length, 3), true);
   }
 
   private focusCell(index: number, selectContent = false) {
@@ -166,7 +166,6 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  /** Splits "Имя Фамилия" into parts; everything after the first word becomes lastName. */
   private splitFullName(value: string): {
     firstName: string;
     lastName: string;
@@ -178,5 +177,11 @@ export class LoginComponent implements OnInit {
 
   goToRegister() {
     this.router.navigate(['/register']);
+  }
+
+  @HostListener('document:keydown.enter')
+  onEnter() {
+    if (this.loading) return;
+    this.login();
   }
 }

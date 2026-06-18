@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { SettingsService } from '../../services/settings.service';
 import { MediaUrlPipe } from '../../pipes/media-url.pipe';
 
 @Component({
@@ -11,7 +12,7 @@ import { MediaUrlPipe } from '../../pipes/media-url.pipe';
   imports: [CommonModule, FormsModule, MediaUrlPipe],
   templateUrl: './settings.component.html',
 })
-export class SettingsComponent implements OnInit {
+export class SettingsComponent implements OnInit, OnDestroy {
   // ── флаги UI ────────────────────────────────────────────────────────────
   error = '';
   msg = '';
@@ -28,11 +29,11 @@ export class SettingsComponent implements OnInit {
   lateEnabled = false;
   lateValue = -2;
 
-  // ── баллы домику за перекличку (подтверждение посещения) ────────────────
+  // ── баллы домику за перекличку ────────────────────────────────────────
   houseAttendanceEnabled = false;
   houseAttendanceValue = 0;
 
-  // ── штраф домику за опоздавших ───────────────────────────────────────────
+  // ── штраф домику за опоздавших ──────────────────────────────────────────
   housePenaltyEnabled = false;
   housePenaltyThreshold = 50;
   housePenaltyValue = 0;
@@ -42,21 +43,42 @@ export class SettingsComponent implements OnInit {
   campEmoji = '';
   campLogoPath: string | null = null;
   campOrganization = '';
-  campColor = '#4f7ef8';
+  campColor = '#F59E0B';
   campDateStart = '';
   campDateEnd = '';
+
+  /**
+   * Оригинальный цвет, загруженный с бэка.
+   * Используется для отката если пользователь ушёл без сохранения.
+   */
+  private _savedColor = '#F59E0B';
+
+  /** Флаг: пользователь нажал «Сохранить» в текущей сессии компонента */
+  private _campInfoSaved = false;
 
   constructor(
     public auth: AuthService,
     private api: ApiService,
+    private settingsService: SettingsService,
   ) {}
 
   ngOnInit() {
     this.loadSettings();
   }
 
+  /**
+   * При уходе со страницы без сохранения откатываем цвет обратно.
+   * Другие поля (название, организация, эмодзи, даты) не трогаем —
+   * они визуально менее критичны и не меняют тему сайдбара.
+   */
+  ngOnDestroy() {
+    if (!this._campInfoSaved) {
+      this.settingsService.patch({ camp_color: this._savedColor });
+    }
+  }
+
   loadSettings() {
-    this.api.get('/settings').subscribe({
+    this.settingsService.get().subscribe({
       next: (d: any) => {
         this.participantPointsEnabled =
           d['participant_points_enabled'] === true;
@@ -74,17 +96,46 @@ export class SettingsComponent implements OnInit {
         this.campEmoji = d['camp_emoji'] ?? '';
         this.campLogoPath = d['camp_logo_path'] ?? null;
         this.campOrganization = d['camp_organization'] ?? '';
-        this.campColor = d['camp_color'] ?? '#4f7ef8';
+        this.campColor = d['camp_color'] ?? '#F59E0B';
         this.campDateStart = d['camp_date_start']
           ? d['camp_date_start'].slice(0, 10)
           : '';
         this.campDateEnd = d['camp_date_end']
           ? d['camp_date_end'].slice(0, 10)
           : '';
+
+        // Запоминаем оригинальный цвет для возможного отката
+        this._savedColor = this.campColor;
       },
       error: (e: any) =>
         (this.error = e.error?.error || 'Ошибка загрузки настроек'),
     });
+  }
+
+  // ── живое обновление кэша при изменении полей ───────────────────────────
+
+  onColorChange(color: string): void {
+    this.settingsService.patch({ camp_color: color });
+  }
+
+  onCampNameChange(name: string): void {
+    this.settingsService.patch({ camp_name: name });
+  }
+
+  onOrganizationChange(org: string): void {
+    this.settingsService.patch({ camp_organization: org });
+  }
+
+  onEmojiChange(emoji: string): void {
+    this.settingsService.patch({ camp_emoji: emoji });
+  }
+
+  onDateStartChange(date: string): void {
+    this.settingsService.patch({ camp_date_start: date });
+  }
+
+  onDateEndChange(date: string): void {
+    this.settingsService.patch({ camp_date_end: date });
   }
 
   // ── баллы участников ────────────────────────────────────────────────────
@@ -125,7 +176,7 @@ export class SettingsComponent implements OnInit {
       });
   }
 
-  // ── баллы домику за перекличку ───────────────────────────────────────────
+  // ── баллы домику за перекличку ──────────────────────────────────────────
   saveHouseAttendancePoints() {
     this.api
       .put('/settings/house-points', {
@@ -138,7 +189,7 @@ export class SettingsComponent implements OnInit {
       });
   }
 
-  // ── штраф домику за опоздавших ───────────────────────────────────────────
+  // ── штраф домику за опоздавших ──────────────────────────────────────────
   saveHouseLatePenalty() {
     this.api
       .put('/settings/house-late-penalty', {
@@ -164,7 +215,25 @@ export class SettingsComponent implements OnInit {
         dateEnd: this.campDateEnd || null,
       })
       .subscribe({
-        next: () => this.ok('Сохранено'),
+        next: () => {
+          // Помечаем что сохранение произошло — ngOnDestroy не будет откатывать цвет
+          this._campInfoSaved = true;
+          this._savedColor = this.campColor;
+
+          // invalidate() сбрасывает только in-memory.
+          // В localStorage лежит полный объект с бэка (записан при loadSettings),
+          // patch() смержит поверх него только camp-поля — остальные останутся.
+          this.settingsService.invalidate();
+          this.settingsService.patch({
+            camp_name: this.campName,
+            camp_organization: this.campOrganization,
+            camp_emoji: this.campEmoji,
+            camp_color: this.campColor,
+            camp_date_start: this.campDateStart,
+            camp_date_end: this.campDateEnd,
+          });
+          this.ok('Сохранено');
+        },
         error: (e: any) => (this.error = e.error?.error || 'Ошибка'),
       });
   }
@@ -181,6 +250,10 @@ export class SettingsComponent implements OnInit {
         this.campLogoPath = d['camp_logo_path'] ?? null;
         this.campEmoji = d['camp_emoji'] ?? '';
         this.logoUploading = false;
+        this.settingsService.patch({
+          camp_logo_path: this.campLogoPath ?? undefined,
+          camp_emoji: this.campEmoji,
+        });
         this.ok('Логотип загружен');
       },
       error: (e: any) => {
@@ -196,6 +269,7 @@ export class SettingsComponent implements OnInit {
     this.api.delete('/settings/camp/logo').subscribe({
       next: () => {
         this.campLogoPath = null;
+        this.settingsService.patch({ camp_logo_path: undefined });
         this.ok('Логотип удалён');
       },
       error: (e: any) => (this.error = e.error?.error || 'Ошибка'),
