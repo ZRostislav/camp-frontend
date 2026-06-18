@@ -1,19 +1,20 @@
 <div
-  class="min-h-screen flex flex-col items-center justify-center px-5 py-10 bg-camp font-nunito relative overflow-hidden"
+  class="min-h-screen flex flex-col items-center justify-center px-5 py-10 font-nunito relative overflow-hidden"
+  style="background: linear-gradient(135deg, #1A5C38 0%, #2D8A5A 40%, #38BDF8 100%);"
 >
-  <!-- Background blobs -->
-  <div
-    class="absolute -top-[70px] -right-[70px] w-[300px] h-[300px] rounded-full pointer-events-none animate-blob bg-[radial-gradient(circle,rgba(255,122,40,0.13)_0%,transparent_70%)]"
-  ></div>
-  <div
-    class="absolute -bottom-15 -left-15 w-[260px] h-[260px] rounded-full pointer-events-none animate-blob-delay bg-[radial-gradient(circle,rgba(255,203,164,0.28)_0%,transparent_70%)]"
-  ></div>
+  <!-- Decorative background emoji -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <span class="absolute top-10 left-8 text-7xl opacity-10 rotate-12">🌲</span>
+    <span class="absolute top-28 right-10 text-5xl opacity-10 -rotate-6">🏕️</span>
+    <span class="absolute bottom-24 left-10 text-6xl opacity-10 rotate-3">⛺</span>
+    <span class="absolute bottom-10 right-8 text-4xl opacity-10 -rotate-12">🔥</span>
+  </div>
 
   <!-- Header -->
   <div class="text-center mb-5 relative z-10 animate-fade-in-down">
     <div class="relative inline-block mb-1.5">
       <span
-        class="block text-[60px] leading-none drop-shadow-[0_5px_16px_rgba(255,122,40,0.28)]"
+        class="block text-[60px] leading-none drop-shadow-[0_5px_16px_rgba(0,0,0,0.25)]"
         >🏕️</span
       >
       <span class="absolute -top-1.5 -right-3.5 text-[22px] animate-spin-slow"
@@ -21,11 +22,11 @@
       >
     </div>
     <h1
-      class="font-baloo text-[1.8rem] font-black text-camp-stone -tracking-wide mb-1"
+      class="font-display text-[1.8rem] font-black text-white -tracking-wide mb-1"
     >
       Регистрация
     </h1>
-    <p class="text-[0.76rem] font-bold text-camp-subtle tracking-wide">
+    <p class="text-[0.76rem] font-bold text-white/70 tracking-wide">
       Подайте заявку · Ожидайте одобрения
     </p>
   </div>
@@ -101,7 +102,7 @@
               Имя
             </label>
             <input
-              class="w-full px-[13px] py-[10px] bg-camp-muted border-2 border-transparent rounded-xl text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(255,122,40,0.12)] focus:bg-white placeholder:text-[#c7bfb8]"
+              class="w-full px-[13px] py-[10px] bg-camp-input border-2 border-transparent rounded-xl text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(245,158,11,0.12)] focus:bg-white placeholder:text-[#c7bfb8]"
               [(ngModel)]="firstName"
               placeholder="Иван"
               autocomplete="given-name"
@@ -119,7 +120,7 @@
               Фамилия
             </label>
             <input
-              class="w-full px-[13px] py-[10px] bg-camp-muted border-2 border-transparent rounded-xl text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(255,122,40,0.12)] focus:bg-white placeholder:text-[#c7bfb8]"
+              class="w-full px-[13px] py-[10px] bg-camp-input border-2 border-transparent rounded-xl text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(245,158,11,0.12)] focus:bg-white placeholder:text-[#c7bfb8]"
               [(ngModel)]="lastName"
               placeholder="Иванов"
               autocomplete="family-name"
@@ -139,7 +140,7 @@
             Логин
           </label>
           <input
-            class="w-full px-[13px] py-[10px] bg-camp-muted border-2 border-transparent rounded-xl text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(255,122,40,0.12)] focus:bg-white placeholder:text-[#c7bfb8]"
+            class="w-full px-[13px] py-[10px] bg-camp-input border-2 border-transparent rounded-xl text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(245,158,11,0.12)] focus:bg-white placeholder:text-[#c7bfb8]"
             [(ngModel)]="username"
             placeholder="Введите логин"
             autocomplete="username"
@@ -163,7 +164,7 @@
             </label>
             <div class="relative">
               <input
-                class="w-full pl-[13px] pr-[38px] py-[10px] bg-camp-muted border-2 border-transparent rounded-xl text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(255,122,40,0.12)] focus:bg-white placeholder:text-[#c7bfb8]"
+                class="w-full pl-[13px] pr-[38px] py-[10px] bg-camp-input border-2 border-transparent rounded-xl text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(245,158,11,0.12)] focus:bg-white placeholder:text-[#c7bfb8]"
                 [type]="showPassword ? 'text' : 'password'"
                 [(ngModel)]="password"
                 placeholder="Пароль"
@@ -198,10 +199,10 @@
                 class="w-full pl-[13px] pr-[38px] py-[10px] border-2 rounded-xl text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200 focus:bg-white placeholder:text-[#c7bfb8]"
                 [class]="
                   passwordConfirm && password !== passwordConfirm
-                    ? 'bg-camp-muted border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.1)]'
+                    ? 'bg-camp-input border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.1)]'
                     : passwordConfirm && password === passwordConfirm
-                      ? 'bg-camp-muted border-camp-success shadow-[0_0_0_3px_rgba(22,163,74,0.1)]'
-                      : 'bg-camp-muted border-transparent focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(255,122,40,0.12)]'
+                      ? 'bg-camp-input border-camp-success shadow-[0_0_0_3px_rgba(22,163,74,0.1)]'
+                      : 'bg-camp-input border-transparent focus:border-camp-orange focus:shadow-[0_0_0_3px_rgba(245,158,11,0.12)]'
                 "
                 [type]="showPassword ? 'text' : 'password'"
                 [(ngModel)]="passwordConfirm"
@@ -239,7 +240,7 @@
               class="flex items-center gap-[7px] py-[9px] px-[13px] border-2 rounded-xl text-[0.82rem] font-bold cursor-pointer transition-all duration-200 text-left"
               [class]="
                 requestedRole === r.value
-                  ? 'border-camp-orange bg-camp-light text-camp-orange shadow-[0_2px_10px_rgba(255,122,40,0.18)]'
+                  ? 'border-camp-orange bg-camp-light text-camp-orange shadow-[0_2px_10px_rgba(245,158,11,0.18)]'
                   : 'border-camp-muted bg-camp-muted text-camp-gray hover:border-camp-mid hover:bg-camp-light hover:text-camp-orange'
               "
               (click)="requestedRole = r.value"

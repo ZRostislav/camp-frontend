@@ -12,13 +12,13 @@
   .font-nunito {
     font-family: "Nunito", sans-serif;
   }
-  .font-baloo {
-    font-family: "Baloo 2", sans-serif;
+  .font-display {
+    font-family: "Fredoka", sans-serif;
   }
 
   /* Camp gradient background */
   .bg-camp {
-    background: linear-gradient(160deg, #fffcf0 0%, #ffe8cc 50%, #fffcf0 100%);
+    background: linear-gradient(160deg, #fefcf3 0%, #fde68a 50%, #fefcf3 100%);
   }
 
   /* Bounce animation for sun emoji */

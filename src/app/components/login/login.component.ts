@@ -1,9 +1,16 @@
-import { Component, ElementRef, QueryList, ViewChildren } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnInit,
+  QueryList,
+  ViewChildren,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IconComponent } from '../../shared/icon.component';
 import { AuthService } from '../../services/auth.service';
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-login',
@@ -11,7 +18,7 @@ import { AuthService } from '../../services/auth.service';
   imports: [CommonModule, FormsModule, IconComponent],
   templateUrl: './login.component.html',
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   mode: 'staff' | 'participant' = 'staff';
   username = '';
   password = '';
@@ -22,6 +29,10 @@ export class LoginComponent {
   // 4-digit access code, stored as one string per cell for the PIN panel.
   accessCodeDigits: string[] = ['', '', '', ''];
 
+  // Заезд/организация, подтягиваются из /settings — отображаются в шапке.
+  campName = '';
+  campOrganization = '';
+
   @ViewChildren('codeCell') codeCells!: QueryList<ElementRef<HTMLInputElement>>;
 
   error = '';
@@ -31,8 +42,19 @@ export class LoginComponent {
   constructor(
     private auth: AuthService,
     private router: Router,
+    private api: ApiService,
   ) {
     if (auth.isLoggedIn) this.router.navigate(['/']);
+  }
+
+  ngOnInit() {
+    this.api.get('/settings').subscribe({
+      next: (d: any) => {
+        this.campName = d['camp_name'] ?? '';
+        this.campOrganization = d['camp_organization'] ?? '';
+      },
+      error: () => {},
+    });
   }
 
   get accessCode(): string {
