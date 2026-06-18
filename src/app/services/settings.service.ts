@@ -83,6 +83,14 @@ export class SettingsService {
     this.settings$ = null;
   }
 
+  /**
+   * Returns the last cached settings snapshot from localStorage without HTTP.
+   * Useful for fast UI bootstrapping like the browser title.
+   */
+  peekCache(): Partial<CampSettings> | null {
+    return this.readLocalStorage();
+  }
+
   // ── helpers ──────────────────────────────────────────────────────────────
 
   private readLocalStorage(): CampSettings | null {
@@ -98,7 +106,7 @@ export class SettingsService {
     try {
       localStorage.setItem(LS_KEY, JSON.stringify(data));
     } catch {
-      // Quota exceeded or access denied — silently ignore.
+      // Quota exceeded or access denied - silently ignore.
     }
   }
 }
