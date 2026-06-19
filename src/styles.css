@@ -1,3 +1,4 @@
+@import "@ctrl/ngx-emoji-mart/picker";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -75,4 +76,70 @@ app-register {
   position: relative;
   z-index: 1;
   display: block;
+}
+
+/* ── Emoji Mart: кастомизация ──────────────────────────── */
+.emoji-mart {
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  background: none !important;
+}
+
+/* Верхний бар категорий */
+.emoji-mart-bar:first-child {
+  border-bottom: 1px solid #e7e5e4 !important;
+  border-radius: 0 !important;
+  background: none !important;
+}
+
+.emoji-mart-scroll {
+  height: 280px !important;
+  background: none !important;
+  padding: 0 6px !important;
+}
+
+.emoji-mart-category-label span {
+  background: #fff !important;
+}
+
+/* Центрирование иконок категорий */
+.emoji-mart-anchor {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.emoji-mart-anchors svg,
+.emoji-mart-anchors img {
+  display: block !important;
+  margin: 0 auto !important;
+}
+
+/* Chrome, Edge, Opera */
+.emoji-mart-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.emoji-mart-scroll::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.emoji-mart-scroll::-webkit-scrollbar-thumb {
+  background: #d6d3d1;
+  border-radius: 999px;
+}
+
+/* Firefox */
+.emoji-mart-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #d6d3d1 transparent;
+}
+
+/* Запрещаем пикеру задавать свою ширину на мобиле */
+@media (max-width: 639px) {
+  .emoji-mart {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
 }

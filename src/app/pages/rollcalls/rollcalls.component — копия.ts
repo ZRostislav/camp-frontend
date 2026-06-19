@@ -83,32 +83,15 @@ export class RollcallsComponent implements OnInit, OnDestroy {
   // GET /rollcalls/:id/houses/:houseId/status. Ключ — houseId.
   houseStatuses: Record<number, any> = {};
 
-  private selectedTimer: any = null;
+  private timer: any;
+  private listTimer: any;
+  private _lastRefresh = 0;
 
   constructor(
     public auth: AuthService,
     private api: ApiService,
     private settings: SettingsService,
   ) {}
-
-  private startSelectedPolling() {
-    this.stopSelectedPolling();
-
-    if (this.selected?.status !== 'активна') {
-      return;
-    }
-
-    this.selectedTimer = setInterval(() => {
-      this.refreshSelected();
-    }, 10000);
-  }
-
-  private stopSelectedPolling() {
-    if (this.selectedTimer) {
-      clearInterval(this.selectedTimer);
-      this.selectedTimer = null;
-    }
-  }
 
   ngOnInit() {
     this.settings.get().subscribe({
@@ -138,10 +121,29 @@ export class RollcallsComponent implements OnInit, OnDestroy {
       },
       error: () => {},
     });
+    // Адаптивный polling: 3 сек для активной переклички, 15 сек для завершённой.
+    this.timer = setInterval(() => {
+      if (!this.selectedId) return;
+      const isActive = this.selected?.status === 'активна';
+      const now = Date.now();
+      const elapsed = now - (this._lastRefresh ?? 0);
+      const interval = isActive ? 3000 : 15000;
+      if (elapsed >= interval) {
+        this._lastRefresh = now;
+        this.refreshSelected();
+      }
+    }, 1000);
+
+    // Раз в 10 секунд обновляем список переклички на вкладках (могла появиться
+    // новая или завершиться активная).
+    this.listTimer = setInterval(() => {
+      this.refreshList();
+    }, 10000);
   }
 
   ngOnDestroy() {
-    this.stopSelectedPolling();
+    if (this.timer) clearInterval(this.timer);
+    if (this.listTimer) clearInterval(this.listTimer);
   }
 
   todayStr(): string {
@@ -205,7 +207,7 @@ export class RollcallsComponent implements OnInit, OnDestroy {
           this.selectedId &&
           this.rollcalls.some((r) => r.id === this.selectedId)
         ) {
-          return;
+          this.refreshSelected();
         } else if (this.rollcalls.length) {
           const active = this.rollcalls.find((r) => r.status === 'активна');
           this.selectTab(active || this.rollcalls[0]);
@@ -234,22 +236,14 @@ export class RollcallsComponent implements OnInit, OnDestroy {
   }
 
   selectTab(r: Rollcall) {
-    this.stopSelectedPolling();
-
     this.selectedId = r.id;
+    this._lastRefresh = 0; // сразу запустить обновление при переключении вкладки
     this.error = '';
-
     this.api.get(`/rollcalls/${r.id}`).subscribe({
       next: (d: any) => {
-        this.selected = {
-          ...d,
-          date: this.toDateStr(d.date),
-        };
-
+        this.selected = { ...d, date: this.toDateStr(d.date) };
         this.houseStatuses = {};
         this.loadHouseStatuses();
-
-        this.startSelectedPolling();
       },
       error: (e) => (this.error = e.error?.error || 'Ошибка'),
     });
@@ -257,23 +251,14 @@ export class RollcallsComponent implements OnInit, OnDestroy {
 
   refreshSelected() {
     if (!this.selectedId) return;
-
     this.api.get(`/rollcalls/${this.selectedId}`).subscribe({
       next: (d: any) => {
-        this.selected = {
-          ...d,
-          date: this.toDateStr(d.date),
-        };
-
+        this.selected = { ...d, date: this.toDateStr(d.date) };
         this.loadHouseStatuses();
-
-        if (this.selected?.status !== 'активна') {
-          this.stopSelectedPolling();
-        }
       },
       error: (e: any) => {
+        // Перекличка удалена или не существует — сбрасываем выбор
         if (e.status === 404) {
-          this.stopSelectedPolling();
           this.selectedId = null;
           this.selected = null;
           this.load();
@@ -366,6 +351,7 @@ export class RollcallsComponent implements OnInit, OnDestroy {
         // Переключаем фильтр на дату новой переклички и сразу выбираем её.
         this.filterDate = this.toDateStr(created.date);
         this.selectedId = created.id;
+        this._lastRefresh = 0;
         const params: any = { date: this.filterDate };
         this.api.get('/rollcalls', params).subscribe({
           next: (d: any) => {

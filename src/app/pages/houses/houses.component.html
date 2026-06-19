@@ -1,455 +1,1262 @@
-<h2>Домики</h2>
-<div *ngIf="error" style="color: red; margin-bottom: 8px">{{ error }}</div>
-<div *ngIf="msg" style="color: green; margin-bottom: 8px">{{ msg }}</div>
-
-<!-- ── Форма создания ──────────────────────────────────────────────────── -->
 <div
-  *ngIf="auth.isAdmin()"
-  style="
-    border: 1px solid #ccc;
-    padding: 12px;
-    margin-bottom: 12px;
-    border-radius: 4px;
-  "
+  class="p-4 sm:p-6 max-w-6xl mx-auto space-y-5 font-nunito animate-fade-in-up"
 >
-  <h3 style="margin-top: 0">Добавить домик</h3>
-
-  <div style="margin-bottom: 8px">
-    Название: <input [(ngModel)]="form.name" style="width: 220px" />
-  </div>
-  <div style="margin-bottom: 8px">
-    Описание: <input [(ngModel)]="form.description" style="width: 300px" />
-  </div>
-
-  <!-- Аватарка: эмодзи или картинка -->
-  <div style="margin-bottom: 8px">
-    <label
-      style="font-size: 13px; color: #555; display: block; margin-bottom: 4px"
-      >Аватарка домика</label
-    >
-    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
-      <!-- Превью -->
-      <div
-        style="
-          width: 48px;
-          height: 48px;
-          border: 1px solid #ddd;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          overflow: hidden;
-          background: #f5f5f5;
-          flex-shrink: 0;
-        "
+  <!-- Header -->
+  <div class="flex items-start justify-between flex-wrap gap-3">
+    <div>
+      <h1
+        style="font-family: var(--font-display, &quot;Neucha&quot;, sans-serif)"
+        class="font-display text-[1.4rem] sm:text-[1.75rem] font-bold text-camp-stone flex items-center gap-2"
       >
-        <img
-          *ngIf="formFiles.length"
-          [src]="formFiles[0] | objectUrl"
-          style="width: 100%; height: 100%; object-fit: cover"
-        />
-        <span *ngIf="!formFiles.length && form.emoji" style="font-size: 26px">{{
-          form.emoji
-        }}</span>
-        <span
-          *ngIf="!formFiles.length && !form.emoji"
-          style="font-size: 22px; color: #ccc"
-          >🏠</span
-        >
-      </div>
+        <app-icon name="house" [size]="26" [style.color]="campColor"></app-icon
+        >Домики · Отряды
+      </h1>
+      <p class="text-xs sm:text-sm mt-1 text-camp-gray font-medium">
+        {{ houses.length }} домиков · отрядов зарегистрировано
+      </p>
+    </div>
+    <button
+      *ngIf="auth.isAdmin()"
+      class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white shadow-camp-btn transition-all hover:-translate-y-px active:translate-y-0"
+      [style.backgroundColor]="campColor"
+      (click)="showCreateForm = !showCreateForm; editItem = null"
+    >
+      <app-icon name="plus" [size]="16"></app-icon>
+      Добавить
+    </button>
+  </div>
 
-      <!-- Эмодзи пикер -->
-      <div class="emoji-field">
-        <div class="emoji-input-wrap">
-          <span class="emoji-preview" (click)="toggleFormEmojiPicker($event)">{{
-            form.emoji || "😀"
-          }}</span>
-          <input
-            [(ngModel)]="form.emoji"
-            placeholder="эмодзи"
-            class="emoji-text-input"
-            [disabled]="formFiles.length > 0"
-          />
+  <!-- Toast messages -->
+  <div
+    *ngIf="error"
+    class="flex items-center gap-2 bg-camp-errorBg text-camp-error rounded-xl px-4 py-3 text-sm font-bold animate-shake"
+  >
+    <app-icon name="circle-alert" [size]="15"></app-icon>
+    {{ error }}
+  </div>
+  <div
+    *ngIf="msg"
+    class="flex items-center gap-2 bg-camp-successBg text-camp-success rounded-xl px-4 py-3 text-sm font-bold animate-fade-in-up"
+  >
+    <app-icon name="circle-check" [size]="15"></app-icon>
+    {{ msg }}
+  </div>
+
+  <!-- ═══════════════ CREATE FORM ═══════════════ -->
+  <div
+    *ngIf="showCreateForm && auth.isAdmin()"
+    class="bg-white rounded-2xl border border-camp-border shadow-sm p-5 animate-fade-in-up"
+  >
+    <h2
+      class="font-display text-base font-bold text-camp-stone mb-4 flex items-center gap-2"
+    >
+      <app-icon name="plus" [size]="17" [style.color]="campColor"></app-icon>
+      Новый домик
+    </h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div>
+        <label
+          class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+          >Название</label
+        >
+        <input
+          class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+          [(ngModel)]="form.name"
+          placeholder="Соколы"
+          (focus)="
+            $any($event.target).style.borderColor = campColor;
+            $any($event.target).style.backgroundColor = 'white'
+          "
+          (blur)="
+            $any($event.target).style.borderColor = 'transparent';
+            $any($event.target).style.backgroundColor = ''
+          "
+        />
+      </div>
+      <div>
+        <label
+          class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+          >Описание</label
+        >
+        <input
+          class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+          [(ngModel)]="form.description"
+          placeholder="Девиз или короткое описание"
+          (focus)="
+            $any($event.target).style.borderColor = campColor;
+            $any($event.target).style.backgroundColor = 'white'
+          "
+          (blur)="
+            $any($event.target).style.borderColor = 'transparent';
+            $any($event.target).style.backgroundColor = ''
+          "
+        />
+      </div>
+    </div>
+
+    <!-- Аватарка + эмодзи -->
+    <div class="mt-4">
+      <label
+        class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-2"
+        >Иконка домика</label
+      >
+
+      <!-- Иконка: эмодзи-кнопка или картинка -->
+      <div class="flex gap-4 flex-wrap items-center">
+        <!-- Кнопка-превью — нажать чтобы открыть пикер -->
+        <div class="relative emoji-field">
           <button
-            class="emoji-btn"
+            type="button"
+            class="w-16 h-16 rounded-2xl border-2 overflow-hidden flex items-center justify-center shrink-0 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            [style.borderColor]="
+              formFiles.length || form.emoji ? campColor : '#E7E5E4'
+            "
+            [style.backgroundColor]="campColorBg"
             (click)="toggleFormEmojiPicker($event)"
             [disabled]="formFiles.length > 0"
+            title="Нажмите для выбора эмодзи"
           >
-            ☺
+            <img
+              *ngIf="formFiles.length"
+              [src]="formFiles[0] | objectUrl"
+              class="w-full h-full object-cover"
+            />
+            <span
+              *ngIf="!formFiles.length && form.emoji"
+              class="text-3xl leading-none"
+              >{{ form.emoji }}</span
+            >
+            <div
+              *ngIf="!formFiles.length && !form.emoji"
+              class="flex flex-col items-center gap-0.5"
+            >
+              <app-icon
+                name="smile"
+                [size]="20"
+                class="text-camp-subtle"
+              ></app-icon>
+              <span
+                class="text-[0.55rem] font-bold text-camp-subtle uppercase tracking-wide"
+                >эмодзи</span
+              >
+            </div>
           </button>
-        </div>
-        <div
-          class="emoji-picker-wrap"
-          *ngIf="showFormEmojiPicker"
-          (click)="$event.stopPropagation()"
-        >
-          <emoji-mart
-            (emojiSelect)="onFormEmojiSelect($event)"
-            [showPreview]="false"
-            [i18n]="{
-              search: 'Поиск',
-              categories: { search: 'Результаты', recent: 'Частые' },
-            }"
-          ></emoji-mart>
-        </div>
-      </div>
-
-      <span style="color: #aaa; font-size: 13px">или</span>
-
-      <!-- Картинка -->
-      <label
-        style="
-          cursor: pointer;
-          padding: 4px 10px;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          font-size: 13px;
-        "
-      >
-        📁 Выбрать картинку
-        <input
-          type="file"
-          accept="image/*"
-          (change)="onFormAvatarChange($event)"
-          style="display: none"
-        />
-      </label>
-      <span *ngIf="formFiles.length" style="font-size: 12px; color: #555">
-        {{ formFiles[0].name }} ({{ fileSize(formFiles[0]) }})
-        <button
-          (click)="removeFormAvatar()"
-          style="color: red; border: none; background: none; cursor: pointer"
-        >
-          ✕
-        </button>
-      </span>
-    </div>
-  </div>
-
-  <button (click)="create()">Создать</button>
-</div>
-
-<!-- ── Таблица домиков ─────────────────────────────────────────────────── -->
-<table
-  border="1"
-  cellpadding="4"
-  style="border-collapse: collapse; width: 100%"
->
-  <thead>
-    <tr>
-      <th style="width: 56px">Аватар</th>
-      <th>Название</th>
-      <th>Баллов</th>
-      <th>Участников</th>
-      <th *ngIf="auth.isAdmin()">Действия</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let h of houses">
-      <td style="text-align: center; padding: 6px">
-        <div
-          style="
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f5f5f5;
-            margin: auto;
-          "
-        >
-          <img
-            *ngIf="h.avatar_path"
-            [src]="h.avatar_path | mediaUrl"
-            style="width: 100%; height: 100%; object-fit: cover"
-          />
-          <span *ngIf="!h.avatar_path && h.emoji" style="font-size: 22px">{{
-            h.emoji
-          }}</span>
-          <span
-            *ngIf="!h.avatar_path && !h.emoji"
-            style="font-size: 20px; color: #ccc"
-            >🏠</span
-          >
-        </div>
-      </td>
-      <td>
-        <a href="#" (click)="select(h); $event.preventDefault()">{{
-          h.name
-        }}</a>
-      </td>
-      <td>{{ h.house_points }}</td>
-      <td>{{ h.participants_count }}</td>
-      <td *ngIf="auth.isAdmin()">
-        <button (click)="startEdit(h)">✏️</button>
-        <button (click)="remove(h.id)">🗑️</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<!-- ── Форма редактирования ───────────────────────────────────────────── -->
-<div
-  *ngIf="editItem"
-  style="
-    margin-top: 16px;
-    border: 1px solid #ccc;
-    padding: 12px;
-    border-radius: 4px;
-  "
->
-  <h4 style="margin-top: 0">Редактирование: {{ editItem.name }}</h4>
-
-  <div style="margin-bottom: 8px">
-    Название: <input [(ngModel)]="editItem.name" style="width: 220px" />
-  </div>
-  <div style="margin-bottom: 8px">
-    Описание: <input [(ngModel)]="editItem.description" style="width: 300px" />
-  </div>
-
-  <!-- Аватарка в редактировании -->
-  <div style="margin-bottom: 8px">
-    <label
-      style="font-size: 13px; color: #555; display: block; margin-bottom: 4px"
-      >Аватарка</label
-    >
-    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
-      <!-- Текущая аватарка -->
-      <div
-        style="
-          width: 48px;
-          height: 48px;
-          border-radius: 50%;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #f5f5f5;
-          flex-shrink: 0;
-          border: 1px solid #ddd;
-        "
-      >
-        <img
-          *ngIf="editFiles.length"
-          [src]="editFiles[0] | objectUrl"
-          style="width: 100%; height: 100%; object-fit: cover"
-        />
-        <img
-          *ngIf="!editFiles.length && editItem.avatar_path"
-          [src]="editItem.avatar_path | mediaUrl"
-          style="width: 100%; height: 100%; object-fit: cover"
-        />
-        <span
-          *ngIf="!editFiles.length && !editItem.avatar_path && editItem.emoji"
-          style="font-size: 26px"
-          >{{ editItem.emoji }}</span
-        >
-        <span
-          *ngIf="!editFiles.length && !editItem.avatar_path && !editItem.emoji"
-          style="font-size: 22px; color: #ccc"
-          >🏠</span
-        >
-      </div>
-
-      <!-- Эмодзи пикер -->
-      <div class="emoji-field">
-        <div class="emoji-input-wrap">
-          <span class="emoji-preview" (click)="toggleEditEmojiPicker($event)">{{
-            editItem.emoji || "😀"
-          }}</span>
-          <input
-            [(ngModel)]="editItem.emoji"
-            placeholder="эмодзи"
-            class="emoji-text-input"
-            [disabled]="editFiles.length > 0 || !!editItem.avatar_path"
-          />
           <button
-            class="emoji-btn"
-            (click)="toggleEditEmojiPicker($event)"
-            [disabled]="editFiles.length > 0 || !!editItem.avatar_path"
+            *ngIf="form.emoji && !formFiles.length"
+            type="button"
+            class="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-[#FEE2E2] text-camp-error hover:bg-[#FECACA] transition-colors shadow-sm z-10"
+            (click)="form.emoji = ''; $event.stopPropagation()"
           >
-            ☺
+            <app-icon name="x" [size]="10"></app-icon>
           </button>
+          <!-- Пикер открывается как модалка (см. внизу шаблона) -->
         </div>
-        <div
-          class="emoji-picker-wrap"
-          *ngIf="showEditEmojiPicker"
-          (click)="$event.stopPropagation()"
-        >
-          <emoji-mart
-            (emojiSelect)="onEditEmojiSelect($event)"
-            [showPreview]="false"
-            [i18n]="{
-              search: 'Поиск',
-              categories: { search: 'Результаты', recent: 'Частые' },
-            }"
-          ></emoji-mart>
+
+        <!-- Загрузка картинки -->
+        <div class="flex flex-col gap-2">
+          <div class="text-xs text-camp-subtle font-medium">
+            или загрузите картинку
+          </div>
+          <label
+            class="cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors w-fit"
+            [style.backgroundColor]="formFiles.length ? campColorBg : '#F5F5F0'"
+            [style.color]="formFiles.length ? campColor : '#78716C'"
+          >
+            <app-icon name="image-plus" [size]="14"></app-icon>
+            {{ formFiles.length ? "Сменить картинку" : "Загрузить картинку" }}
+            <input
+              type="file"
+              accept="image/*"
+              (change)="onFormAvatarChange($event)"
+              class="hidden"
+            />
+          </label>
+          <span
+            *ngIf="formFiles.length"
+            class="flex items-center gap-1.5 text-xs font-semibold text-camp-gray"
+          >
+            {{ formFiles[0].name }} ({{ fileSize(formFiles[0]) }})
+            <button
+              type="button"
+              class="w-5 h-5 flex items-center justify-center rounded-full bg-[#FEE2E2] text-camp-error hover:bg-[#FECACA] transition-colors"
+              (click)="removeFormAvatar()"
+            >
+              <app-icon name="x" [size]="11"></app-icon>
+            </button>
+          </span>
         </div>
       </div>
+    </div>
 
-      <span style="color: #aaa; font-size: 13px">или</span>
-
-      <!-- Загрузить новую картинку -->
-      <label
-        style="
-          cursor: pointer;
-          padding: 4px 10px;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          font-size: 13px;
-        "
-      >
-        📁 Новая картинка
-        <input
-          type="file"
-          accept="image/*"
-          (change)="onEditAvatarChange($event)"
-          style="display: none"
-        />
-      </label>
-      <span *ngIf="editFiles.length" style="font-size: 12px; color: #555">
-        {{ editFiles[0].name }}
-        <button
-          (click)="removeEditAvatar()"
-          style="color: red; border: none; background: none; cursor: pointer"
-        >
-          ✕
-        </button>
-      </span>
+    <div class="flex gap-2 mt-5">
       <button
-        *ngIf="editItem.avatar_path && !editFiles.length"
-        (click)="deleteAvatar(editItem.id)"
-        style="
-          color: red;
-          border: none;
-          background: none;
-          cursor: pointer;
-          font-size: 13px;
-        "
+        class="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px"
+        [style.backgroundColor]="campColor"
+        (click)="create()"
       >
-        ✕ удалить фото
+        <app-icon name="plus" [size]="15"></app-icon>
+        Создать
+      </button>
+      <button
+        class="px-4 py-2 rounded-xl text-sm font-bold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+        (click)="showCreateForm = false"
+      >
+        Отмена
       </button>
     </div>
   </div>
 
-  <button (click)="saveEdit()">Сохранить</button>
-  <button (click)="editItem = null; editFiles = []" style="margin-left: 8px">
-    Отмена
-  </button>
-</div>
-
-<!-- ── Детали домика ──────────────────────────────────────────────────── -->
-<div
-  *ngIf="selectedHouse"
-  style="
-    margin-top: 20px;
-    border: 1px solid #ccc;
-    padding: 12px;
-    border-radius: 4px;
-  "
->
+  <!-- ═══════════════ PODIUM + RANKING ═══════════════ -->
   <div
-    style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px"
+    *ngIf="houses.length > 0"
+    class="rounded-2xl border border-camp-border shadow-sm overflow-hidden"
+    [style.background]="
+      'linear-gradient(135deg, ' + campColorBg + ', white 60%)'
+    "
   >
-    <div
-      style="
-        width: 52px;
-        height: 52px;
-        border-radius: 50%;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #f5f5f5;
-        border: 1px solid #ddd;
-        flex-shrink: 0;
-      "
-    >
-      <img
-        *ngIf="selectedHouse.avatar_path"
-        [src]="selectedHouse.avatar_path | mediaUrl"
-        style="width: 100%; height: 100%; object-fit: cover"
-      />
-      <span
-        *ngIf="!selectedHouse.avatar_path && selectedHouse.emoji"
-        style="font-size: 28px"
-        >{{ selectedHouse.emoji }}</span
+    <div class="p-5">
+      <h2
+        class="font-display text-base font-bold text-camp-stone mb-5 flex items-center gap-2"
       >
-      <span
-        *ngIf="!selectedHouse.avatar_path && !selectedHouse.emoji"
-        style="font-size: 24px; color: #ccc"
-        >🏠</span
+        <app-icon
+          name="trophy"
+          [size]="17"
+          [style.color]="campColor"
+        ></app-icon>
+        Турнирная таблица
+      </h2>
+
+      <!-- ── Podium: top 3 ── -->
+      <div
+        *ngIf="sortedHouses.length >= 2"
+        class="flex items-end justify-center gap-2 sm:gap-4 mb-8 pt-4"
       >
-    </div>
-    <div>
-      <h3 style="margin: 0">{{ selectedHouse.name }}</h3>
-      <div style="color: #666; font-size: 13px">
-        {{ selectedHouse.description }}
+        <div
+          *ngFor="let h of podiumOrder; let i = index"
+          class="flex flex-col items-center"
+          [style.order]="
+            h === sortedHouses[0] ? 1 : h === sortedHouses[1] ? 0 : 2
+          "
+        >
+          <!-- Аватар домика над пьедесталом -->
+          <div
+            class="rounded-2xl flex items-center justify-center overflow-hidden shadow-md mb-2 border-2 transition-all"
+            [style.borderColor]="campColor"
+            [style.backgroundColor]="campColorBg"
+            [style.width]="h === sortedHouses[0] ? '64px' : '48px'"
+            [style.height]="h === sortedHouses[0] ? '64px' : '48px'"
+          >
+            <img
+              *ngIf="h.avatar_path"
+              [src]="h.avatar_path | mediaUrl"
+              class="w-full h-full object-cover"
+            />
+            <span
+              *ngIf="!h.avatar_path && h.emoji"
+              [style.fontSize]="h === sortedHouses[0] ? '2rem' : '1.4rem'"
+              class="leading-none"
+              >{{ h.emoji }}</span
+            >
+            <app-icon
+              *ngIf="!h.avatar_path && !h.emoji"
+              [size]="h === sortedHouses[0] ? 28 : 20"
+              name="house"
+              [style.color]="campColor"
+            ></app-icon>
+          </div>
+
+          <div
+            class="font-bold text-camp-stone text-center mb-1 truncate"
+            [style.fontSize]="h === sortedHouses[0] ? '0.85rem' : '0.75rem'"
+            [style.maxWidth]="h === sortedHouses[0] ? '90px' : '70px'"
+          >
+            {{ h.name }}
+          </div>
+          <div
+            class="font-bold tabular-nums mb-2"
+            [style.color]="campColor"
+            [style.fontSize]="h === sortedHouses[0] ? '0.9rem' : '0.75rem'"
+          >
+            {{ h.house_points }}
+          </div>
+
+          <!-- Подиумная плашка — градиент оттенков основного цвета -->
+          <div
+            class="rounded-t-2xl flex items-start justify-center pt-2 text-xl font-bold shadow-sm"
+            [style.width]="h === sortedHouses[0] ? '80px' : '60px'"
+            [style.height]="
+              h === sortedHouses[0]
+                ? '96px'
+                : h === sortedHouses[1]
+                  ? '68px'
+                  : '50px'
+            "
+            [style.background]="
+              h === sortedHouses[0]
+                ? 'linear-gradient(180deg, ' +
+                  campColor +
+                  ', ' +
+                  campColor +
+                  'CC)'
+                : h === sortedHouses[1]
+                  ? 'linear-gradient(180deg, ' +
+                    campColor +
+                    'CC, ' +
+                    campColor +
+                    '88)'
+                  : 'linear-gradient(180deg, ' +
+                    campColor +
+                    '99, ' +
+                    campColor +
+                    '55)'
+            "
+          >
+            {{
+              rankBadge(
+                h === sortedHouses[0] ? 0 : h === sortedHouses[1] ? 1 : 2
+              )
+            }}
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Full ranking bars ── -->
+      <div class="space-y-2.5">
+        <div
+          *ngFor="let h of sortedHouses; let i = index"
+          class="flex items-center gap-3 cursor-pointer group rounded-xl px-2 py-1 hover:bg-white/70 transition-colors"
+          (click)="select(h)"
+        >
+          <span
+            class="text-sm w-6 text-center shrink-0 font-bold text-camp-gray"
+            >{{ i < 3 ? rankBadge(i) : i + 1 }}</span
+          >
+          <!-- Иконка домика в рейтинге -->
+          <div
+            class="w-8 h-8 rounded-xl flex items-center justify-center overflow-hidden shrink-0"
+            [style.backgroundColor]="houseColorBg(i)"
+          >
+            <img
+              *ngIf="h.avatar_path"
+              [src]="h.avatar_path | mediaUrl"
+              class="w-full h-full object-cover"
+            />
+            <span
+              *ngIf="!h.avatar_path && h.emoji"
+              class="text-base leading-none"
+              >{{ h.emoji }}</span
+            >
+            <app-icon
+              *ngIf="!h.avatar_path && !h.emoji"
+              name="house"
+              [size]="14"
+              [style.color]="houseColor(i)"
+            ></app-icon>
+          </div>
+          <span
+            class="w-20 sm:w-28 text-sm font-bold text-camp-stone truncate group-hover:underline"
+            >{{ h.name }}</span
+          >
+          <div
+            class="flex-1 h-2.5 rounded-full overflow-hidden"
+            style="background: rgba(0, 0, 0, 0.06)"
+          >
+            <div
+              class="h-2.5 rounded-full transition-all duration-700"
+              [style.width.%]="((h.house_points ?? 0) / maxHousePoints) * 100"
+              [style.backgroundColor]="houseColor(i)"
+            ></div>
+          </div>
+          <span
+            class="w-14 sm:w-16 text-right font-bold tabular-nums text-sm shrink-0"
+            [style.color]="houseColor(i)"
+            >{{ h.house_points }}</span
+          >
+        </div>
       </div>
     </div>
-    <strong style="margin-left: auto"
-      >Баллы: {{ selectedHouse.house_points }}</strong
+  </div>
+
+  <!-- ═══════════════ HOUSE CARDS ═══════════════ -->
+  <div
+    *ngIf="houses.length === 0"
+    class="py-16 text-center text-camp-subtle bg-white rounded-2xl border border-camp-border"
+  >
+    <div class="text-4xl mb-3">🏠</div>
+    <div class="text-sm font-medium">Домиков не найдено</div>
+  </div>
+
+  <!-- Переключатель вида -->
+  <div
+    *ngIf="houses.length > 0"
+    class="flex items-center justify-between gap-3"
+  >
+    <span class="text-xs font-bold text-camp-gray uppercase tracking-wide"
+      >Вид</span
     >
+    <div class="flex gap-1 p-1 bg-camp-muted rounded-xl">
+      <button
+        *ngFor="
+          let mode of [
+            ['cards', 'layout-grid'],
+            ['list', 'layout-list'],
+            ['compact', 'rows-3'],
+          ]
+        "
+        type="button"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+        [style.backgroundColor]="viewMode === mode[0] ? 'white' : 'transparent'"
+        [style.color]="viewMode === mode[0] ? campColor : '#78716C'"
+        [style.boxShadow]="
+          viewMode === mode[0] ? '0 1px 4px rgba(0,0,0,0.10)' : 'none'
+        "
+        (click)="viewMode = $any(mode[0])"
+      >
+        <app-icon [name]="mode[1]" [size]="13"></app-icon>
+        {{
+          mode[0] === "cards"
+            ? "Карточки"
+            : mode[0] === "list"
+              ? "Список"
+              : "Компакт"
+        }}
+      </button>
+    </div>
   </div>
 
-  <h4>Ответственные</h4>
-  <table border="1" cellpadding="4" style="border-collapse: collapse">
-    <thead>
-      <tr>
-        <th>ФИО</th>
-        <th>Роль</th>
-        <th>Уровень</th>
-        <th *ngIf="auth.isAdmin()">Удалить</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let r of selectedHouse.responsible">
-        <td>{{ r.full_name }}</td>
-        <td>{{ r.role }}</td>
-        <td>{{ r.rank_level }}</td>
-        <td *ngIf="auth.isAdmin()">
-          <button (click)="removeResponsible(r.id)">🗑️</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- ── CARDS VIEW ── -->
+  <div
+    *ngIf="viewMode === 'cards'"
+    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+  >
+    <div
+      *ngFor="let h of sortedHouses; let i = index"
+      class="bg-white rounded-2xl border border-camp-border shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer group"
+      (click)="select(h)"
+    >
+      <!-- Цветная полоса сверху — оттенок для каждого домика -->
+      <div class="h-1.5" [style.backgroundColor]="houseColor(i)"></div>
 
-  <div *ngIf="auth.isAdmin() && users.length" style="margin-top: 8px">
-    Добавить:
-    <select [(ngModel)]="responsibleForm.userId">
-      <option value="">— выбрать —</option>
-      <option *ngFor="let u of users" [value]="u.id">
-        {{ u.full_name }} ({{ u.role }})
-      </option>
-    </select>
-    Уровень:
-    <input
-      type="number"
-      [(ngModel)]="responsibleForm.rankLevel"
-      style="width: 50px"
-    />
-    <button (click)="addResponsible()">Добавить</button>
+      <div class="p-4 sm:p-5">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div
+              class="w-14 h-14 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 shadow-sm"
+              [style.background]="
+                'linear-gradient(135deg,' +
+                houseColor(i) +
+                '30,' +
+                houseColor(i) +
+                '10)'
+              "
+              [style.border]="'1.5px solid ' + houseColor(i) + '40'"
+            >
+              <img
+                *ngIf="h.avatar_path"
+                [src]="h.avatar_path | mediaUrl"
+                class="w-full h-full object-cover"
+              />
+              <span
+                *ngIf="!h.avatar_path && h.emoji"
+                class="text-3xl leading-none"
+                >{{ h.emoji }}</span
+              >
+              <app-icon
+                *ngIf="!h.avatar_path && !h.emoji"
+                name="house"
+                [size]="22"
+                [style.color]="houseColor(i)"
+              ></app-icon>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-sm text-camp-stone truncate">{{
+                  h.name
+                }}</span>
+                <span *ngIf="i < 3" class="text-sm shrink-0">{{
+                  rankBadge(i)
+                }}</span>
+              </div>
+              <div
+                *ngIf="h.description"
+                class="text-xs text-camp-gray mt-0.5 italic truncate"
+              >
+                «{{ h.description }}»
+              </div>
+            </div>
+          </div>
+          <app-icon
+            name="chevron-right"
+            [size]="18"
+            class="text-camp-subtle shrink-0 group-hover:translate-x-0.5 transition-transform"
+          ></app-icon>
+        </div>
+
+        <!-- Статистика -->
+        <div class="flex gap-2">
+          <div
+            class="flex-1 rounded-xl px-2 py-2 text-center"
+            [style.background]="
+              'linear-gradient(135deg,' +
+              houseColor(i) +
+              '25,' +
+              houseColor(i) +
+              '08)'
+            "
+          >
+            <div
+              class="font-bold text-lg tabular-nums"
+              [style.color]="houseColor(i)"
+            >
+              {{ h.house_points }}
+            </div>
+            <div class="text-[0.65rem] text-camp-gray mt-0.5">Баллов</div>
+          </div>
+          <div
+            class="flex-1 rounded-xl px-2 py-2 text-center"
+            [style.background]="
+              'linear-gradient(135deg,' +
+              houseColor(i) +
+              '12,' +
+              houseColor(i) +
+              '04)'
+            "
+          >
+            <div class="font-bold text-lg tabular-nums text-camp-stone">
+              {{ h.participants_count ?? 0 }}
+            </div>
+            <div class="text-[0.65rem] text-camp-gray mt-0.5">Участников</div>
+          </div>
+          <div
+            class="flex-1 rounded-xl px-2 py-2 text-center"
+            [style.background]="
+              'linear-gradient(135deg,' +
+              houseColor(i) +
+              '08,' +
+              houseColor(i) +
+              '02)'
+            "
+          >
+            <div class="font-bold text-lg tabular-nums text-camp-stone">
+              #{{ i + 1 }}
+            </div>
+            <div class="text-[0.65rem] text-camp-gray mt-0.5">Место</div>
+          </div>
+        </div>
+
+        <!-- Admin actions -->
+        <div
+          *ngIf="auth.isAdmin()"
+          class="flex gap-1 mt-3 transition-opacity"
+          (click)="$event.stopPropagation()"
+        >
+          <button
+            class="w-8 h-8 flex items-center justify-center rounded-lg bg-camp-muted hover:bg-camp-border text-camp-gray transition-colors"
+            (click)="startEdit(h)"
+            title="Редактировать"
+          >
+            <app-icon name="pencil" [size]="14"></app-icon>
+          </button>
+          <button
+            class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#FEE2E2] hover:bg-[#FECACA] text-camp-error transition-colors"
+            (click)="remove(h.id)"
+            title="Удалить"
+          >
+            <app-icon name="trash-2" [size]="14"></app-icon>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <h4>Участники</h4>
-  <table border="1" cellpadding="4" style="border-collapse: collapse">
-    <thead>
-      <tr>
-        <th>ФИО</th>
-        <th>Пол</th>
-        <th>Возраст</th>
-        <th>Баллы</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let p of selectedHouse.participants">
-        <td>{{ p.last_name }} {{ p.first_name }}</td>
-        <td>{{ p.gender }}</td>
-        <td>{{ p.age }}</td>
-        <td>{{ p.total_points }}</td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- ── LIST VIEW ── -->
+  <div
+    *ngIf="viewMode === 'list'"
+    class="bg-white rounded-2xl border border-camp-border shadow-sm overflow-hidden"
+  >
+    <div
+      *ngFor="let h of sortedHouses; let i = index; let last = last"
+      class="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-camp-muted transition-colors group"
+      [class.border-b]="!last"
+      [class.border-camp-border]="!last"
+      (click)="select(h)"
+    >
+      <!-- Цветная полоска слева -->
+      <div
+        class="w-1 self-stretch rounded-full shrink-0"
+        [style.backgroundColor]="houseColor(i)"
+      ></div>
+
+      <!-- Иконка -->
+      <div
+        class="w-11 h-11 rounded-xl flex items-center justify-center overflow-hidden shrink-0"
+        [style.backgroundColor]="houseColorBg(i)"
+      >
+        <img
+          *ngIf="h.avatar_path"
+          [src]="h.avatar_path | mediaUrl"
+          class="w-full h-full object-cover"
+        />
+        <span *ngIf="!h.avatar_path && h.emoji" class="text-xl leading-none">{{
+          h.emoji
+        }}</span>
+        <app-icon
+          *ngIf="!h.avatar_path && !h.emoji"
+          name="house"
+          [size]="18"
+          [style.color]="houseColor(i)"
+        ></app-icon>
+      </div>
+
+      <!-- Инфо -->
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-1.5">
+          <span class="font-bold text-sm text-camp-stone truncate">{{
+            h.name
+          }}</span>
+          <span *ngIf="i < 3" class="text-sm shrink-0">{{ rankBadge(i) }}</span>
+        </div>
+        <div
+          *ngIf="h.description"
+          class="text-xs text-camp-gray italic truncate"
+        >
+          «{{ h.description }}»
+        </div>
+      </div>
+
+      <!-- Баллы -->
+      <div class="text-right shrink-0">
+        <div
+          class="font-bold text-sm tabular-nums"
+          [style.color]="houseColor(i)"
+        >
+          {{ h.house_points }}
+        </div>
+        <div class="text-[0.65rem] text-camp-subtle">
+          {{ h.participants_count ?? 0 }} уч.
+        </div>
+      </div>
+
+      <!-- Admin actions -->
+      <div
+        *ngIf="auth.isAdmin()"
+        class="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0"
+        (click)="$event.stopPropagation()"
+      >
+        <button
+          class="w-7 h-7 flex items-center justify-center rounded-lg bg-camp-muted hover:bg-camp-border text-camp-gray transition-colors"
+          (click)="startEdit(h)"
+          title="Редактировать"
+        >
+          <app-icon name="pencil" [size]="13"></app-icon>
+        </button>
+        <button
+          class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#FEE2E2] hover:bg-[#FECACA] text-camp-error transition-colors"
+          (click)="remove(h.id)"
+          title="Удалить"
+        >
+          <app-icon name="trash-2" [size]="13"></app-icon>
+        </button>
+      </div>
+
+      <app-icon
+        name="chevron-right"
+        [size]="15"
+        class="text-camp-subtle shrink-0 group-hover:translate-x-0.5 transition-transform"
+      ></app-icon>
+    </div>
+  </div>
+
+  <!-- ── COMPACT VIEW ── -->
+  <div
+    *ngIf="viewMode === 'compact'"
+    class="grid grid-cols-1 sm:grid-cols-2 gap-2"
+  >
+    <div
+      *ngFor="let h of sortedHouses; let i = index"
+      class="flex items-center gap-3 px-3 py-2.5 rounded-xl border cursor-pointer hover:shadow-sm transition-all group"
+      [style.borderColor]="houseColor(i) + '40'"
+      [style.backgroundColor]="houseColorBg(i)"
+      (click)="select(h)"
+    >
+      <span
+        class="text-xs font-bold w-5 text-center shrink-0"
+        [style.color]="houseColor(i)"
+        >{{ i < 3 ? rankBadge(i) : "#" + (i + 1) }}</span
+      >
+      <div
+        class="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden shrink-0"
+        [style.backgroundColor]="'white'"
+      >
+        <img
+          *ngIf="h.avatar_path"
+          [src]="h.avatar_path | mediaUrl"
+          class="w-full h-full object-cover"
+        />
+        <span
+          *ngIf="!h.avatar_path && h.emoji"
+          class="text-base leading-none"
+          >{{ h.emoji }}</span
+        >
+        <app-icon
+          *ngIf="!h.avatar_path && !h.emoji"
+          name="house"
+          [size]="14"
+          [style.color]="houseColor(i)"
+        ></app-icon>
+      </div>
+      <span class="font-bold text-sm text-camp-stone truncate flex-1">{{
+        h.name
+      }}</span>
+      <span
+        class="font-bold text-sm tabular-nums shrink-0"
+        [style.color]="houseColor(i)"
+        >{{ h.house_points }}</span
+      >
+      <div
+        *ngIf="auth.isAdmin()"
+        class="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0"
+        (click)="$event.stopPropagation()"
+      >
+        <button
+          class="w-6 h-6 flex items-center justify-center rounded-md bg-white/80 text-camp-gray hover:bg-camp-border transition-colors"
+          (click)="startEdit(h)"
+        >
+          <app-icon name="pencil" [size]="11"></app-icon>
+        </button>
+        <button
+          class="w-6 h-6 flex items-center justify-center rounded-md bg-[#FEE2E2] text-camp-error hover:bg-[#FECACA] transition-colors"
+          (click)="remove(h.id)"
+        >
+          <app-icon name="trash-2" [size]="11"></app-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ EMOJI PICKER MODAL ═══════════════ -->
+<div
+  *ngIf="showFormEmojiPicker || showEditEmojiPicker"
+  class="fixed inset-0 flex items-end sm:items-center justify-center z-[10000]"
+  style="background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(2px)"
+  (click)="showFormEmojiPicker = false; showEditEmojiPicker = false"
+>
+  <div
+    class="bg-white w-full sm:w-auto rounded-t-2xl sm:rounded-2xl shadow-camp animate-pop-in flex flex-col overflow-hidden"
+    style="max-height: 75dvh; max-height: 75vh"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Шапка -->
+    <div
+      class="flex items-center justify-between px-4 py-3 border-b border-camp-border shrink-0 rounded-t-2xl"
+      [style.background]="campColorBg"
+    >
+      <div class="flex items-center gap-2">
+        <app-icon name="smile" [size]="16" [style.color]="campColor"></app-icon>
+        <span class="font-display text-sm font-bold text-camp-stone"
+          >Выберите эмодзи</span
+        >
+      </div>
+      <button
+        type="button"
+        class="w-7 h-7 flex items-center justify-center rounded-xl bg-white/70 text-camp-gray hover:bg-white transition-colors"
+        (click)="showFormEmojiPicker = false; showEditEmojiPicker = false"
+      >
+        <app-icon name="x" [size]="14"></app-icon>
+      </button>
+    </div>
+    <!-- Пикер -->
+    <div class="flex-1 min-h-0 overflow-hidden">
+      <emoji-mart
+        *ngIf="showFormEmojiPicker"
+        (emojiSelect)="onFormEmojiSelect($event)"
+        [darkMode]="false"
+        [showPreview]="false"
+        [enableSearch]="false"
+        [recent]="[]"
+        [totalFrequentLines]="0"
+        [exclude]="['recent']"
+        [color]="campColor"
+        [perLine]="8"
+      ></emoji-mart>
+      <emoji-mart
+        *ngIf="showEditEmojiPicker"
+        (emojiSelect)="onEditEmojiSelect($event)"
+        [darkMode]="false"
+        [showPreview]="false"
+        [enableSearch]="false"
+        [recent]="[]"
+        [totalFrequentLines]="0"
+        [exclude]="['recent']"
+        [color]="campColor"
+        [perLine]="8"
+      ></emoji-mart>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ EDIT MODAL ═══════════════ -->
+<div
+  *ngIf="editItem"
+  class="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center p-4 z-[9999]"
+  style="background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(2px)"
+  (click)="editItem = null; editFiles = []"
+>
+  <div
+    class="bg-white rounded-2xl shadow-camp w-full max-w-md animate-pop-in overflow-y-auto"
+    style="max-height: calc(100dvh - 2rem)"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-5">
+        <h2
+          class="font-display text-base font-bold text-camp-stone flex items-center gap-2"
+        >
+          <app-icon
+            name="pencil"
+            [size]="16"
+            [style.color]="campColor"
+          ></app-icon>
+          {{ editItem.name }}
+        </h2>
+        <button
+          class="w-8 h-8 flex items-center justify-center rounded-xl bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+          (click)="editItem = null; editFiles = []"
+        >
+          <app-icon name="x" [size]="14"></app-icon>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label
+            class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+            >Название</label
+          >
+          <input
+            class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+            [(ngModel)]="editItem.name"
+            (focus)="
+              $any($event.target).style.borderColor = campColor;
+              $any($event.target).style.backgroundColor = 'white'
+            "
+            (blur)="
+              $any($event.target).style.borderColor = 'transparent';
+              $any($event.target).style.backgroundColor = ''
+            "
+          />
+        </div>
+        <div>
+          <label
+            class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+            >Описание</label
+          >
+          <input
+            class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+            [(ngModel)]="editItem.description"
+            (focus)="
+              $any($event.target).style.borderColor = campColor;
+              $any($event.target).style.backgroundColor = 'white'
+            "
+            (blur)="
+              $any($event.target).style.borderColor = 'transparent';
+              $any($event.target).style.backgroundColor = ''
+            "
+          />
+        </div>
+
+        <!-- Аватарка — улучшенный блок -->
+        <div>
+          <label
+            class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-2"
+            >Иконка домика</label
+          >
+
+          <div class="flex gap-4 flex-wrap items-center">
+            <!-- Кнопка-превью для выбора эмодзи -->
+            <div class="relative emoji-field">
+              <button
+                type="button"
+                class="w-16 h-16 rounded-2xl border-2 overflow-hidden flex items-center justify-center shrink-0 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                [style.borderColor]="
+                  editFiles.length || editItem.avatar_path || editItem.emoji
+                    ? campColor
+                    : '#E7E5E4'
+                "
+                [style.backgroundColor]="campColorBg"
+                (click)="toggleEditEmojiPicker($event)"
+                [disabled]="editFiles.length > 0 || !!editItem.avatar_path"
+                title="Нажмите для выбора эмодзи"
+              >
+                <img
+                  *ngIf="editFiles.length"
+                  [src]="editFiles[0] | objectUrl"
+                  class="w-full h-full object-cover"
+                />
+                <img
+                  *ngIf="!editFiles.length && editItem.avatar_path"
+                  [src]="editItem.avatar_path | mediaUrl"
+                  class="w-full h-full object-cover"
+                />
+                <span
+                  *ngIf="
+                    !editFiles.length && !editItem.avatar_path && editItem.emoji
+                  "
+                  class="text-3xl leading-none"
+                  >{{ editItem.emoji }}</span
+                >
+                <div
+                  *ngIf="
+                    !editFiles.length &&
+                    !editItem.avatar_path &&
+                    !editItem.emoji
+                  "
+                  class="flex flex-col items-center gap-0.5"
+                >
+                  <app-icon
+                    name="smile"
+                    [size]="20"
+                    class="text-camp-subtle"
+                  ></app-icon>
+                  <span
+                    class="text-[0.55rem] font-bold text-camp-subtle uppercase tracking-wide"
+                    >эмодзи</span
+                  >
+                </div>
+              </button>
+              <button
+                *ngIf="
+                  editItem.emoji && !editFiles.length && !editItem.avatar_path
+                "
+                type="button"
+                class="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-[#FEE2E2] text-camp-error hover:bg-[#FECACA] transition-colors shadow-sm z-10"
+                (click)="editItem.emoji = ''; $event.stopPropagation()"
+              >
+                <app-icon name="x" [size]="10"></app-icon>
+              </button>
+              <!-- Пикер открывается как модалка (см. внизу шаблона) -->
+            </div>
+
+            <!-- Загрузка картинки -->
+            <div class="flex flex-col gap-2">
+              <div class="text-xs text-camp-subtle font-medium">
+                или загрузите картинку
+              </div>
+              <label
+                class="cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors w-fit"
+                [style.backgroundColor]="
+                  editFiles.length ? campColorBg : '#F5F5F0'
+                "
+                [style.color]="editFiles.length ? campColor : '#78716C'"
+              >
+                <app-icon name="image-plus" [size]="14"></app-icon>
+                {{
+                  editItem.avatar_path && !editFiles.length
+                    ? "Заменить фото"
+                    : editFiles.length
+                      ? "Сменить"
+                      : "Загрузить фото"
+                }}
+                <input
+                  type="file"
+                  accept="image/*"
+                  (change)="onEditAvatarChange($event)"
+                  class="hidden"
+                />
+              </label>
+              <span
+                *ngIf="editFiles.length"
+                class="flex items-center gap-1.5 text-xs font-semibold text-camp-gray"
+              >
+                {{ editFiles[0].name }}
+                <button
+                  type="button"
+                  class="w-5 h-5 flex items-center justify-center rounded-full bg-[#FEE2E2] text-camp-error hover:bg-[#FECACA] transition-colors"
+                  (click)="removeEditAvatar()"
+                >
+                  <app-icon name="x" [size]="11"></app-icon>
+                </button>
+              </span>
+              <button
+                *ngIf="editItem.avatar_path && !editFiles.length"
+                type="button"
+                class="text-xs font-bold text-camp-error hover:underline flex items-center gap-1 w-fit"
+                (click)="deleteAvatar(editItem.id)"
+              >
+                <app-icon name="trash-2" [size]="12"></app-icon>
+                удалить фото
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-2 mt-5">
+        <button
+          class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px"
+          [style.backgroundColor]="campColor"
+          (click)="saveEdit()"
+        >
+          <app-icon name="check" [size]="15"></app-icon>
+          Сохранить
+        </button>
+        <button
+          class="px-4 py-2.5 rounded-xl text-sm font-bold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+          (click)="editItem = null; editFiles = []"
+        >
+          Отмена
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ DETAILS MODAL ═══════════════ -->
+<div
+  *ngIf="selectedHouse"
+  class="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center p-4 z-[9999]"
+  style="background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(2px)"
+  (click)="closeDetails()"
+>
+  <div
+    class="bg-white rounded-2xl shadow-camp w-full max-w-lg animate-pop-in overflow-y-auto"
+    style="max-height: calc(100dvh - 2rem)"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Header -->
+    <div class="p-6 pb-4">
+      <div class="flex items-start justify-between gap-3 mb-1">
+        <div class="flex items-center gap-3 min-w-0">
+          <div
+            class="w-14 h-14 rounded-2xl flex items-center justify-center overflow-hidden shrink-0"
+            [style.background]="
+              'linear-gradient(135deg, ' +
+              campColor +
+              '30, ' +
+              campColor +
+              '10)'
+            "
+            [style.border]="'1.5px solid ' + campColor + '30'"
+          >
+            <img
+              *ngIf="selectedHouse.avatar_path"
+              [src]="selectedHouse.avatar_path | mediaUrl"
+              class="w-full h-full object-cover"
+            />
+            <span
+              *ngIf="!selectedHouse.avatar_path && selectedHouse.emoji"
+              class="text-3xl"
+              >{{ selectedHouse.emoji }}</span
+            >
+            <app-icon
+              *ngIf="!selectedHouse.avatar_path && !selectedHouse.emoji"
+              name="home"
+              [size]="26"
+              [style.color]="campColor"
+            ></app-icon>
+          </div>
+          <div class="min-w-0">
+            <h2 class="font-display text-lg font-bold text-camp-stone truncate">
+              {{ selectedHouse.name }}
+            </h2>
+            <div
+              *ngIf="selectedHouse.description"
+              class="text-xs text-camp-gray italic truncate"
+            >
+              «{{ selectedHouse.description }}»
+            </div>
+          </div>
+        </div>
+        <button
+          class="w-8 h-8 flex items-center justify-center rounded-xl bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors shrink-0"
+          (click)="closeDetails()"
+        >
+          <app-icon name="x" [size]="14"></app-icon>
+        </button>
+      </div>
+
+      <div
+        class="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-xl"
+        [style.backgroundColor]="campColorBg"
+      >
+        <app-icon name="star" [size]="14" [style.color]="campColor"></app-icon>
+        <span class="font-bold text-sm" [style.color]="campColor"
+          >{{ selectedHouse.house_points }} баллов</span
+        >
+      </div>
+    </div>
+
+    <div class="px-6 pb-6 space-y-5">
+      <!-- Ответственные -->
+      <div>
+        <h3
+          class="font-display text-sm font-bold text-camp-stone mb-2 flex items-center gap-2"
+        >
+          <app-icon
+            name="shield"
+            [size]="14"
+            [style.color]="campColor"
+          ></app-icon>
+          Ответственные
+        </h3>
+
+        <div
+          *ngIf="!selectedHouse.responsible?.length"
+          class="text-xs text-camp-subtle bg-camp-muted rounded-xl px-3 py-2.5"
+        >
+          Пока никто не назначен
+        </div>
+
+        <div class="space-y-1.5">
+          <div
+            *ngFor="let r of selectedHouse.responsible"
+            class="flex items-center gap-2 px-3 py-2 rounded-xl bg-camp-muted"
+          >
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-sm text-camp-stone truncate">
+                {{ r.full_name }}
+              </div>
+              <div class="text-xs text-camp-gray">
+                {{ r.role }} · уровень {{ r.rank_level }}
+              </div>
+            </div>
+            <button
+              *ngIf="auth.isAdmin()"
+              class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#FEE2E2] hover:bg-[#FECACA] text-camp-error transition-colors shrink-0"
+              (click)="removeResponsible(r.id)"
+              title="Удалить"
+            >
+              <app-icon name="x" [size]="12"></app-icon>
+            </button>
+          </div>
+        </div>
+
+        <div
+          *ngIf="auth.isAdmin() && users.length"
+          class="flex items-center gap-2 mt-2.5 flex-wrap"
+        >
+          <select
+            [(ngModel)]="responsibleForm.userId"
+            class="flex-1 min-w-[140px] px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+          >
+            <option value="">— выбрать —</option>
+            <option *ngFor="let u of users" [value]="u.id">
+              {{ u.full_name }} ({{ u.role }})
+            </option>
+          </select>
+          <input
+            type="number"
+            [(ngModel)]="responsibleForm.rankLevel"
+            class="w-16 px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+            title="Уровень"
+          />
+          <button
+            class="px-3 py-2 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px shrink-0"
+            [style.backgroundColor]="campColor"
+            (click)="addResponsible()"
+          >
+            <app-icon name="plus" [size]="14"></app-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Участники -->
+      <div>
+        <h3
+          class="font-display text-sm font-bold text-camp-stone mb-2 flex items-center gap-2"
+        >
+          <app-icon
+            name="users"
+            [size]="14"
+            [style.color]="campColor"
+          ></app-icon>
+          Участники
+          <span class="text-camp-subtle font-medium"
+            >({{ selectedHouse.participants?.length ?? 0 }})</span
+          >
+        </h3>
+
+        <div
+          *ngIf="!selectedHouse.participants?.length"
+          class="text-xs text-camp-subtle bg-camp-muted rounded-xl px-3 py-2.5"
+        >
+          В этом домике пока нет участников
+        </div>
+
+        <div class="space-y-1 max-h-64 overflow-y-auto">
+          <div
+            *ngFor="let p of selectedHouse.participants"
+            class="flex items-center gap-2.5 px-3 py-1.5 rounded-xl hover:bg-camp-muted transition-colors"
+          >
+            <span class="font-semibold text-sm text-camp-stone flex-1 truncate">
+              {{ p.last_name }} {{ p.first_name }}
+            </span>
+            <span class="text-xs text-camp-gray shrink-0">
+              {{ p.gender === "м" ? "♂" : "♀"
+              }}<ng-container *ngIf="p.age"> · {{ p.age }} л.</ng-container>
+            </span>
+            <span
+              class="font-bold text-xs shrink-0 flex items-center gap-0.5"
+              [style.color]="campColor"
+            >
+              <app-icon name="star" [size]="11"></app-icon>{{ p.total_points }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ CONFIRM MODAL ═══════════════ -->
+<div
+  *ngIf="confirmState"
+  class="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center p-4 z-[9999]"
+  style="background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(2px)"
+  (click)="confirmNo()"
+>
+  <div
+    class="bg-white rounded-2xl shadow-camp w-full max-w-sm animate-pop-in overflow-hidden"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="p-6">
+      <div class="flex items-start gap-3 mb-2">
+        <div
+          class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+          [style.backgroundColor]="
+            confirmState.danger ? '#FEE2E2' : campColorBg
+          "
+          [style.color]="confirmState.danger ? '#DC2626' : campColor"
+        >
+          <app-icon name="trash-2" [size]="18"></app-icon>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h2 class="font-display text-base font-bold text-camp-stone">
+            {{ confirmState.title }}
+          </h2>
+          <p class="text-sm text-camp-gray mt-1">
+            {{ confirmState.message }}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex gap-2 mt-5">
+        <button
+          class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px"
+          [style.backgroundColor]="confirmState.danger ? '#DC2626' : campColor"
+          (click)="confirmYes()"
+        >
+          {{ confirmState.confirmLabel }}
+        </button>
+        <button
+          class="px-4 py-2.5 rounded-xl text-sm font-bold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+          (click)="confirmNo()"
+        >
+          Отмена
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

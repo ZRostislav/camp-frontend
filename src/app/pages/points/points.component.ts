@@ -3,54 +3,228 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { SettingsService } from '../../services/settings.service';
+import { IconComponent } from '../../shared/icon.component';
+import { MediaUrlPipe } from '../../pipes/media-url.pipe';
 
-@Component({ selector: 'app-points', standalone: true, imports: [CommonModule, FormsModule], templateUrl: './points.component.html' })
+@Component({
+  selector: 'app-points',
+  standalone: true,
+  imports: [CommonModule, FormsModule, IconComponent, MediaUrlPipe],
+  templateUrl: './points.component.html',
+  styleUrl: './points.component.css',
+})
 export class PointsComponent implements OnInit {
   houses: any[] = [];
   participants: any[] = [];
   mode: 'participant' | 'house' = 'participant';
   selectedId: any = '';
+  selectorQuery = '';
+  selectorOpen = false;
   history: any = null;
   addForm: any = { points: 0, reason: '' };
   editEntry: any = null;
   error = '';
   msg = '';
 
-  constructor(public auth: AuthService, private api: ApiService) {}
+  campColor = '#F59E0B';
+
+  pointsFilter: 'all' | 'positive' | 'negative' = 'all';
+  searchQuery = '';
+
+  filters = [
+    { key: 'all', label: 'Все' },
+    { key: 'positive', label: '✅ Начисления' },
+    { key: 'negative', label: '❌ Списания' },
+  ];
+
+  quickPoints = [-10, -5, +5, +10, +25, +50];
+
+  quickReasons = [
+    'Победа в конкурсе',
+    'Отличное поведение',
+    'Помощь другим',
+    'Победа в спортивном мероприятии',
+    'Творческое задание',
+    'Нарушение правил',
+    'Опоздание',
+  ];
+
+  get campColorBg(): string {
+    const num = parseInt(this.campColor.replace('#', ''), 16);
+    return `rgba(${(num >> 16) & 255},${(num >> 8) & 255},${num & 255},0.1)`;
+  }
+
+  get filteredHistory(): any[] {
+    if (!this.history?.history) return [];
+    const q = this.searchQuery.toLowerCase().trim();
+    return this.history.history.filter((e: any) => {
+      const matchFilter =
+        this.pointsFilter === 'all' ||
+        (this.pointsFilter === 'positive' && e.points >= 0) ||
+        (this.pointsFilter === 'negative' && e.points < 0);
+      const matchSearch =
+        !q ||
+        (e.reason ?? '').toLowerCase().includes(q) ||
+        (e.created_by_name ?? '').toLowerCase().includes(q);
+      return matchFilter && matchSearch;
+    });
+  }
+
+  /** Список участников или домиков, отфильтрованный по поисковому запросу селектора. */
+  get filteredSelectorOptions(): any[] {
+    const q = this.selectorQuery.toLowerCase().trim();
+    const list = this.mode === 'participant' ? this.participants : this.houses;
+    if (!q) return list;
+    return list.filter((item: any) => {
+      if (this.mode === 'participant') {
+        const fullName =
+          `${item.last_name ?? ''} ${item.first_name ?? ''}`.toLowerCase();
+        const houseName = (item.house_name ?? '').toLowerCase();
+        return fullName.includes(q) || houseName.includes(q);
+      }
+      return (item.name ?? '').toLowerCase().includes(q);
+    });
+  }
+
+  /** Текущий выбранный участник/домик — для отображения в поле селектора. */
+  get selectedItem(): any {
+    const list = this.mode === 'participant' ? this.participants : this.houses;
+    return list.find((item: any) => item.id == this.selectedId) ?? null;
+  }
+
+  constructor(
+    public auth: AuthService,
+    private api: ApiService,
+    private settings: SettingsService,
+  ) {}
 
   ngOnInit() {
-    this.api.get('/houses').subscribe({ next: (d: any) => this.houses = d, error: () => {} });
-    this.api.get('/participants').subscribe({ next: (d: any) => this.participants = d, error: () => {} });
+    this.settings.get().subscribe({
+      next: (d) => {
+        this.campColor = (d['camp_color'] as string) ?? '#F59E0B';
+      },
+      error: () => {},
+    });
+    this.api
+      .get('/houses')
+      .subscribe({ next: (d: any) => (this.houses = d), error: () => {} });
+    this.api.get('/participants').subscribe({
+      next: (d: any) => (this.participants = d),
+      error: () => {},
+    });
+  }
+
+  /** Переключение режима участник/домик со сбросом выбора и поиска. */
+  setMode(m: 'participant' | 'house') {
+    this.mode = m;
+    this.selectedId = '';
+    this.selectorQuery = '';
+    this.selectorOpen = false;
+    this.history = null;
+    this.error = '';
+    this.msg = '';
+  }
+
+  openSelector() {
+    this.selectorOpen = true;
+    this.selectorQuery = '';
+  }
+
+  closeSelector() {
+    this.selectorOpen = false;
+  }
+
+  selectItem(item: any) {
+    this.selectedId = item.id;
+    this.selectorOpen = false;
+    this.selectorQuery = '';
+    this.loadHistory();
+  }
+
+  initials(p: any): string {
+    const l = (p.last_name ?? '').charAt(0).toUpperCase();
+    const f = (p.first_name ?? '').charAt(0).toUpperCase();
+    return l + f || '?';
+  }
+
+  getHouse(houseId: any): any {
+    return this.houses.find((h) => h.id == houseId) ?? null;
+  }
+
+  getHouseColor(houseId: any): string {
+    return this.getHouse(houseId)?.color || this.campColor;
+  }
+
+  getHouseEmoji(houseId: any): string {
+    return this.getHouse(houseId)?.emoji || '';
+  }
+
+  getHouseAvatar(houseId: any): string | null {
+    return this.getHouse(houseId)?.avatar_path ?? null;
   }
 
   loadHistory() {
     if (!this.selectedId) return;
-    const path = this.mode === 'participant' ? `/points/participant/${this.selectedId}/history` : `/points/house/${this.selectedId}/history`;
-    this.api.get(path).subscribe({ next: (d: any) => this.history = d, error: e => this.error = e.error?.error || 'Ошибка' });
+    this.history = null;
+    const path =
+      this.mode === 'participant'
+        ? `/points/participant/${this.selectedId}/history`
+        : `/points/house/${this.selectedId}/history`;
+    this.api.get(path).subscribe({
+      next: (d: any) => (this.history = d),
+      error: (e: any) => (this.error = e.error?.error || 'Ошибка'),
+    });
   }
 
   addPoints() {
-    const path = this.mode === 'participant' ? `/points/participant/${this.selectedId}` : `/points/house/${this.selectedId}`;
-    this.api.post(path, { points: Number(this.addForm.points), reason: this.addForm.reason }).subscribe({
-      next: () => { this.msg = 'Баллы начислены'; this.addForm = { points: 0, reason: '' }; this.loadHistory(); },
-      error: e => this.error = e.error?.error || 'Ошибка'
-    });
+    const path =
+      this.mode === 'participant'
+        ? `/points/participant/${this.selectedId}`
+        : `/points/house/${this.selectedId}`;
+    this.api
+      .post(path, {
+        points: Number(this.addForm.points),
+        reason: this.addForm.reason,
+      })
+      .subscribe({
+        next: () => {
+          this.msg = 'Баллы начислены';
+          this.addForm = { points: 0, reason: '' };
+          this.loadHistory();
+        },
+        error: (e: any) => (this.error = e.error?.error || 'Ошибка'),
+      });
   }
 
-  startEdit(e: any) { this.editEntry = { ...e }; }
+  startEdit(e: any) {
+    this.editEntry = { ...e };
+  }
 
   saveEdit() {
-    this.api.put(`/points/entries/${this.editEntry.id}`, { points: Number(this.editEntry.points), reason: this.editEntry.reason }).subscribe({
-      next: () => { this.editEntry = null; this.msg = 'Обновлено'; this.loadHistory(); },
-      error: e => this.error = e.error?.error || 'Ошибка'
-    });
+    this.api
+      .put(`/points/entries/${this.editEntry.id}`, {
+        points: Number(this.editEntry.points),
+        reason: this.editEntry.reason,
+      })
+      .subscribe({
+        next: () => {
+          this.editEntry = null;
+          this.msg = 'Обновлено';
+          this.loadHistory();
+        },
+        error: (e: any) => (this.error = e.error?.error || 'Ошибка'),
+      });
   }
 
   deleteEntry(id: number) {
     if (!confirm('Удалить запись?')) return;
     this.api.delete(`/points/entries/${id}`).subscribe({
-      next: () => { this.msg = 'Удалено'; this.loadHistory(); },
-      error: e => this.error = e.error?.error || 'Ошибка'
+      next: () => {
+        this.msg = 'Удалено';
+        this.loadHistory();
+      },
+      error: (e: any) => (this.error = e.error?.error || 'Ошибка'),
     });
   }
 }

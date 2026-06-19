@@ -1,35 +1,396 @@
-<h2>Главная</h2>
-<div *ngIf="loading">Загрузка...</div>
-
-<div *ngIf="!loading">
-  <h3>Домики (рейтинг)</h3>
-  <table border="1" cellpadding="4" style="border-collapse:collapse">
-    <thead><tr><th>#</th><th>Домик</th><th>Баллов</th><th>Участников</th></tr></thead>
-    <tbody>
-      <tr *ngFor="let h of houses; let i=index">
-        <td>{{ i+1 }}</td>
-        <td><a [routerLink]="['/houses']">{{ h.name }}</a></td>
-        <td>{{ h.house_points }}</td>
-        <td>{{ h.participants_count }}</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <h3 style="margin-top:16px">Последние новости</h3>
-  <div *ngFor="let n of news" style="border:1px solid #ccc;padding:8px;margin-bottom:8px">
-    <strong>{{ n.pinned ? '📌 ' : '' }}{{ n.title }}</strong>
-    <div>{{ n.text }}</div>
-    <div style="font-size:11px;color:#666">{{ n.created_by_name }} · {{ n.created_at | date:'dd.MM.yyyy HH:mm' }}</div>
+<div
+  class="p-4 sm:p-6 max-w-7xl mx-auto space-y-5 font-nunito animate-fade-in-up"
+>
+  <!-- Loading state -->
+  <div *ngIf="loading" class="flex items-center justify-center py-20">
+    <span
+      class="w-8 h-8 border-[3px] border-camp-border border-t-camp-orange rounded-full inline-block animate-spin-btn"
+    ></span>
   </div>
 
-  <h3 style="margin-top:16px">Расписание дня</h3>
-  <table border="1" cellpadding="4" style="border-collapse:collapse">
-    <thead><tr><th>Время</th><th>Мероприятие</th></tr></thead>
-    <tbody>
-      <tr *ngFor="let s of schedule">
-        <td>{{ s.time }}</td>
-        <td>{{ s.emoji }} {{ s.title }}</td>
-      </tr>
-    </tbody>
-  </table>
+  <ng-container *ngIf="!loading">
+    <!-- Header -->
+    <div
+      class="flex items-start justify-between flex-wrap gap-3 animate-fade-in-down"
+    >
+      <div>
+        <h1
+          style="
+            font-family: var(--font-display, &quot;Neucha&quot;, sans-serif);
+          "
+          class="font-display text-[1.4rem] sm:text-[1.75rem] font-bold text-camp-stone flex items-center gap-2 leading-tight"
+        >
+          <app-icon name="sun" [size]="26" [style.color]="campColor"></app-icon>
+          Главная
+          <app-icon name="sun" [size]="26" [style.color]="campColor"></app-icon>
+        </h1>
+        <p class="text-xs sm:text-sm mt-1 text-camp-gray font-medium">
+          {{ today | date: "EEEE, d MMMM"
+          }}<ng-container *ngIf="campName"> · {{ campName }}</ng-container>
+        </p>
+      </div>
+      <div
+        class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold text-white shadow-camp-btn flex items-center gap-1.5 shrink-0"
+        [style.backgroundColor]="campColor"
+      >
+        🏕️ {{ campName || "Лагерь" }}
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div
+      class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 animate-fade-in-up"
+    >
+      <div
+        class="bg-white rounded-2xl p-3 sm:p-5 shadow-sm border border-camp-border flex items-center gap-2 sm:gap-4"
+      >
+        <div
+          class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 bg-[#E0F7FF] text-[#38BDF8]"
+        >
+          <app-icon name="users" [size]="18"></app-icon>
+        </div>
+        <div class="min-w-0">
+          <div
+            class="text-lg sm:text-2xl font-bold font-display text-camp-stone truncate"
+          >
+            {{ totalParticipants }}
+          </div>
+          <div class="text-[0.65rem] sm:text-xs text-camp-gray font-medium">
+            Участников
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="bg-white rounded-2xl p-3 sm:p-5 shadow-sm border border-camp-border flex items-center gap-2 sm:gap-4"
+      >
+        <div
+          class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 bg-[#FFF0E6] text-[#F97316]"
+        >
+          <app-icon name="house" [size]="18"></app-icon>
+        </div>
+        <div class="min-w-0">
+          <div
+            class="text-lg sm:text-2xl font-bold font-display text-camp-stone truncate"
+          >
+            {{ houses.length }}
+          </div>
+          <div class="text-[0.65rem] sm:text-xs text-camp-gray font-medium">
+            Домиков
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="bg-white rounded-2xl p-3 sm:p-5 shadow-sm border border-camp-border flex items-center gap-2 sm:gap-4"
+      >
+        <div
+          class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 bg-[#F5F3FF] text-[#8B5CF6]"
+        >
+          <app-icon name="zap" [size]="18"></app-icon>
+        </div>
+        <div class="min-w-0">
+          <div
+            class="text-lg sm:text-2xl font-bold font-display text-camp-stone truncate"
+          >
+            {{ contests.length }}
+          </div>
+          <div class="text-[0.65rem] sm:text-xs text-camp-gray font-medium">
+            Событий
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="bg-white rounded-2xl p-3 sm:p-5 shadow-sm border border-camp-border flex items-center gap-2 sm:gap-4"
+      >
+        <div
+          class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0"
+          [style.backgroundColor]="campColorBg"
+          [style.color]="campColor"
+        >
+          <app-icon name="star" [size]="18"></app-icon>
+        </div>
+        <div class="min-w-0">
+          <div
+            class="text-lg sm:text-2xl font-bold font-display text-camp-stone truncate"
+          >
+            {{ topHousePoints }}
+          </div>
+          <div class="text-[0.65rem] sm:text-xs text-camp-gray font-medium">
+            Топ баллов
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Houses + Schedule row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      <!-- House standings -->
+      <div
+        class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-camp-border p-4 sm:p-5"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <h2
+            class="font-display text-[1rem] sm:text-[1.15rem] font-bold text-camp-stone flex items-center gap-1.5"
+          >
+            🏆 Рейтинг домиков
+          </h2>
+          <a
+            [routerLink]="['/houses']"
+            class="text-xs px-3 py-1 rounded-full font-semibold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors no-underline"
+          >
+            Все →
+          </a>
+        </div>
+        <div class="space-y-3">
+          <div
+            *ngFor="let h of houses; let i = index"
+            class="flex items-center gap-2 sm:gap-4"
+          >
+            <span
+              class="text-base sm:text-lg w-7 sm:w-8 text-center shrink-0"
+              >{{ medals[i] || i + 1 + "." }}</span
+            >
+            <!-- Иконка домика: фото → эмодзи → icon -->
+            <div
+              class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm overflow-hidden"
+              [style.backgroundColor]="(h.color || campColor) + '20'"
+            >
+              <ng-container *ngIf="h.avatar_path">
+                <img
+                  [src]="h.avatar_path | mediaUrl"
+                  class="w-full h-full object-cover"
+                />
+              </ng-container>
+              <ng-container *ngIf="!h.avatar_path && h.emoji">
+                <span class="text-base sm:text-lg leading-none">{{
+                  h.emoji
+                }}</span>
+              </ng-container>
+              <ng-container *ngIf="!h.avatar_path && !h.emoji">
+                <app-icon
+                  name="house"
+                  [size]="16"
+                  [style.color]="h.color || campColor"
+                ></app-icon>
+              </ng-container>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-center mb-1 gap-2">
+                <span
+                  class="font-semibold text-xs sm:text-sm text-camp-stone truncate"
+                  >{{ h.name }}</span
+                >
+                <span
+                  class="text-xs sm:text-sm font-bold tabular-nums shrink-0"
+                  [style.color]="h.color || campColor"
+                >
+                  {{ h.house_points | number }}&nbsp;б.
+                </span>
+              </div>
+              <div class="h-2 sm:h-2.5 rounded-full bg-camp-muted">
+                <div
+                  class="h-2 sm:h-2.5 rounded-full transition-all duration-500"
+                  [style.width]="getHouseBarWidth(h) + '%'"
+                  [style.backgroundColor]="h.color || campColor"
+                ></div>
+              </div>
+            </div>
+          </div>
+          <div
+            *ngIf="houses.length === 0"
+            class="text-sm text-camp-subtle text-center py-4"
+          >
+            Домиков пока нет
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's schedule -->
+      <div
+        class="bg-white rounded-2xl shadow-sm border border-camp-border p-4 sm:p-5 flex flex-col"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <h2
+            class="font-display text-[1rem] sm:text-[1.15rem] font-bold text-camp-stone"
+          >
+            📅 Расписание
+          </h2>
+          <a
+            [routerLink]="['/schedule']"
+            class="text-xs px-3 py-1 rounded-full font-semibold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors no-underline"
+          >
+            Всё →
+          </a>
+        </div>
+
+        <div class="space-y-1.5">
+          <div
+            *ngFor="let s of schedule | slice: 0 : 6; let i = index"
+            class="flex items-center gap-2.5 rounded-xl px-3 py-2 transition-all duration-200 relative"
+            [class.ring-2]="isActiveScheduleItem(i)"
+            [style.ringColor]="
+              isActiveScheduleItem(i) ? campColor : 'transparent'
+            "
+            [style.backgroundColor]="
+              isActiveScheduleItem(i) ? campColorLight : '#F5F5F0'
+            "
+          >
+            <span
+              *ngIf="isActiveScheduleItem(i)"
+              class="absolute left-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full"
+              [style.backgroundColor]="campColor"
+            ></span>
+            <span
+              class="text-base shrink-0"
+              [class.ml-3]="isActiveScheduleItem(i)"
+              >{{ s.emoji }}</span
+            >
+            <div class="min-w-0 flex-1">
+              <div
+                class="text-[0.78rem] sm:text-sm font-semibold truncate"
+                [class.text-camp-stone]="!isActiveScheduleItem(i)"
+                [style.color]="isActiveScheduleItem(i) ? campColor : ''"
+              >
+                {{ s.title }}
+              </div>
+              <div class="text-[0.65rem] sm:text-xs text-camp-gray">
+                {{ s.time }}
+              </div>
+            </div>
+            <span
+              *ngIf="isActiveScheduleItem(i)"
+              class="text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full text-white shrink-0"
+              [style.backgroundColor]="campColor"
+              >сейчас</span
+            >
+          </div>
+
+          <div
+            *ngIf="schedule.length === 0"
+            class="text-sm text-camp-subtle text-center py-4"
+          >
+            Расписание пока не добавлено
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contests + News row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+      <!-- Contests / Events -->
+      <div
+        class="bg-white rounded-2xl shadow-sm border border-camp-border p-4 sm:p-5"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <h2
+            class="font-display text-[1rem] sm:text-[1.15rem] font-bold text-camp-stone"
+          >
+            ⚡ События
+          </h2>
+          <a
+            [routerLink]="['/contests']"
+            class="text-xs px-3 py-1 rounded-full font-semibold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors no-underline"
+          >
+            Все →
+          </a>
+        </div>
+
+        <div
+          *ngIf="contests.length === 0"
+          class="text-sm text-camp-subtle text-center py-6"
+        >
+          Событий пока нет
+        </div>
+
+        <div class="space-y-2">
+          <div
+            *ngFor="let c of contests | slice: 0 : 4"
+            class="flex items-center gap-3 py-1"
+          >
+            <div
+              class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 text-lg"
+              [style.backgroundColor]="campColorBg"
+            >
+              {{ c.emoji || "⚡" }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <div
+                class="text-xs sm:text-sm font-semibold text-camp-stone truncate"
+              >
+                {{ c.title }}
+              </div>
+              <div
+                *ngIf="c.description"
+                class="text-[0.65rem] sm:text-xs text-camp-gray truncate"
+              >
+                {{ c.description }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Latest news -->
+      <div
+        class="bg-white rounded-2xl shadow-sm border border-camp-border p-4 sm:p-5"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <h2
+            class="font-display text-[1rem] sm:text-[1.15rem] font-bold text-camp-stone"
+          >
+            📰 Новости
+          </h2>
+          <a
+            [routerLink]="['/news']"
+            class="text-xs px-3 py-1 rounded-full font-semibold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors no-underline"
+          >
+            Все →
+          </a>
+        </div>
+
+        <div
+          *ngIf="news.length === 0"
+          class="text-sm text-camp-subtle text-center py-6"
+        >
+          Новостей пока нет
+        </div>
+
+        <div class="space-y-3">
+          <div *ngFor="let n of news" class="flex gap-3 py-0.5">
+            <div
+              class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 text-lg"
+              [style.backgroundColor]="campColorBg"
+            >
+              {{ n.pinned ? "📌" : "📄" }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                <span
+                  *ngIf="n.pinned"
+                  class="inline-block text-[0.6rem] px-1.5 py-0.5 rounded-full font-bold text-white"
+                  [style.backgroundColor]="campColor"
+                  >закреплено</span
+                >
+                <span
+                  class="text-xs sm:text-sm font-semibold text-camp-stone leading-snug"
+                  >{{ n.title }}</span
+                >
+              </div>
+              <div
+                class="text-[0.7rem] sm:text-xs text-camp-gray leading-snug line-clamp-2"
+              >
+                {{ n.text }}
+              </div>
+              <div class="text-[0.6rem] sm:text-xs text-camp-subtle mt-1">
+                {{ n.created_by_name }} ·
+                {{ n.created_at | date: "dd.MM.yyyy HH:mm" }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
 </div>

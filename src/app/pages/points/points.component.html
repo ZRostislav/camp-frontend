@@ -1,60 +1,575 @@
-<h2>Баллы</h2>
-<div *ngIf="error" style="color:red">{{ error }}</div>
-<div *ngIf="msg" style="color:green">{{ msg }}</div>
-
-<div>
-  <button (click)="mode='participant'; selectedId=''; history=null" [disabled]="mode==='participant'">Участник</button>
-  <button (click)="mode='house'; selectedId=''; history=null" [disabled]="mode==='house'" style="margin-left:8px">Домик</button>
-</div>
-
-<div style="margin-top:8px">
-  <span *ngIf="mode==='participant'">
-    Участник:
-    <select [(ngModel)]="selectedId" (ngModelChange)="loadHistory()">
-      <option value="">— выбрать —</option>
-      <option *ngFor="let p of participants" [value]="p.id">{{ p.last_name }} {{ p.first_name }} ({{ p.house_name }})</option>
-    </select>
-  </span>
-  <span *ngIf="mode==='house'">
-    Домик:
-    <select [(ngModel)]="selectedId" (ngModelChange)="loadHistory()">
-      <option value="">— выбрать —</option>
-      <option *ngFor="let h of houses" [value]="h.id">{{ h.name }}</option>
-    </select>
-  </span>
-</div>
-
-<div *ngIf="history" style="margin-top:12px">
-  <strong>Итого: {{ history.total }} баллов</strong>
-
-  <div *ngIf="auth.isAdmin()" style="margin-top:8px;border:1px solid #ccc;padding:8px">
-    <b>Добавить баллы</b><br>
-    Баллы: <input type="number" [(ngModel)]="addForm.points" style="width:80px">
-    Причина: <input [(ngModel)]="addForm.reason" style="width:200px">
-    <button (click)="addPoints()">Начислить</button>
+<div
+  class="p-4 sm:p-6 max-w-4xl mx-auto space-y-5 font-nunito animate-fade-in-up"
+>
+  <!-- Header -->
+  <div class="flex items-start justify-between flex-wrap gap-3">
+    <div>
+      <h1
+        class="font-display text-[1.4rem] sm:text-[1.75rem] font-bold text-camp-stone flex items-center gap-2"
+        style="font-family: var(--font-display, &quot;Neucha&quot;, sans-serif)"
+      >
+        <app-icon name="star" [size]="26" [style.color]="campColor"></app-icon>
+        Баллы
+      </h1>
+      <p class="text-xs sm:text-sm mt-1 text-camp-gray font-medium">
+        Начисление и история баллов участников и домиков
+      </p>
+    </div>
   </div>
 
-  <table border="1" cellpadding="4" style="border-collapse:collapse;margin-top:8px">
-    <thead><tr><th>Дата</th><th>Баллы</th><th>Причина</th><th>Кем</th><th *ngIf="auth.isAdmin()">Действия</th></tr></thead>
-    <tbody>
-      <tr *ngFor="let e of history.history">
-        <td>{{ e.created_at | date:'dd.MM.yyyy HH:mm' }}</td>
-        <td [style.color]="e.points < 0 ? 'red' : 'green'">{{ e.points > 0 ? '+' : '' }}{{ e.points }}</td>
-        <td>{{ e.reason }}</td>
-        <td>{{ e.created_by_name }}</td>
-        <td *ngIf="auth.isAdmin()">
-          <button (click)="startEdit(e)">✏️</button>
-          <button (click)="deleteEntry(e.id)">🗑️</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- Toast messages -->
+  <div
+    *ngIf="error"
+    class="flex items-center gap-2 bg-camp-errorBg text-camp-error rounded-xl px-4 py-3 text-sm font-bold animate-shake"
+  >
+    <app-icon name="circle-alert" [size]="15"></app-icon>
+    {{ error }}
+    <button class="ml-auto" (click)="error = ''">
+      <app-icon name="x" [size]="13"></app-icon>
+    </button>
+  </div>
+  <div
+    *ngIf="msg"
+    class="flex items-center gap-2 bg-camp-successBg text-camp-success rounded-xl px-4 py-3 text-sm font-bold animate-fade-in-up"
+  >
+    <app-icon name="circle-check" [size]="15"></app-icon>
+    {{ msg }}
+    <button class="ml-auto" (click)="msg = ''">
+      <app-icon name="x" [size]="13"></app-icon>
+    </button>
+  </div>
+
+  <!-- Mode tabs -->
+  <div class="flex gap-1 p-1 bg-camp-muted rounded-xl w-fit">
+    <button
+      type="button"
+      class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all"
+      [style.backgroundColor]="mode === 'participant' ? 'white' : 'transparent'"
+      [style.color]="mode === 'participant' ? campColor : '#78716C'"
+      [style.boxShadow]="
+        mode === 'participant' ? '0 1px 4px rgba(0,0,0,0.10)' : 'none'
+      "
+      (click)="setMode('participant')"
+    >
+      <app-icon name="user" [size]="15"></app-icon>
+      Участник
+    </button>
+    <button
+      type="button"
+      class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all"
+      [style.backgroundColor]="mode === 'house' ? 'white' : 'transparent'"
+      [style.color]="mode === 'house' ? campColor : '#78716C'"
+      [style.boxShadow]="
+        mode === 'house' ? '0 1px 4px rgba(0,0,0,0.10)' : 'none'
+      "
+      (click)="setMode('house')"
+    >
+      <app-icon name="house" [size]="15"></app-icon>
+      Домик · Отряд
+    </button>
+  </div>
+
+  <!-- Selector: поиск с выпадающим списком и иконками -->
+  <div class="flex items-center gap-3 flex-wrap">
+    <div class="relative flex-1 min-w-[240px] max-w-sm">
+      <!-- Поле: показывает выбранный элемент (с аватаром) или строку поиска -->
+      <div
+        class="relative flex items-center w-full pl-2 pr-4 py-1.5 bg-camp-input border-2 border-transparent rounded-xl transition-colors"
+        [class.!bg-white]="selectorOpen"
+        [style.borderColor]="selectorOpen ? campColor : 'transparent'"
+      >
+        <!-- Аватар выбранного элемента -->
+        <ng-container *ngIf="selectedItem && !selectorOpen">
+          <div
+            *ngIf="mode === 'participant'"
+            class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-white text-[0.65rem] shrink-0 mr-2"
+            [style.backgroundColor]="getHouseColor(selectedItem.house_id)"
+          >
+            {{ initials(selectedItem) }}
+          </div>
+          <span
+            *ngIf="mode === 'house'"
+            class="w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center shrink-0 mr-2"
+            [style.backgroundColor]="(selectedItem.color || campColor) + '20'"
+          >
+            <img
+              *ngIf="selectedItem.avatar_path"
+              [src]="selectedItem.avatar_path | mediaUrl"
+              class="w-full h-full object-cover"
+            />
+            <span
+              *ngIf="!selectedItem.avatar_path && selectedItem.emoji"
+              class="text-sm leading-none"
+              >{{ selectedItem.emoji }}</span
+            >
+            <app-icon
+              *ngIf="!selectedItem.avatar_path && !selectedItem.emoji"
+              name="home"
+              [size]="14"
+              [style.color]="selectedItem.color || campColor"
+            ></app-icon>
+          </span>
+        </ng-container>
+        <app-icon
+          *ngIf="!selectedItem || selectorOpen"
+          name="search"
+          [size]="15"
+          class="text-camp-subtle shrink-0 mr-2"
+        ></app-icon>
+
+        <input
+          type="text"
+          [placeholder]="
+            mode === 'participant' ? 'Поиск участника…' : 'Поиск домика/отряда…'
+          "
+          [ngModel]="
+            selectorOpen
+              ? selectorQuery
+              : selectedItem
+                ? mode === 'participant'
+                  ? selectedItem.last_name + ' ' + selectedItem.first_name
+                  : selectedItem.name
+                : ''
+          "
+          (ngModelChange)="selectorQuery = $event"
+          (focus)="openSelector()"
+          class="flex-1 min-w-0 py-1.5 bg-transparent text-sm font-medium text-camp-stone outline-none placeholder:text-camp-subtle"
+        />
+
+        <button
+          *ngIf="selectedId && !selectorOpen"
+          type="button"
+          class="text-camp-subtle hover:text-camp-gray transition-colors shrink-0"
+          (click)="selectedId = ''; history = null; openSelector()"
+        >
+          <app-icon name="x" [size]="14"></app-icon>
+        </button>
+      </div>
+
+      <!-- Backdrop для закрытия по клику вне списка -->
+      <div
+        *ngIf="selectorOpen"
+        class="fixed inset-0 z-10"
+        (click)="closeSelector()"
+      ></div>
+
+      <!-- Выпадающий список -->
+      <div
+        *ngIf="selectorOpen"
+        class="absolute left-0 right-0 mt-1.5 z-20 bg-white rounded-xl border border-camp-border shadow-camp max-h-72 overflow-y-auto"
+      >
+        <div
+          *ngIf="filteredSelectorOptions.length === 0"
+          class="py-6 text-center text-xs text-camp-subtle font-medium"
+        >
+          Ничего не найдено
+        </div>
+
+        <!-- Участники -->
+        <button
+          *ngFor="let p of filteredSelectorOptions"
+          type="button"
+          class="w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-camp-muted transition-colors"
+          [class.bg-camp-muted]="p.id == selectedId"
+          (click)="selectItem(p)"
+        >
+          <ng-container *ngIf="mode === 'participant'">
+            <div
+              class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs shrink-0"
+              [style.backgroundColor]="getHouseColor(p.house_id)"
+            >
+              {{ initials(p) }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-semibold text-camp-stone truncate">
+                {{ p.last_name }} {{ p.first_name }}
+              </div>
+              <div *ngIf="p.house_name" class="text-xs text-camp-gray truncate">
+                {{ p.house_name }}
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="mode === 'house'">
+            <span
+              class="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0"
+              [style.backgroundColor]="(p.color || campColor) + '20'"
+            >
+              <img
+                *ngIf="p.avatar_path"
+                [src]="p.avatar_path | mediaUrl"
+                class="w-full h-full object-cover"
+              />
+              <span
+                *ngIf="!p.avatar_path && p.emoji"
+                class="text-sm leading-none"
+                >{{ p.emoji }}</span
+              >
+              <app-icon
+                *ngIf="!p.avatar_path && !p.emoji"
+                name="home"
+                [size]="14"
+                [style.color]="p.color || campColor"
+              ></app-icon>
+            </span>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-semibold text-camp-stone truncate">
+                {{ p.name }}
+              </div>
+            </div>
+          </ng-container>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History block -->
+  <div *ngIf="history" class="space-y-4 animate-fade-in-up">
+    <!-- Total + Add form -->
+    <div class="flex flex-wrap gap-3 items-stretch">
+      <!-- Total card -->
+      <div
+        class="flex items-center gap-3 px-5 py-4 rounded-2xl border border-camp-border bg-white shadow-sm flex-1 min-w-[160px]"
+      >
+        <div
+          class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+          [style.backgroundColor]="campColorBg"
+        >
+          <app-icon
+            name="star"
+            [size]="20"
+            [style.color]="campColor"
+          ></app-icon>
+        </div>
+        <div>
+          <div class="text-xs text-camp-gray font-bold uppercase tracking-wide">
+            Итого
+          </div>
+          <div
+            class="font-display text-2xl font-bold tabular-nums"
+            [style.color]="campColor"
+          >
+            {{ history.total }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Add points form (admin only) -->
+      <div
+        *ngIf="auth.isAdmin()"
+        class="bg-white rounded-2xl border border-camp-border shadow-sm p-4 flex-[2] min-w-[280px] space-y-3"
+      >
+        <div class="flex items-center gap-2">
+          <app-icon
+            name="circle-plus"
+            [size]="15"
+            [style.color]="campColor"
+          ></app-icon>
+          <span class="font-display text-sm font-bold text-camp-stone"
+            >Начислить баллы</span
+          >
+        </div>
+        <!-- Quick points -->
+        <div>
+          <div
+            class="text-[0.65rem] font-bold text-camp-subtle uppercase tracking-wide mb-1.5"
+          >
+            Быстрые баллы
+          </div>
+          <div class="flex gap-1.5 flex-wrap">
+            <button
+              *ngFor="let q of quickPoints"
+              type="button"
+              class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all hover:-translate-y-px border-2"
+              [style.borderColor]="
+                addForm.points === q ? campColor : 'transparent'
+              "
+              [style.backgroundColor]="q < 0 ? '#FEE2E2' : '#DCFCE7'"
+              [style.color]="q < 0 ? '#DC2626' : '#16A34A'"
+              (click)="addForm.points = q"
+            >
+              {{ q > 0 ? "+" : "" }}{{ q }}
+            </button>
+          </div>
+        </div>
+        <!-- Manual input row -->
+        <div class="flex gap-2 flex-wrap">
+          <input
+            type="number"
+            [(ngModel)]="addForm.points"
+            placeholder="±0"
+            class="w-20 px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+            (focus)="
+              $any($event.target).style.borderColor = campColor;
+              $any($event.target).style.backgroundColor = 'white'
+            "
+            (blur)="
+              $any($event.target).style.borderColor = 'transparent';
+              $any($event.target).style.backgroundColor = ''
+            "
+          />
+          <input
+            [(ngModel)]="addForm.reason"
+            placeholder="Причина..."
+            class="flex-1 min-w-[140px] px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+            (focus)="
+              $any($event.target).style.borderColor = campColor;
+              $any($event.target).style.backgroundColor = 'white'
+            "
+            (blur)="
+              $any($event.target).style.borderColor = 'transparent';
+              $any($event.target).style.backgroundColor = ''
+            "
+          />
+          <button
+            class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px active:translate-y-0 shrink-0"
+            [style.backgroundColor]="campColor"
+            (click)="addPoints()"
+          >
+            <app-icon name="plus" [size]="14"></app-icon>
+            Начислить
+          </button>
+        </div>
+        <!-- Quick reasons -->
+        <div>
+          <div
+            class="text-[0.65rem] font-bold text-camp-subtle uppercase tracking-wide mb-1.5"
+          >
+            Быстрые причины
+          </div>
+          <div class="flex gap-1.5 flex-wrap">
+            <button
+              *ngFor="let r of quickReasons"
+              type="button"
+              class="px-2.5 py-1 rounded-lg text-xs font-medium transition-all hover:-translate-y-px border"
+              [style.borderColor]="addForm.reason === r ? campColor : '#E7E5E4'"
+              [style.backgroundColor]="
+                addForm.reason === r ? campColorBg : '#F9F7EE'
+              "
+              [style.color]="addForm.reason === r ? campColor : '#78716C'"
+              (click)="addForm.reason = r"
+            >
+              {{ r }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search + Filter pills -->
+    <div class="flex flex-wrap items-center gap-3">
+      <!-- Search -->
+      <div class="relative flex-1 min-w-[200px] max-w-xs">
+        <app-icon
+          name="search"
+          [size]="14"
+          class="absolute left-3 top-1/2 -translate-y-1/2 text-camp-subtle pointer-events-none"
+        ></app-icon>
+        <input
+          [(ngModel)]="searchQuery"
+          placeholder="Поиск по причине или автору..."
+          class="w-full pl-9 pr-3 py-2 bg-white border border-camp-border rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+          (focus)="$any($event.target).style.borderColor = campColor"
+          (blur)="$any($event.target).style.borderColor = ''"
+        />
+        <button
+          *ngIf="searchQuery"
+          class="absolute right-2.5 top-1/2 -translate-y-1/2 text-camp-subtle hover:text-camp-gray transition-colors"
+          (click)="searchQuery = ''"
+        >
+          <app-icon name="x" [size]="13"></app-icon>
+        </button>
+      </div>
+
+      <!-- Filter pills -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-xs font-bold text-camp-gray uppercase tracking-wide"
+          >Фильтр:</span
+        >
+        <button
+          *ngFor="let f of filters"
+          type="button"
+          class="px-3 py-1.5 rounded-full text-xs font-bold transition-all"
+          [style.backgroundColor]="
+            pointsFilter === f.key ? campColor : '#F5F5F0'
+          "
+          [style.color]="pointsFilter === f.key ? 'white' : '#78716C'"
+          (click)="pointsFilter = $any(f.key)"
+        >
+          {{ f.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Entries list -->
+    <div
+      class="bg-white rounded-2xl border border-camp-border shadow-sm overflow-hidden"
+    >
+      <div
+        *ngIf="filteredHistory.length === 0"
+        class="py-14 text-center text-camp-subtle"
+      >
+        <div class="text-3xl mb-2">📭</div>
+        <div class="text-sm font-medium">Записей не найдено</div>
+      </div>
+
+      <div
+        *ngFor="let e of filteredHistory; let i = index; let last = last"
+        class="flex items-center gap-4 px-4 sm:px-5 py-3.5 hover:bg-camp-muted transition-colors"
+        [class.border-b]="!last"
+        [style.borderColor]="'rgba(0,0,0,0.05)'"
+      >
+        <!-- Points badge -->
+        <div
+          class="w-12 h-10 rounded-xl flex items-center justify-center font-bold tabular-nums text-sm shrink-0"
+          [style.backgroundColor]="e.points >= 0 ? '#DCFCE7' : '#FEE2E2'"
+          [style.color]="e.points >= 0 ? '#16A34A' : '#DC2626'"
+        >
+          <div class="flex flex-col items-center leading-none gap-0.5">
+            <app-icon
+              [name]="e.points >= 0 ? 'trending-up' : 'trending-down'"
+              [size]="12"
+            ></app-icon>
+            <span>{{ e.points > 0 ? "+" : "" }}{{ e.points }}</span>
+          </div>
+        </div>
+
+        <!-- Info -->
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm text-camp-stone truncate">
+            {{ e.reason || "—" }}
+          </div>
+          <div
+            class="flex items-center gap-1.5 mt-0.5 text-xs text-camp-gray flex-wrap"
+          >
+            <span>{{ e.created_by_name }}</span>
+            <span class="text-camp-border">·</span>
+            <span>{{ e.created_at | date: "dd.MM.yyyy HH:mm" }}</span>
+          </div>
+        </div>
+
+        <!-- Actions (admin) -->
+        <div *ngIf="auth.isAdmin()" class="flex gap-1 shrink-0">
+          <button
+            class="w-7 h-7 flex items-center justify-center rounded-lg bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+            (click)="startEdit(e)"
+            title="Редактировать"
+          >
+            <app-icon name="pencil" [size]="12"></app-icon>
+          </button>
+          <button
+            class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#FEE2E2] text-camp-error hover:bg-[#FECACA] transition-colors"
+            (click)="deleteEntry(e.id)"
+            title="Удалить"
+          >
+            <app-icon name="trash-2" [size]="12"></app-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state (no selection) -->
+  <div
+    *ngIf="!history && selectedId === ''"
+    class="py-16 text-center text-camp-subtle bg-white rounded-2xl border border-camp-border"
+  >
+    <div class="text-4xl mb-3">⭐</div>
+    <div class="text-sm font-medium">
+      Выберите
+      {{ mode === "participant" ? "участника" : "домик/отряд" }} чтобы увидеть
+      историю баллов
+    </div>
+  </div>
 </div>
 
-<div *ngIf="editEntry" style="margin-top:16px;border:1px solid #ccc;padding:12px">
-  <h4>Редактирование записи</h4>
-  <div>Баллы: <input type="number" [(ngModel)]="editEntry.points"></div>
-  <div>Причина: <input [(ngModel)]="editEntry.reason" style="width:300px"></div>
-  <button (click)="saveEdit()">Сохранить</button>
-  <button (click)="editEntry=null" style="margin-left:8px">Отмена</button>
+<!-- ═══════════════ EDIT MODAL ═══════════════ -->
+<div
+  *ngIf="editEntry"
+  class="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center p-4 z-[9999]"
+  style="background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(2px)"
+  (click)="editEntry = null"
+>
+  <div
+    class="bg-white rounded-2xl shadow-camp w-full max-w-sm animate-pop-in"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-5">
+        <h2
+          class="font-display text-base font-bold text-camp-stone flex items-center gap-2"
+        >
+          <app-icon
+            name="pencil"
+            [size]="16"
+            [style.color]="campColor"
+          ></app-icon>
+          Редактировать запись
+        </h2>
+        <button
+          class="w-8 h-8 flex items-center justify-center rounded-xl bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+          (click)="editEntry = null"
+        >
+          <app-icon name="x" [size]="14"></app-icon>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label
+            class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+            >Баллы</label
+          >
+          <input
+            type="number"
+            [(ngModel)]="editEntry.points"
+            class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+            (focus)="
+              $any($event.target).style.borderColor = campColor;
+              $any($event.target).style.backgroundColor = 'white'
+            "
+            (blur)="
+              $any($event.target).style.borderColor = 'transparent';
+              $any($event.target).style.backgroundColor = ''
+            "
+          />
+        </div>
+        <div>
+          <label
+            class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+            >Причина</label
+          >
+          <input
+            [(ngModel)]="editEntry.reason"
+            class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+            (focus)="
+              $any($event.target).style.borderColor = campColor;
+              $any($event.target).style.backgroundColor = 'white'
+            "
+            (blur)="
+              $any($event.target).style.borderColor = 'transparent';
+              $any($event.target).style.backgroundColor = ''
+            "
+          />
+        </div>
+      </div>
+
+      <div class="flex gap-2 mt-5">
+        <button
+          class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px"
+          [style.backgroundColor]="campColor"
+          (click)="saveEdit()"
+        >
+          <app-icon name="check" [size]="15"></app-icon>
+          Сохранить
+        </button>
+        <button
+          class="px-4 py-2.5 rounded-xl text-sm font-bold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+          (click)="editEntry = null"
+        >
+          Отмена
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

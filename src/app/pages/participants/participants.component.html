@@ -1,105 +1,955 @@
-<h2>Участники</h2>
-<div *ngIf="error" style="color: red">{{ error }}</div>
-<div *ngIf="msg" style="color: green">{{ msg }}</div>
-
-<div>
-  Поиск: <input [(ngModel)]="searchQuery" (ngModelChange)="load()" /> Домик:
-  <select [(ngModel)]="filterHouseId" (ngModelChange)="load()">
-    <option value="">Все</option>
-    <option *ngFor="let h of houses" [value]="h.id">{{ h.name }}</option>
-  </select>
-</div>
-
 <div
-  *ngIf="auth.isAdmin()"
-  style="margin-top: 12px; border: 1px solid #ccc; padding: 12px"
+  class="p-4 sm:p-6 max-w-6xl mx-auto space-y-5 font-nunito animate-fade-in-up"
 >
-  <h3>Добавить участника</h3>
-  <div>Фамилия: <input [(ngModel)]="form.lastName" /></div>
-  <div>Имя: <input [(ngModel)]="form.firstName" /></div>
-  <div>Дата рождения: <input type="date" [(ngModel)]="form.birthDate" /></div>
-  <div>
-    Пол:
-    <select [(ngModel)]="form.gender">
-      <option value="м">М</option>
-      <option value="ж">Ж</option>
-    </select>
+  <!-- Header -->
+  <div class="flex items-start justify-between flex-wrap gap-3">
+    <div>
+      <h1
+        class="font-display text-[1.4rem] sm:text-[1.75rem] font-bold text-camp-stone flex items-center gap-2"
+        style="font-family: var(--font-display, &quot;Neucha&quot;, sans-serif)"
+      >
+        <app-icon name="user" [size]="26" [style.color]="campColor"></app-icon
+        >Участники
+      </h1>
+      <p class="text-xs sm:text-sm mt-1 text-camp-gray font-medium">
+        {{ participants.length }} участников зарегистрировано
+      </p>
+    </div>
+    <button
+      *ngIf="auth.isAdmin()"
+      class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white shadow-camp-btn transition-all hover:-translate-y-px active:translate-y-0"
+      [style.backgroundColor]="campColor"
+      (click)="showForm = !showForm; editItem = null"
+    >
+      <app-icon name="user-plus" [size]="16"></app-icon>
+      Добавить
+    </button>
   </div>
-  <div>Город: <input [(ngModel)]="form.city" /></div>
-  <div>
-    Домик:
-    <select [(ngModel)]="form.houseId">
-      <option value="">—</option>
-      <option *ngFor="let h of houses" [value]="h.id">{{ h.name }}</option>
-    </select>
+
+  <!-- Toast messages -->
+  <div
+    *ngIf="error"
+    class="flex items-center gap-2 bg-camp-errorBg text-camp-error rounded-xl px-4 py-3 text-sm font-bold animate-shake"
+  >
+    <app-icon name="circle-alert" [size]="15"></app-icon>
+    {{ error }}
   </div>
-  <div>Баллы: <input type="checkbox" [(ngModel)]="form.hasPoints" /></div>
-  <button (click)="create()">Создать</button>
+  <div
+    *ngIf="msg"
+    class="flex items-center gap-2 bg-camp-successBg text-camp-success rounded-xl px-4 py-3 text-sm font-bold animate-fade-in-up"
+  >
+    <app-icon name="circle-check" [size]="15"></app-icon>
+    {{ msg }}
+  </div>
+
+  <!-- Add form -->
+  <div
+    *ngIf="showForm && auth.isAdmin() && !editItem"
+    class="bg-white rounded-2xl border border-camp-border shadow-sm p-5 animate-fade-in-up"
+  >
+    <h2
+      class="font-display text-base font-bold text-camp-stone mb-4 flex items-center gap-2"
+    >
+      <app-icon
+        name="user-plus"
+        [size]="17"
+        [style.color]="campColor"
+      ></app-icon>
+      Новый участник
+    </h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div>
+        <label
+          class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+          >Фамилия</label
+        >
+        <input
+          class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+          [(ngModel)]="form.lastName"
+          placeholder="Иванов"
+          (focus)="
+            $any($event.target).style.borderColor = campColor;
+            $any($event.target).style.backgroundColor = 'white'
+          "
+          (blur)="
+            $any($event.target).style.borderColor = 'transparent';
+            $any($event.target).style.backgroundColor = ''
+          "
+        />
+      </div>
+      <div>
+        <label
+          class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+          >Имя</label
+        >
+        <input
+          class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+          [(ngModel)]="form.firstName"
+          placeholder="Иван"
+          (focus)="
+            $any($event.target).style.borderColor = campColor;
+            $any($event.target).style.backgroundColor = 'white'
+          "
+          (blur)="
+            $any($event.target).style.borderColor = 'transparent';
+            $any($event.target).style.backgroundColor = ''
+          "
+        />
+      </div>
+      <div>
+        <label
+          class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+          >Дата рождения</label
+        >
+        <input
+          type="date"
+          class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+          [(ngModel)]="form.birthDate"
+          (focus)="
+            $any($event.target).style.borderColor = campColor;
+            $any($event.target).style.backgroundColor = 'white'
+          "
+          (blur)="
+            $any($event.target).style.borderColor = 'transparent';
+            $any($event.target).style.backgroundColor = ''
+          "
+        />
+      </div>
+      <div>
+        <label
+          class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+          >Пол</label
+        >
+        <select
+          class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+          [(ngModel)]="form.gender"
+          (focus)="$any($event.target).style.borderColor = campColor"
+          (blur)="$any($event.target).style.borderColor = 'transparent'"
+        >
+          <option value="м">Мужской</option>
+          <option value="ж">Женский</option>
+        </select>
+      </div>
+      <div>
+        <label
+          class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+          >Город</label
+        >
+        <input
+          class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+          [(ngModel)]="form.city"
+          placeholder="Москва"
+          (focus)="
+            $any($event.target).style.borderColor = campColor;
+            $any($event.target).style.backgroundColor = 'white'
+          "
+          (blur)="
+            $any($event.target).style.borderColor = 'transparent';
+            $any($event.target).style.backgroundColor = ''
+          "
+        />
+      </div>
+      <div>
+        <label
+          class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+          >Домик</label
+        >
+        <select
+          class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+          [(ngModel)]="form.houseId"
+          (focus)="$any($event.target).style.borderColor = campColor"
+          (blur)="$any($event.target).style.borderColor = 'transparent'"
+        >
+          <option value="">— Без домика</option>
+          <option *ngFor="let h of houses" [value]="h.id">
+            {{ h.emoji ? h.emoji + " " : "🏠 " }}{{ h.name }}
+          </option>
+        </select>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 mt-3">
+      <label
+        class="flex items-center gap-2 select-none"
+        [class.cursor-pointer]="participantPointsEnabled"
+        [class.cursor-not-allowed]="!participantPointsEnabled"
+      >
+        <input
+          type="checkbox"
+          [(ngModel)]="form.hasPoints"
+          [disabled]="!participantPointsEnabled"
+          class="w-4 h-4 accent-camp-orange rounded disabled:opacity-50 disabled:cursor-not-allowed"
+        />
+        <span
+          class="text-sm font-medium text-camp-gray"
+          [class.opacity-50]="!participantPointsEnabled"
+          >Участвует в баллах</span
+        >
+      </label>
+    </div>
+    <p *ngIf="!participantPointsEnabled" class="text-xs text-camp-subtle mt-1">
+      Система баллов отключена в настройках
+    </p>
+    <div class="flex gap-2 mt-4">
+      <button
+        class="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px"
+        [style.backgroundColor]="campColor"
+        (click)="create()"
+      >
+        <app-icon name="user-plus" [size]="15"></app-icon>
+        Создать
+      </button>
+      <button
+        class="px-4 py-2 rounded-xl text-sm font-bold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+        (click)="showForm = false"
+      >
+        Отмена
+      </button>
+    </div>
+  </div>
+
+  <!-- Search + filter + view switcher -->
+  <div class="flex flex-col gap-3">
+    <div class="flex gap-3 flex-wrap">
+      <!-- Search -->
+      <div class="relative flex-1 min-w-[180px]">
+        <span
+          class="absolute left-3.5 top-1/2 -translate-y-1/2 text-camp-subtle pointer-events-none"
+        >
+          <app-icon name="search" [size]="16"></app-icon>
+        </span>
+        <input
+          type="text"
+          placeholder="Поиск участников…"
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="load()"
+          class="w-full pl-9 pr-4 py-2.5 bg-white border border-camp-border rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors placeholder:text-camp-subtle"
+          (focus)="$any($event.target).style.borderColor = campColor"
+          (blur)="$any($event.target).style.borderColor = ''"
+        />
+      </div>
+
+      <!-- View mode switcher -->
+      <div class="flex bg-camp-muted rounded-xl p-1 gap-1 shrink-0">
+        <button
+          class="w-9 h-9 flex items-center justify-center rounded-[8px] transition-all"
+          [style.backgroundColor]="
+            viewMode === 'list' ? 'white' : 'transparent'
+          "
+          [style.color]="viewMode === 'list' ? campColor : '#A8A29E'"
+          [style.boxShadow]="
+            viewMode === 'list' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none'
+          "
+          (click)="viewMode = 'list'"
+          title="Список"
+        >
+          <app-icon name="list" [size]="17"></app-icon>
+        </button>
+        <button
+          class="w-9 h-9 flex items-center justify-center rounded-[8px] transition-all"
+          [style.backgroundColor]="
+            viewMode === 'compact' ? 'white' : 'transparent'
+          "
+          [style.color]="viewMode === 'compact' ? campColor : '#A8A29E'"
+          [style.boxShadow]="
+            viewMode === 'compact' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none'
+          "
+          (click)="viewMode = 'compact'"
+          title="Компактный"
+        >
+          <app-icon name="rows" [size]="17"></app-icon>
+        </button>
+        <button
+          class="w-9 h-9 flex items-center justify-center rounded-[8px] transition-all"
+          [style.backgroundColor]="
+            viewMode === 'grid' ? 'white' : 'transparent'
+          "
+          [style.color]="viewMode === 'grid' ? campColor : '#A8A29E'"
+          [style.boxShadow]="
+            viewMode === 'grid' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none'
+          "
+          (click)="viewMode = 'grid'"
+          title="Карточки"
+        >
+          <app-icon name="grid" [size]="17"></app-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- House filter pills — с аватаркой домика -->
+    <div class="flex gap-2 flex-wrap">
+      <button
+        class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors"
+        [style.backgroundColor]="!filterHouseId ? campColor : '#F5F5F0'"
+        [style.color]="!filterHouseId ? '#fff' : '#78716C'"
+        (click)="setHouseFilter('')"
+      >
+        Все
+      </button>
+      <button
+        *ngFor="let h of houses"
+        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-colors"
+        [style.backgroundColor]="
+          filterHouseId == h.id ? h.color || campColor : '#F5F5F0'
+        "
+        [style.color]="filterHouseId == h.id ? '#fff' : '#78716C'"
+        (click)="setHouseFilter(h.id)"
+      >
+        <!-- Миниатюра домика в фильтре -->
+        <span
+          class="w-5 h-5 rounded-md overflow-hidden flex items-center justify-center shrink-0"
+          [style.backgroundColor]="
+            filterHouseId == h.id
+              ? 'rgba(255,255,255,0.2)'
+              : (h.color || campColor) + '20'
+          "
+        >
+          <img
+            *ngIf="h.avatar_path"
+            [src]="h.avatar_path | mediaUrl"
+            class="w-full h-full object-cover"
+          />
+          <span
+            *ngIf="!h.avatar_path && h.emoji"
+            class="text-[11px] leading-none"
+            >{{ h.emoji }}</span
+          >
+          <app-icon
+            *ngIf="!h.avatar_path && !h.emoji"
+            name="home"
+            [size]="11"
+            [style.color]="
+              filterHouseId == h.id ? '#fff' : h.color || campColor
+            "
+          ></app-icon>
+        </span>
+        {{ h.name }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VIEW: LIST (default) ═══════════════ -->
+  <div
+    *ngIf="viewMode === 'list'"
+    class="bg-white rounded-2xl border border-camp-border shadow-sm overflow-hidden"
+  >
+    <div
+      *ngIf="participants.length === 0"
+      class="py-16 text-center text-camp-subtle"
+    >
+      <div class="text-4xl mb-3">👀</div>
+      <div class="text-sm font-medium">Участников не найдено</div>
+    </div>
+
+    <div
+      *ngFor="let p of participants; let last = last"
+      class="flex items-center gap-3 px-4 py-3 group hover:bg-camp-muted transition-colors"
+      [class.border-b]="!last"
+      [class.border-camp-border]="!last"
+    >
+      <!-- Аватар участника (инициалы) -->
+      <div
+        class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0"
+        [style.backgroundColor]="getHouseColor(p.house_id)"
+      >
+        {{ initials(p) }}
+      </div>
+
+      <!-- Name + meta -->
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-sm text-camp-stone">
+          {{ p.last_name }} {{ p.first_name }}
+        </div>
+        <div class="flex items-center gap-2 flex-wrap mt-0.5">
+          <!-- Бейдж домика с аватаркой -->
+          <span
+            *ngIf="p.house_name"
+            class="inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded-full"
+            [style.backgroundColor]="getHouseColor(p.house_id) + '20'"
+            [style.color]="getHouseColor(p.house_id)"
+          >
+            <!-- иконка домика: фото → эмодзи → house icon -->
+            <span
+              class="w-4 h-4 rounded-sm overflow-hidden flex items-center justify-center shrink-0"
+              [style.backgroundColor]="getHouseColor(p.house_id) + '30'"
+            >
+              <img
+                *ngIf="getHouseAvatar(p.house_id)"
+                [src]="getHouseAvatar(p.house_id) | mediaUrl"
+                class="w-full h-full object-cover"
+              />
+              <span
+                *ngIf="!getHouseAvatar(p.house_id) && getHouseEmoji(p.house_id)"
+                class="text-[10px] leading-none"
+                >{{ getHouseEmoji(p.house_id) }}</span
+              >
+              <app-icon
+                *ngIf="
+                  !getHouseAvatar(p.house_id) && !getHouseEmoji(p.house_id)
+                "
+                name="home"
+                [size]="9"
+                [style.color]="getHouseColor(p.house_id)"
+              ></app-icon>
+            </span>
+            {{ p.house_name }}
+          </span>
+          <span class="text-xs text-camp-gray"
+            >{{ p.gender === "м" ? "♂" : "♀"
+            }}<ng-container *ngIf="p.age"> · {{ p.age }} лет</ng-container
+            ><ng-container *ngIf="p.city"> · {{ p.city }}</ng-container></span
+          >
+        </div>
+      </div>
+
+      <!-- Access code -->
+      <div
+        *ngIf="!auth.isCounselorOrHelper() && p.access_code"
+        class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl shrink-0"
+        [style.backgroundColor]="campColorBg"
+      >
+        <app-icon name="key" [size]="13" [style.color]="campColor"></app-icon>
+        <span
+          class="font-mono font-bold text-sm tracking-[0.2em]"
+          [style.color]="campColor"
+          >{{ p.access_code }}</span
+        >
+      </div>
+
+      <!-- Points -->
+      <div
+        *ngIf="p.has_points"
+        class="flex items-center gap-1 shrink-0 font-bold text-sm"
+        [style.color]="campColor"
+      >
+        <app-icon name="star" [size]="13"></app-icon>
+        {{ p.total_points ?? 0 }}
+      </div>
+
+      <!-- Admin actions -->
+      <div
+        *ngIf="auth.isAdmin()"
+        class="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0"
+      >
+        <button
+          class="w-8 h-8 flex items-center justify-center rounded-lg bg-camp-muted hover:bg-camp-border text-camp-gray transition-colors"
+          (click)="startEdit(p)"
+          title="Редактировать"
+        >
+          <app-icon name="pencil" [size]="14"></app-icon>
+        </button>
+        <button
+          class="w-8 h-8 flex items-center justify-center rounded-lg bg-camp-muted hover:bg-camp-border text-camp-gray transition-colors"
+          (click)="resetCode(p.id)"
+          title="Сбросить код"
+        >
+          <app-icon name="key" [size]="14"></app-icon>
+        </button>
+        <button
+          class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#FEE2E2] hover:bg-[#FECACA] text-camp-error transition-colors"
+          (click)="remove(p.id)"
+          title="Удалить"
+        >
+          <app-icon name="x" [size]="14"></app-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VIEW: COMPACT ═══════════════ -->
+  <div *ngIf="viewMode === 'compact'" class="space-y-1.5">
+    <div
+      *ngIf="participants.length === 0"
+      class="py-16 text-center text-camp-subtle bg-white rounded-2xl border border-camp-border"
+    >
+      <div class="text-4xl mb-3">👀</div>
+      <div class="text-sm font-medium">Участников не найдено</div>
+    </div>
+
+    <div
+      *ngFor="let p of participants"
+      class="flex items-center gap-3 bg-white rounded-xl border border-camp-border px-3 py-2 group hover:shadow-sm transition-shadow"
+    >
+      <!-- Color dot -->
+      <div
+        class="w-2.5 h-2.5 rounded-full shrink-0"
+        [style.backgroundColor]="getHouseColor(p.house_id)"
+      ></div>
+
+      <!-- Name -->
+      <div class="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
+        <span class="font-semibold text-sm text-camp-stone truncate"
+          >{{ p.last_name }} {{ p.first_name }}</span
+        >
+        <!-- Миниатюра домика в компактном виде -->
+        <span
+          *ngIf="p.house_name"
+          class="inline-flex items-center gap-1 text-xs font-medium text-camp-gray"
+        >
+          <span
+            class="w-3.5 h-3.5 rounded-sm overflow-hidden flex items-center justify-center shrink-0"
+            [style.backgroundColor]="getHouseColor(p.house_id) + '25'"
+          >
+            <img
+              *ngIf="getHouseAvatar(p.house_id)"
+              [src]="getHouseAvatar(p.house_id) | mediaUrl"
+              class="w-full h-full object-cover"
+            />
+            <span
+              *ngIf="!getHouseAvatar(p.house_id) && getHouseEmoji(p.house_id)"
+              class="text-[9px] leading-none"
+              >{{ getHouseEmoji(p.house_id) }}</span
+            >
+            <app-icon
+              *ngIf="!getHouseAvatar(p.house_id) && !getHouseEmoji(p.house_id)"
+              name="home"
+              [size]="8"
+              [style.color]="getHouseColor(p.house_id)"
+            ></app-icon>
+          </span>
+          {{ p.house_name }}
+        </span>
+        <span class="text-xs text-camp-subtle"
+          >{{ p.gender === "м" ? "♂" : "♀"
+          }}<ng-container *ngIf="p.age">, {{ p.age }} л.</ng-container
+          ><ng-container *ngIf="p.city"> · {{ p.city }}</ng-container></span
+        >
+      </div>
+
+      <!-- Code -->
+      <div
+        *ngIf="!auth.isCounselorOrHelper() && p.access_code"
+        class="flex items-center gap-1 px-2.5 py-1 rounded-lg shrink-0"
+        [style.backgroundColor]="campColorBg"
+      >
+        <span
+          class="font-mono font-bold text-xs tracking-[0.18em]"
+          [style.color]="campColor"
+          >{{ p.access_code }}</span
+        >
+      </div>
+
+      <!-- Points -->
+      <div
+        *ngIf="p.has_points"
+        class="text-xs font-bold shrink-0 flex items-center gap-0.5"
+        [style.color]="campColor"
+      >
+        <app-icon name="star" [size]="11"></app-icon>{{ p.total_points ?? 0 }}
+      </div>
+
+      <!-- Actions -->
+      <div
+        *ngIf="auth.isAdmin()"
+        class="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0"
+      >
+        <button
+          class="w-7 h-7 flex items-center justify-center rounded-lg bg-camp-muted hover:bg-camp-border text-camp-gray transition-colors"
+          (click)="startEdit(p)"
+        >
+          <app-icon name="pencil" [size]="12"></app-icon>
+        </button>
+        <button
+          class="w-7 h-7 flex items-center justify-center rounded-lg bg-camp-muted hover:bg-camp-border text-camp-gray transition-colors"
+          (click)="resetCode(p.id)"
+        >
+          <app-icon name="key" [size]="12"></app-icon>
+        </button>
+        <button
+          class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#FEE2E2] hover:bg-[#FECACA] text-camp-error transition-colors"
+          (click)="remove(p.id)"
+        >
+          <app-icon name="x" [size]="12"></app-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VIEW: GRID (cards) ═══════════════ -->
+  <div
+    *ngIf="viewMode === 'grid'"
+    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+  >
+    <div
+      *ngIf="participants.length === 0"
+      class="col-span-3 py-16 text-center text-camp-subtle bg-white rounded-2xl border border-camp-border"
+    >
+      <div class="text-4xl mb-3">👀</div>
+      <div class="text-sm font-medium">Участников не найдено</div>
+    </div>
+
+    <div
+      *ngFor="let p of participants"
+      class="bg-white rounded-2xl border border-camp-border shadow-sm p-4 sm:p-5 hover:shadow-md transition-shadow group"
+    >
+      <div class="flex items-start gap-3 mb-3">
+        <div
+          class="w-11 h-11 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0 shadow-sm"
+          [style.backgroundColor]="getHouseColor(p.house_id)"
+        >
+          {{ initials(p) }}
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="font-bold text-camp-stone text-sm">
+            {{ p.last_name }} {{ p.first_name }}
+          </div>
+          <div class="text-xs text-camp-gray mt-0.5">
+            {{ p.gender === "м" ? "♂" : "♀"
+            }}<ng-container *ngIf="p.age"> · {{ p.age }} лет</ng-container
+            ><ng-container *ngIf="p.city"> · {{ p.city }}</ng-container>
+          </div>
+        </div>
+        <div
+          *ngIf="auth.isAdmin()"
+          class="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0"
+        >
+          <button
+            class="w-7 h-7 flex items-center justify-center rounded-lg bg-camp-muted hover:bg-camp-border text-camp-gray transition-colors"
+            (click)="startEdit(p)"
+          >
+            <app-icon name="pencil" [size]="13"></app-icon>
+          </button>
+          <button
+            class="w-7 h-7 flex items-center justify-center rounded-lg bg-camp-muted hover:bg-camp-border text-camp-gray transition-colors"
+            (click)="resetCode(p.id)"
+          >
+            <app-icon name="key" [size]="13"></app-icon>
+          </button>
+          <button
+            class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#FEE2E2] hover:bg-[#FECACA] text-camp-error transition-colors"
+            (click)="remove(p.id)"
+          >
+            <app-icon name="x" [size]="13"></app-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between gap-2 flex-wrap">
+        <!-- Бейдж домика с аватаркой в карточках -->
+        <span
+          *ngIf="p.house_name"
+          class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold"
+          [style.backgroundColor]="getHouseColor(p.house_id) + '20'"
+          [style.color]="getHouseColor(p.house_id)"
+        >
+          <span
+            class="w-4 h-4 rounded-sm overflow-hidden flex items-center justify-center shrink-0"
+            [style.backgroundColor]="getHouseColor(p.house_id) + '30'"
+          >
+            <img
+              *ngIf="getHouseAvatar(p.house_id)"
+              [src]="getHouseAvatar(p.house_id) | mediaUrl"
+              class="w-full h-full object-cover"
+            />
+            <span
+              *ngIf="!getHouseAvatar(p.house_id) && getHouseEmoji(p.house_id)"
+              class="text-[10px] leading-none"
+              >{{ getHouseEmoji(p.house_id) }}</span
+            >
+            <app-icon
+              *ngIf="!getHouseAvatar(p.house_id) && !getHouseEmoji(p.house_id)"
+              name="home"
+              [size]="9"
+              [style.color]="getHouseColor(p.house_id)"
+            ></app-icon>
+          </span>
+          {{ p.house_name }}
+        </span>
+        <span
+          *ngIf="!p.house_name"
+          class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-camp-muted text-camp-subtle"
+          >Без домика</span
+        >
+        <div
+          *ngIf="p.has_points"
+          class="flex items-center gap-1 text-xs font-bold"
+          [style.color]="campColor"
+        >
+          <app-icon name="star" [size]="12"></app-icon>{{ p.total_points ?? 0 }}
+        </div>
+      </div>
+
+      <!-- Access code — prominent -->
+      <div
+        *ngIf="!auth.isCounselorOrHelper() && p.access_code"
+        class="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl"
+        [style.backgroundColor]="campColorBg"
+      >
+        <app-icon name="key" [size]="14" [style.color]="campColor"></app-icon>
+        <span
+          class="font-mono font-extrabold text-base tracking-[0.25em]"
+          [style.color]="campColor"
+          >{{ p.access_code }}</span
+        >
+      </div>
+    </div>
+  </div>
 </div>
 
-<table
-  border="1"
-  cellpadding="4"
-  style="border-collapse: collapse; margin-top: 12px"
->
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>ФИО</th>
-      <th>Пол</th>
-      <th>Возраст</th>
-      <th>Город</th>
-      <th>Домик</th>
-      <th>Баллы</th>
-      <th *ngIf="!auth.isCounselorOrHelper()">Код</th>
-      <th>Действия</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let p of participants">
-      <td>{{ p.id }}</td>
-      <td>{{ p.last_name }} {{ p.first_name }}</td>
-      <td>{{ p.gender }}</td>
-      <td>{{ p.age }}</td>
-      <td>{{ p.city }}</td>
-      <td>{{ p.house_name }}</td>
-      <td>{{ p.total_points }}</td>
-      <td *ngIf="!auth.isCounselorOrHelper()">{{ p.access_code }}</td>
-      <td *ngIf="auth.isAdmin()">
-        <button (click)="startEdit(p)">✏️</button>
-        <button (click)="resetCode(p.id)">🔑</button>
-        <button (click)="remove(p.id)">🗑️</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
+<!-- ═══════════════ EDIT MODAL ═══════════════ -->
 <div
   *ngIf="editItem"
-  style="margin-top: 16px; border: 1px solid #ccc; padding: 12px"
+  class="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center p-4 z-[9999]"
+  style="background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(2px)"
+  (click)="editItem = null"
 >
-  <h4>Редактирование: {{ editItem.last_name }} {{ editItem.first_name }}</h4>
-  <div>Фамилия: <input [(ngModel)]="editItem.last_name" /></div>
-  <div>Имя: <input [(ngModel)]="editItem.first_name" /></div>
-  <div>
-    Дата рождения: <input type="date" [(ngModel)]="editItem.birth_date" />
+  <div
+    class="bg-white rounded-2xl shadow-camp w-full max-w-md animate-pop-in overflow-y-auto"
+    style="max-height: calc(100dvh - 2rem)"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-5">
+        <h2
+          class="font-display text-base font-bold text-camp-stone flex items-center gap-2"
+        >
+          <app-icon
+            name="pencil"
+            [size]="16"
+            [style.color]="campColor"
+          ></app-icon>
+          {{ editItem.last_name }} {{ editItem.first_name }}
+        </h2>
+        <button
+          class="w-8 h-8 flex items-center justify-center rounded-xl bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+          (click)="editItem = null"
+        >
+          <app-icon name="x" [size]="14"></app-icon>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label
+              class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+              >Фамилия</label
+            >
+            <input
+              class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+              [(ngModel)]="editItem.last_name"
+              (focus)="
+                $any($event.target).style.borderColor = campColor;
+                $any($event.target).style.backgroundColor = 'white'
+              "
+              (blur)="
+                $any($event.target).style.borderColor = 'transparent';
+                $any($event.target).style.backgroundColor = ''
+              "
+            />
+          </div>
+          <div>
+            <label
+              class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+              >Имя</label
+            >
+            <input
+              class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+              [(ngModel)]="editItem.first_name"
+              (focus)="
+                $any($event.target).style.borderColor = campColor;
+                $any($event.target).style.backgroundColor = 'white'
+              "
+              (blur)="
+                $any($event.target).style.borderColor = 'transparent';
+                $any($event.target).style.backgroundColor = ''
+              "
+            />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label
+              class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+              >Дата рождения</label
+            >
+            <input
+              type="date"
+              class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+              [(ngModel)]="editItem.birth_date"
+              (focus)="
+                $any($event.target).style.borderColor = campColor;
+                $any($event.target).style.backgroundColor = 'white'
+              "
+              (blur)="
+                $any($event.target).style.borderColor = 'transparent';
+                $any($event.target).style.backgroundColor = ''
+              "
+            />
+          </div>
+          <div>
+            <label
+              class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+              >Пол</label
+            >
+            <select
+              class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+              [(ngModel)]="editItem.gender"
+              (focus)="$any($event.target).style.borderColor = campColor"
+              (blur)="$any($event.target).style.borderColor = 'transparent'"
+            >
+              <option value="м">Мужской</option>
+              <option value="ж">Женский</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label
+            class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+            >Город</label
+          >
+          <input
+            class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+            [(ngModel)]="editItem.city"
+            (focus)="
+              $any($event.target).style.borderColor = campColor;
+              $any($event.target).style.backgroundColor = 'white'
+            "
+            (blur)="
+              $any($event.target).style.borderColor = 'transparent';
+              $any($event.target).style.backgroundColor = ''
+            "
+          />
+        </div>
+        <div>
+          <label
+            class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+            >Домик</label
+          >
+          <select
+            class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+            [(ngModel)]="editItem.houseId"
+            (focus)="$any($event.target).style.borderColor = campColor"
+            (blur)="$any($event.target).style.borderColor = 'transparent'"
+          >
+            <option value="">— Без домика</option>
+            <option *ngFor="let h of houses" [value]="h.id">
+              {{ h.emoji ? h.emoji + " " : "🏠 " }}{{ h.name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Current access code display -->
+        <div
+          *ngIf="!auth.isCounselorOrHelper() && editItem.access_code"
+          class="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border-2"
+          [style.borderColor]="campColorBg"
+          [style.backgroundColor]="campColorBg"
+        >
+          <div class="flex items-center gap-2">
+            <app-icon
+              name="key"
+              [size]="15"
+              [style.color]="campColor"
+            ></app-icon>
+            <span
+              class="text-xs font-bold text-camp-gray uppercase tracking-wide"
+              >Код доступа</span
+            >
+          </div>
+          <span
+            class="font-mono font-extrabold text-xl tracking-[0.3em]"
+            [style.color]="campColor"
+            >{{ editItem.access_code }}</span
+          >
+        </div>
+
+        <div>
+          <label
+            class="flex items-center gap-2 select-none"
+            [class.cursor-pointer]="participantPointsEnabled"
+            [class.cursor-not-allowed]="!participantPointsEnabled"
+          >
+            <input
+              type="checkbox"
+              [(ngModel)]="editItem.has_points"
+              [disabled]="!participantPointsEnabled"
+              class="w-4 h-4 accent-camp-orange rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            <span
+              class="text-sm font-medium text-camp-gray"
+              [class.opacity-50]="!participantPointsEnabled"
+              >Участвует в баллах</span
+            >
+          </label>
+          <p
+            *ngIf="!participantPointsEnabled"
+            class="text-xs text-camp-subtle mt-1"
+          >
+            Система баллов отключена в настройках
+          </p>
+        </div>
+      </div>
+
+      <div class="flex gap-2 mt-5">
+        <button
+          class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px"
+          [style.backgroundColor]="campColor"
+          (click)="saveEdit()"
+        >
+          <app-icon name="check" [size]="15"></app-icon>
+          Сохранить
+        </button>
+        <button
+          class="px-4 py-2.5 rounded-xl text-sm font-bold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+          (click)="editItem = null"
+        >
+          Отмена
+        </button>
+      </div>
+    </div>
   </div>
-  <div>
-    Пол:
-    <select [(ngModel)]="editItem.gender">
-      <option value="м">М</option>
-      <option value="ж">Ж</option>
-    </select>
+</div>
+
+<!-- ═══════════════ CONFIRM MODAL ═══════════════ -->
+<div
+  *ngIf="confirmState"
+  class="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center p-4 z-[9999]"
+  style="background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(2px)"
+  (click)="confirmNo()"
+>
+  <div
+    class="bg-white rounded-2xl shadow-camp w-full max-w-sm animate-pop-in overflow-hidden"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="p-6">
+      <div class="flex items-start gap-3 mb-2">
+        <div
+          class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+          [style.backgroundColor]="
+            confirmState.danger ? '#FEE2E2' : campColorBg
+          "
+          [style.color]="confirmState.danger ? '#DC2626' : campColor"
+        >
+          <app-icon
+            [name]="confirmState.danger ? 'trash-2' : 'key'"
+            [size]="18"
+          ></app-icon>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h2 class="font-display text-base font-bold text-camp-stone">
+            {{ confirmState.title }}
+          </h2>
+          <p class="text-sm text-camp-gray mt-1">
+            {{ confirmState.message }}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex gap-2 mt-5">
+        <button
+          class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px"
+          [style.backgroundColor]="confirmState.danger ? '#DC2626' : campColor"
+          (click)="confirmYes()"
+        >
+          {{ confirmState.confirmLabel }}
+        </button>
+        <button
+          class="px-4 py-2.5 rounded-xl text-sm font-bold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+          (click)="confirmNo()"
+        >
+          Отмена
+        </button>
+      </div>
+    </div>
   </div>
-  <div>Город: <input [(ngModel)]="editItem.city" /></div>
-  <div>
-    Домик:
-    <select [(ngModel)]="editItem.houseId">
-      <option value="">—</option>
-      <option *ngFor="let h of houses" [value]="h.id">{{ h.name }}</option>
-    </select>
-  </div>
-  <div>Баллы: <input type="checkbox" [(ngModel)]="editItem.has_points" /></div>
-  <button (click)="saveEdit()">Сохранить</button>
-  <button (click)="editItem = null" style="margin-left: 8px">Отмена</button>
 </div>
