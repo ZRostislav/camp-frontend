@@ -76,7 +76,7 @@ const ICON_PATHS: Record<string, string> = {
   'rows-3':
     'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z M21 9H3 M21 15H3',
   'chevron-down': 'm6 9 6 6 6-6',
-  ' -plus': 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z M8 12h8 M12 8v8',
+  'circle-plus': 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z M8 12h8 M12 8v8',
   'trending-up': 'M16 7h6v6 M22 7l-8.5 8.5-5-5L2 17',
   'trending-down': 'M16 17h6v-6 M22 17l-8.5-8.5-5 5L2 7',
   'clipboard-check':
@@ -91,6 +91,11 @@ const ICON_PATHS: Record<string, string> = {
   'circle-minus': 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z M8 12h8',
   'clipboard-plus':
     'M8 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1z M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2 M9 14h6 M12 17v-6',
+  'grip-vertical':
+    'M9 12a1 1 0 1 0 0-2 1 1 0 0 0 0 2z M9 5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z M9 19a1 1 0 1 0 0-2 1 1 0 0 0 0 2z M15 12a1 1 0 1 0 0-2 1 1 0 0 0 0 2z M15 5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z M15 19a1 1 0 1 0 0-2 1 1 0 0 0 0 2z',
+  'calendar-plus':
+    'M16 19h6 M16 2v4 M19 16v6 M21 12.598V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8.5 M3 10h18 M8 2v4',
+  upload: 'M12 3v12 M17 8l-5-5-5 5 M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4',
 
   // ── Layout / navigation ────────────────────────────────────────────
   'layout-dashboard': 'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',

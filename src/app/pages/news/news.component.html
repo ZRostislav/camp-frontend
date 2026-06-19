@@ -1,34 +1,304 @@
-<h2>Новости</h2>
-<div *ngIf="error" style="color:red">{{ error }}</div>
-<div *ngIf="msg" style="color:green">{{ msg }}</div>
-
-<div *ngIf="auth.isAdmin()" style="border:1px solid #ccc;padding:12px;margin-bottom:16px">
-  <h3>Добавить новость</h3>
-  <div>Заголовок: <input [(ngModel)]="form.title" style="width:300px"></div>
-  <div>Текст: <textarea [(ngModel)]="form.text" rows="3" style="width:100%"></textarea></div>
-  <div>Закрепить: <input type="checkbox" [(ngModel)]="form.pinned"></div>
-  <button (click)="create()">Создать</button>
-</div>
-
-<div *ngFor="let n of news" style="border:1px solid #ccc;padding:10px;margin-bottom:10px">
-  <div style="display:flex;justify-content:space-between;align-items:start">
+<div
+  class="p-4 sm:p-6 max-w-3xl mx-auto space-y-5 font-nunito animate-fade-in-up"
+>
+  <!-- Header -->
+  <div
+    class="flex items-start justify-between flex-wrap gap-3 animate-fade-in-down"
+  >
     <div>
-      <strong>{{ n.pinned ? '📌 ' : '' }}{{ n.title }}</strong>
-      <div style="white-space:pre-wrap;margin-top:4px">{{ n.text }}</div>
-      <div style="font-size:11px;color:#666;margin-top:4px">{{ n.created_by_name }} · {{ n.created_at | date:'dd.MM.yyyy HH:mm' }}</div>
+      <h1
+        style="font-family: var(--font-display, &quot;Neucha&quot;, sans-serif)"
+        class="font-display text-[1.4rem] sm:text-[1.75rem] font-bold text-camp-stone flex items-center gap-2 leading-tight"
+      >
+        <app-icon
+          name="newspaper"
+          [size]="26"
+          [style.color]="campColor"
+        ></app-icon>
+        Новости
+      </h1>
+      <p class="text-xs sm:text-sm mt-1 text-camp-gray font-medium">
+        Объявления и обновления лагеря
+      </p>
     </div>
-    <div *ngIf="auth.isAdmin()">
-      <button (click)="startEdit(n)">✏️</button>
-      <button (click)="remove(n.id)">🗑️</button>
+
+    <!-- Add button (admin only) -->
+    <button
+      *ngIf="auth.isAdmin()"
+      (click)="showForm = !showForm"
+      class="flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-semibold shadow-camp-btn transition-all duration-200 hover:opacity-90 active:scale-95 shrink-0"
+      [style.backgroundColor]="campColor"
+    >
+      <app-icon name="plus" [size]="16"></app-icon>
+      Новая новость
+    </button>
+  </div>
+
+  <!-- Success / Error banners -->
+  <div
+    *ngIf="msg"
+    class="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm font-medium animate-fade-in-up"
+  >
+    <app-icon name="check-circle" [size]="16"></app-icon>
+    {{ msg }}
+  </div>
+  <div
+    *ngIf="error"
+    class="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium animate-fade-in-up"
+  >
+    <app-icon name="alert-circle" [size]="16"></app-icon>
+    {{ error }}
+  </div>
+
+  <!-- Create form (admin only) -->
+  <div
+    *ngIf="auth.isAdmin() && showForm"
+    class="bg-white rounded-2xl shadow-sm border border-camp-border p-4 sm:p-5 space-y-3 animate-fade-in-up"
+  >
+    <h3
+      class="font-display text-base font-bold text-camp-stone flex items-center gap-1.5"
+    >
+      <app-icon
+        name="file-plus"
+        [size]="17"
+        [style.color]="campColor"
+      ></app-icon>
+      Добавить новость
+    </h3>
+
+    <div class="space-y-2">
+      <label
+        class="block text-xs font-semibold text-camp-gray uppercase tracking-wide"
+        >Заголовок</label
+      >
+      <input
+        [(ngModel)]="form.title"
+        placeholder="Введите заголовок..."
+        class="w-full px-3 py-2 rounded-xl border border-camp-border text-sm text-camp-stone bg-camp-muted focus:outline-none focus:ring-2 transition-all placeholder:text-camp-subtle"
+        [style.--tw-ring-color]="campColor"
+      />
+    </div>
+
+    <div class="space-y-2">
+      <label
+        class="block text-xs font-semibold text-camp-gray uppercase tracking-wide"
+        >Текст</label
+      >
+      <textarea
+        [(ngModel)]="form.text"
+        rows="4"
+        placeholder="Текст новости..."
+        class="w-full px-3 py-2 rounded-xl border border-camp-border text-sm text-camp-stone bg-camp-muted focus:outline-none focus:ring-2 transition-all placeholder:text-camp-subtle resize-none"
+        [style.--tw-ring-color]="campColor"
+      ></textarea>
+    </div>
+
+    <label class="flex items-center gap-2.5 cursor-pointer select-none w-fit">
+      <input
+        type="checkbox"
+        [(ngModel)]="form.pinned"
+        class="w-4 h-4 rounded accent-current"
+        [style.accentColor]="campColor"
+      />
+      <span class="text-sm font-medium text-camp-stone"
+        >📌 Закрепить новость</span
+      >
+    </label>
+
+    <div class="flex gap-2 pt-1">
+      <button
+        (click)="create()"
+        class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-sm font-semibold shadow-camp-btn transition-all duration-200 hover:opacity-90 active:scale-95"
+        [style.backgroundColor]="campColor"
+      >
+        <app-icon name="send" [size]="14"></app-icon>
+        Опубликовать
+      </button>
+      <button
+        (click)="showForm = false"
+        class="px-4 py-2 rounded-xl text-sm font-semibold text-camp-gray bg-camp-muted hover:bg-camp-border transition-colors"
+      >
+        Отмена
+      </button>
     </div>
   </div>
-</div>
 
-<div *ngIf="editItem" style="margin-top:16px;border:1px solid #ccc;padding:12px">
-  <h4>Редактирование</h4>
-  <div>Заголовок: <input [(ngModel)]="editItem.title" style="width:300px"></div>
-  <div>Текст: <textarea [(ngModel)]="editItem.text" rows="4" style="width:100%"></textarea></div>
-  <div>Закрепить: <input type="checkbox" [(ngModel)]="editItem.pinned"></div>
-  <button (click)="saveEdit()">Сохранить</button>
-  <button (click)="editItem=null" style="margin-left:8px">Отмена</button>
+  <!-- News list -->
+  <div class="space-y-4">
+    <!-- Empty state -->
+    <div
+      *ngIf="news.length === 0"
+      class="bg-white rounded-2xl border border-camp-border p-10 text-center"
+    >
+      <div class="text-4xl mb-3">📭</div>
+      <p class="text-sm font-medium text-camp-gray">Новостей пока нет</p>
+      <p class="text-xs text-camp-subtle mt-1">
+        Здесь появятся объявления и обновления лагеря
+      </p>
+    </div>
+
+    <!-- News card -->
+    <article
+      *ngFor="let n of news"
+      class="bg-white rounded-2xl shadow-sm border border-camp-border overflow-hidden hover:shadow-md transition-all duration-200 animate-fade-in-up"
+      [class.ring-2]="n.pinned"
+      [style.--tw-ring-color]="n.pinned ? campColor : 'transparent'"
+    >
+      <!-- Pinned accent bar -->
+      <div
+        *ngIf="n.pinned"
+        class="h-1 w-full"
+        [style.backgroundColor]="campColor"
+      ></div>
+
+      <div class="p-4 sm:p-5">
+        <!-- Badges row -->
+        <div class="flex items-center gap-2 mb-3 flex-wrap">
+          <span
+            *ngIf="n.pinned"
+            class="inline-flex items-center gap-1 text-[0.65rem] px-2.5 py-1 rounded-full font-bold text-white"
+            [style.backgroundColor]="campColor"
+          >
+            📌 Закреплено
+          </span>
+          <span
+            *ngIf="isNew(n)"
+            class="inline-flex items-center gap-1 text-[0.65rem] px-2.5 py-1 rounded-full font-semibold bg-amber-100 text-amber-700"
+          >
+            🆕 Новое
+          </span>
+        </div>
+
+        <!-- Title -->
+        <h2
+          style="
+            font-family: var(--font-display, &quot;Neucha&quot;, sans-serif);
+          "
+          class="font-display text-base sm:text-lg font-bold text-camp-stone leading-snug mb-2"
+        >
+          {{ n.title }}
+        </h2>
+
+        <!-- Body text -->
+        <p
+          class="text-sm text-camp-stone leading-relaxed whitespace-pre-wrap line-clamp-4"
+        >
+          {{ n.text }}
+        </p>
+
+        <!-- Footer: author + date + actions -->
+        <div
+          class="flex items-center justify-between mt-4 pt-4 border-t border-camp-border flex-wrap gap-2"
+        >
+          <div class="flex items-center gap-3 text-xs text-camp-gray">
+            <span class="flex items-center gap-1.5">
+              <app-icon name="user" [size]="12"></app-icon>
+              {{ n.created_by_name }}
+            </span>
+            <span class="flex items-center gap-1.5">
+              <app-icon name="calendar" [size]="12"></app-icon>
+              {{ n.created_at | date: "dd.MM.yyyy HH:mm" }}
+            </span>
+          </div>
+
+          <!-- Admin actions -->
+          <div *ngIf="auth.isAdmin()" class="flex items-center gap-1.5">
+            <button
+              (click)="startEdit(n)"
+              class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-camp-gray bg-camp-muted hover:bg-camp-border transition-colors"
+            >
+              <app-icon name="pencil" [size]="12"></app-icon>
+              Изменить
+            </button>
+            <button
+              (click)="remove(n.id)"
+              class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-red-500 bg-red-50 hover:bg-red-100 transition-colors"
+            >
+              <app-icon name="trash-2" [size]="12"></app-icon>
+              Удалить
+            </button>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <!-- Edit modal overlay -->
+  <div
+    *ngIf="editItem"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4"
+    style="background: rgba(0, 0, 0, 0.35)"
+    (click)="editItem = null"
+  >
+    <div
+      class="bg-white rounded-2xl shadow-xl border border-camp-border w-full max-w-lg p-5 space-y-3 animate-fade-in-up"
+      (click)="$event.stopPropagation()"
+    >
+      <h3
+        class="font-display text-base font-bold text-camp-stone flex items-center gap-1.5"
+        style="font-family: var(--font-display, &quot;Neucha&quot;, sans-serif)"
+      >
+        <app-icon
+          name="pencil"
+          [size]="16"
+          [style.color]="campColor"
+        ></app-icon>
+        Редактирование
+      </h3>
+
+      <div class="space-y-2">
+        <label
+          class="block text-xs font-semibold text-camp-gray uppercase tracking-wide"
+          >Заголовок</label
+        >
+        <input
+          [(ngModel)]="editItem.title"
+          class="w-full px-3 py-2 rounded-xl border border-camp-border text-sm text-camp-stone bg-camp-muted focus:outline-none focus:ring-2 transition-all"
+          [style.--tw-ring-color]="campColor"
+        />
+      </div>
+
+      <div class="space-y-2">
+        <label
+          class="block text-xs font-semibold text-camp-gray uppercase tracking-wide"
+          >Текст</label
+        >
+        <textarea
+          [(ngModel)]="editItem.text"
+          rows="5"
+          class="w-full px-3 py-2 rounded-xl border border-camp-border text-sm text-camp-stone bg-camp-muted focus:outline-none focus:ring-2 transition-all resize-none"
+          [style.--tw-ring-color]="campColor"
+        ></textarea>
+      </div>
+
+      <label class="flex items-center gap-2.5 cursor-pointer select-none w-fit">
+        <input
+          type="checkbox"
+          [(ngModel)]="editItem.pinned"
+          [style.accentColor]="campColor"
+          class="w-4 h-4 rounded"
+        />
+        <span class="text-sm font-medium text-camp-stone"
+          >📌 Закрепить новость</span
+        >
+      </label>
+
+      <div class="flex gap-2 pt-1">
+        <button
+          (click)="saveEdit()"
+          class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-sm font-semibold shadow-camp-btn transition-all duration-200 hover:opacity-90 active:scale-95"
+          [style.backgroundColor]="campColor"
+        >
+          <app-icon name="check" [size]="14"></app-icon>
+          Сохранить
+        </button>
+        <button
+          (click)="editItem = null"
+          class="px-4 py-2 rounded-xl text-sm font-semibold text-camp-gray bg-camp-muted hover:bg-camp-border transition-colors"
+        >
+          Отмена
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

@@ -1,15 +1,24 @@
 import { Component, OnInit, HostListener, ElementRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { SettingsService } from '../../services/settings.service';
 import { MediaUrlPipe } from '../../pipes/media-url.pipe';
+import { IconComponent } from '../../shared/icon.component';
 
 @Component({
   selector: 'app-contests',
   standalone: true,
-  imports: [CommonModule, FormsModule, PickerComponent, MediaUrlPipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    PickerComponent,
+    MediaUrlPipe,
+    IconComponent,
+    DatePipe,
+  ],
   templateUrl: './contests.component.html',
   styleUrl: './contests.component.css',
 })
@@ -19,6 +28,7 @@ export class ContestsComponent implements OnInit {
   formFiles: File[] = [];
   formLinks: { url: string; label: string }[] = [];
   showFormEmojiPicker = false;
+  showCreateForm = false;
 
   editItem: any = null;
   editFiles: File[] = [];
@@ -28,17 +38,51 @@ export class ContestsComponent implements OnInit {
   error = '';
   msg = '';
 
+  campColor = '#F59E0B';
+
   constructor(
     public auth: AuthService,
     private api: ApiService,
     private elRef: ElementRef,
+    private settings: SettingsService,
   ) {}
 
   ngOnInit() {
+    this.settings.get().subscribe({
+      next: (d) => {
+        this.campColor = (d['camp_color'] as string) ?? '#F59E0B';
+      },
+      error: () => {},
+    });
     this.load();
   }
 
-  // Закрываем пикер при клике вне компонента
+  get campColorBg(): string {
+    return this.hexToRgba(this.campColor, 0.1);
+  }
+
+  get completedCount(): number {
+    return this.contests.filter((c) => c.status === 'completed').length;
+  }
+
+  get activeCount(): number {
+    return this.contests.filter(
+      (c) => c.status === 'in-progress' || c.status === 'active',
+    ).length;
+  }
+
+  get upcomingCount(): number {
+    return this.contests.filter((c) => c.status === 'upcoming').length;
+  }
+
+  private hexToRgba(hex: string, alpha: number): string {
+    const num = parseInt(hex.replace('#', ''), 16);
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     if (!this.elRef.nativeElement.contains(event.target)) {
@@ -76,7 +120,6 @@ export class ContestsComponent implements OnInit {
     });
   }
 
-  // --- Файлы (накапливаем) ---
   onFormFilesChange(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files) return;
@@ -107,7 +150,6 @@ export class ContestsComponent implements OnInit {
     ];
   }
 
-  // --- YouTube ссылки ---
   addFormLink() {
     this.formLinks.push({ url: '', label: '' });
   }
@@ -121,7 +163,6 @@ export class ContestsComponent implements OnInit {
     this.editNewLinks = this.editNewLinks.filter((_, idx) => idx !== i);
   }
 
-  // --- Хелперы ---
   fileIcon(file: File | { file_type: string }): string {
     const type = 'file_type' in file ? file.file_type : (file as File).type;
     return type.startsWith('image') || type === 'image' ? '🖼️' : '🎬';
@@ -138,7 +179,6 @@ export class ContestsComponent implements OnInit {
       : `${mb.toFixed(1)} MB`;
   }
 
-  // --- Создание ---
   create() {
     if (!this.form.title) {
       this.error = 'Укажите название';
@@ -185,6 +225,7 @@ export class ContestsComponent implements OnInit {
 
           Promise.allSettled(tasks).then(() => {
             this.msg = 'Конкурс создан';
+            this.showCreateForm = false;
             this.resetForm();
             this.load();
           });
@@ -193,14 +234,13 @@ export class ContestsComponent implements OnInit {
       });
   }
 
-  private resetForm() {
+  resetForm() {
     this.form = { emoji: '', title: '', description: '' };
     this.formFiles = [];
     this.formLinks = [];
     this.showFormEmojiPicker = false;
   }
 
-  // --- Редактирование ---
   startEdit(c: any) {
     this.editItem = {
       ...c,

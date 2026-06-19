@@ -1,163 +1,328 @@
-<h2>Конкурсы</h2>
-<div *ngIf="error" style="color: red">{{ error }}</div>
-<div *ngIf="msg" style="color: green">{{ msg }}</div>
-
-<!-- Форма создания -->
 <div
-  *ngIf="auth.isAdmin()"
-  style="margin-top: 12px; border: 1px solid #ccc; padding: 12px"
+  class="p-4 sm:p-6 max-w-5xl mx-auto space-y-5 font-nunito animate-fade-in-up"
 >
-  <h3>Добавить конкурс</h3>
-
-  <!-- Эмодзи с пикером -->
-  <div class="emoji-field">
-    <label>Эмодзи:</label>
-    <div class="emoji-input-wrap">
-      <span class="emoji-preview" (click)="toggleFormEmojiPicker($event)">
-        {{ form.emoji || "😀" }}
-      </span>
-      <input
-        [(ngModel)]="form.emoji"
-        placeholder="или введите вручную"
-        class="emoji-text-input"
-      />
-      <button class="emoji-btn" (click)="toggleFormEmojiPicker($event)">
-        ☺
-      </button>
-    </div>
-    <div
-      class="emoji-picker-wrap"
-      *ngIf="showFormEmojiPicker"
-      (click)="$event.stopPropagation()"
-    >
-      <emoji-mart
-        (emojiSelect)="onFormEmojiSelect($event)"
-        [showPreview]="false"
-        [i18n]="{
-          search: 'Поиск',
-          categories: { search: 'Результаты', recent: 'Частые' },
-        }"
-      ></emoji-mart>
-    </div>
-  </div>
-
-  <div>Название: <input [(ngModel)]="form.title" /></div>
-  <div>
-    Описание: <textarea [(ngModel)]="form.description" rows="3"></textarea>
-  </div>
-
-  <!-- YouTube ссылки -->
-  <div style="margin-top: 8px">
-    <strong>YouTube ссылки:</strong>
-    <button (click)="addFormLink()" style="margin-left: 8px">➕</button>
-    <div
-      *ngFor="let l of formLinks; let i = index"
-      style="display: flex; align-items: center; gap: 6px; margin-top: 4px"
-    >
-      <input
-        [(ngModel)]="l.url"
-        placeholder="https://youtu.be/..."
-        style="width: 260px"
-      />
-      <input
-        [(ngModel)]="l.label"
-        placeholder="Подпись (необязательно)"
-        style="width: 160px"
-      />
-      <button
-        (click)="removeFormLink(i)"
-        style="color: red; border: none; background: none; cursor: pointer"
-      >
-        ✕
-      </button>
-    </div>
-  </div>
-
-  <!-- Файлы -->
-  <div style="margin-top: 8px">
-    Файлы (изображения и видео):
-    <input
-      type="file"
-      accept="image/*,video/*"
-      multiple
-      (change)="onFormFilesChange($event)"
-    />
+  <!-- Messages -->
+  <div
+    *ngIf="error"
+    class="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm animate-fade-in-up"
+  >
+    <app-icon name="alert-circle" [size]="16"></app-icon>
+    {{ error }}
   </div>
   <div
-    *ngIf="formFiles.length"
-    style="margin-top: 6px; padding: 6px; background: #f5f5f5"
+    *ngIf="msg"
+    class="flex items-center gap-2 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm animate-fade-in-up"
   >
-    <div
-      *ngFor="let f of formFiles; let i = index"
-      style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px"
-    >
-      <span>{{ fileIcon(f) }}</span>
-      <span>{{ fileName(f) }}</span>
-      <span style="color: #888; font-size: 12px">({{ fileSize(f) }})</span>
-      <button
-        (click)="removeFormFile(i)"
-        style="color: red; border: none; background: none; cursor: pointer"
+    <app-icon name="circle-check" [size]="16"></app-icon>
+    {{ msg }}
+  </div>
+
+  <!-- Header -->
+  <div
+    class="flex items-start justify-between flex-wrap gap-3 animate-fade-in-down"
+  >
+    <div>
+      <h1
+        style="font-family: var(--font-display, &quot;Neucha&quot;, sans-serif)"
+        class="font-display text-[1.4rem] sm:text-[1.75rem] font-bold text-camp-stone flex items-center gap-2 leading-tight"
       >
-        ✕
+        <app-icon
+          name="trophy"
+          [size]="26"
+          [style.color]="campColor"
+        ></app-icon>
+        Конкурсы
+      </h1>
+      <p class="text-xs sm:text-sm mt-1 text-camp-gray font-medium">
+        Соревнования и мероприятия лагеря
+      </p>
+    </div>
+    <button
+      *ngIf="auth.isAdmin() && !showCreateForm"
+      (click)="showCreateForm = true"
+      class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold text-white shadow-camp-btn transition-all hover:opacity-90 active:scale-95"
+      [style.backgroundColor]="campColor"
+    >
+      <app-icon name="plus" [size]="16"></app-icon>
+      Добавить конкурс
+    </button>
+  </div>
+
+  <!-- Stats row -->
+  <div class="grid grid-cols-3 gap-3 sm:gap-4 animate-fade-in-up">
+    <div
+      class="bg-white rounded-2xl p-3 sm:p-5 shadow-sm border border-camp-border flex flex-col items-center text-center gap-1"
+    >
+      <span class="text-2xl">✅</span>
+      <div
+        class="text-xl sm:text-2xl font-bold font-display text-green-600 tabular-nums"
+      >
+        {{ completedCount }}
+      </div>
+      <div class="text-[0.65rem] sm:text-xs text-camp-gray font-medium">
+        Завершено
+      </div>
+    </div>
+    <div
+      class="bg-white rounded-2xl p-3 sm:p-5 shadow-sm border border-camp-border flex flex-col items-center text-center gap-1"
+    >
+      <span class="text-2xl">🔥</span>
+      <div
+        class="text-xl sm:text-2xl font-bold font-display text-amber-600 tabular-nums"
+      >
+        {{ activeCount }}
+      </div>
+      <div class="text-[0.65rem] sm:text-xs text-camp-gray font-medium">
+        Идут сейчас
+      </div>
+    </div>
+    <div
+      class="bg-white rounded-2xl p-3 sm:p-5 shadow-sm border border-camp-border flex flex-col items-center text-center gap-1"
+    >
+      <span class="text-2xl">⏳</span>
+      <div
+        class="text-xl sm:text-2xl font-bold font-display text-indigo-600 tabular-nums"
+      >
+        {{ upcomingCount }}
+      </div>
+      <div class="text-[0.65rem] sm:text-xs text-camp-gray font-medium">
+        Предстоят
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Form -->
+  <div
+    *ngIf="auth.isAdmin() && showCreateForm"
+    class="bg-white rounded-2xl shadow-sm border border-camp-border p-4 sm:p-6 space-y-4 animate-fade-in-up"
+  >
+    <div class="flex items-center justify-between">
+      <h2
+        class="font-display text-[1rem] sm:text-[1.1rem] font-bold text-camp-stone flex items-center gap-2"
+      >
+        <app-icon
+          name="circle-plus"
+          [size]="18"
+          [style.color]="campColor"
+        ></app-icon>
+        Новый конкурс
+      </h2>
+      <button
+        (click)="showCreateForm = false; resetForm()"
+        class="text-camp-gray hover:text-camp-stone transition-colors"
+      >
+        <app-icon name="x" [size]="20"></app-icon>
+      </button>
+    </div>
+
+    <!-- Emoji + Title row -->
+    <div class="flex items-center gap-3">
+      <div class="relative shrink-0">
+        <button
+          (click)="toggleFormEmojiPicker($event)"
+          class="w-12 h-12 rounded-xl text-2xl flex items-center justify-center border-2 border-camp-border hover:border-camp-orange transition-colors bg-camp-muted"
+        >
+          {{ form.emoji || "😀" }}
+        </button>
+        <div
+          class="emoji-picker-wrap absolute z-30 top-14 left-0"
+          *ngIf="showFormEmojiPicker"
+          (click)="$event.stopPropagation()"
+        >
+          <emoji-mart
+            (emojiSelect)="onFormEmojiSelect($event)"
+            [showPreview]="false"
+            [i18n]="{
+              search: 'Поиск',
+              categories: { search: 'Результаты', recent: 'Частые' },
+            }"
+          ></emoji-mart>
+        </div>
+      </div>
+      <input
+        [(ngModel)]="form.title"
+        placeholder="Название конкурса"
+        class="flex-1 px-4 py-3 rounded-xl border border-camp-border bg-camp-muted text-camp-stone text-sm font-semibold placeholder-camp-subtle focus:outline-none focus:border-camp-orange transition-colors"
+      />
+    </div>
+
+    <textarea
+      [(ngModel)]="form.description"
+      placeholder="Описание (необязательно)"
+      rows="2"
+      class="w-full px-4 py-3 rounded-xl border border-camp-border bg-camp-muted text-camp-stone text-sm placeholder-camp-subtle focus:outline-none focus:border-camp-orange transition-colors resize-none"
+    ></textarea>
+
+    <!-- YouTube Links -->
+    <div class="space-y-2">
+      <div class="flex items-center justify-between">
+        <span
+          class="text-xs font-semibold text-camp-gray uppercase tracking-wide"
+          >YouTube ссылки</span
+        >
+        <button
+          (click)="addFormLink()"
+          class="flex items-center gap-1 text-xs px-3 py-1 rounded-full font-semibold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+        >
+          <app-icon name="plus" [size]="12"></app-icon> Добавить
+        </button>
+      </div>
+      <div
+        *ngFor="let l of formLinks; let i = index"
+        class="flex items-center gap-2"
+      >
+        <input
+          [(ngModel)]="l.url"
+          placeholder="https://youtu.be/..."
+          class="flex-1 px-3 py-2 rounded-xl border border-camp-border bg-camp-muted text-sm text-camp-stone placeholder-camp-subtle focus:outline-none focus:border-camp-orange transition-colors"
+        />
+        <input
+          [(ngModel)]="l.label"
+          placeholder="Подпись"
+          class="w-32 px-3 py-2 rounded-xl border border-camp-border bg-camp-muted text-sm text-camp-stone placeholder-camp-subtle focus:outline-none focus:border-camp-orange transition-colors"
+        />
+        <button
+          (click)="removeFormLink(i)"
+          class="text-red-400 hover:text-red-600 transition-colors shrink-0"
+        >
+          <app-icon name="x" [size]="16"></app-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Files -->
+    <div class="space-y-2">
+      <span class="text-xs font-semibold text-camp-gray uppercase tracking-wide"
+        >Файлы</span
+      >
+      <label
+        class="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-camp-border hover:border-camp-orange bg-camp-muted cursor-pointer transition-colors text-sm text-camp-gray"
+      >
+        <app-icon name="upload" [size]="16"></app-icon>
+        Добавить изображения или видео
+        <input
+          type="file"
+          accept="image/*,video/*"
+          multiple
+          (change)="onFormFilesChange($event)"
+          class="hidden"
+        />
+      </label>
+      <div *ngIf="formFiles.length" class="space-y-1">
+        <div
+          *ngFor="let f of formFiles; let i = index"
+          class="flex items-center gap-2 px-3 py-2 bg-camp-muted rounded-xl text-sm"
+        >
+          <span>{{ fileIcon(f) }}</span>
+          <span class="flex-1 truncate text-camp-stone text-xs">{{
+            fileName(f)
+          }}</span>
+          <span class="text-camp-subtle text-xs">{{ fileSize(f) }}</span>
+          <button
+            (click)="removeFormFile(i)"
+            class="text-red-400 hover:text-red-600 transition-colors"
+          >
+            <app-icon name="x" [size]="14"></app-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex gap-2 pt-1">
+      <button
+        (click)="create()"
+        class="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold text-white shadow-camp-btn hover:opacity-90 active:scale-95 transition-all"
+        [style.backgroundColor]="campColor"
+      >
+        <app-icon name="check" [size]="16"></app-icon>
+        Создать конкурс
+      </button>
+      <button
+        (click)="showCreateForm = false; resetForm()"
+        class="px-5 py-2.5 rounded-full text-sm font-semibold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+      >
+        Отмена
       </button>
     </div>
   </div>
 
-  <button (click)="create()" style="margin-top: 8px">Создать</button>
-</div>
+  <!-- Contest Cards Grid -->
+  <div
+    *ngIf="contests.length === 0"
+    class="text-sm text-camp-subtle text-center py-12"
+  >
+    Конкурсов пока нет
+  </div>
 
-<!-- Таблица -->
-<table
-  border="1"
-  cellpadding="4"
-  style="border-collapse: collapse; margin-top: 12px; width: 100%"
->
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Эмодзи</th>
-      <th>Название</th>
-      <th>Описание</th>
-      <th>YouTube</th>
-      <th>Файлы</th>
-      <th>Создан</th>
-      <th *ngIf="auth.isAdmin()">Действия</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let c of contests">
-      <td>{{ c.id }}</td>
-      <td style="font-size: 24px; text-align: center">{{ c.emoji }}</td>
-      <td>{{ c.title }}</td>
-      <td>{{ c.description }}</td>
-      <td style="min-width: 140px">
-        <div *ngIf="!c.youtube_links?.length" style="color: #999">—</div>
-        <div *ngFor="let l of c.youtube_links" style="margin-bottom: 2px">
-          <a [href]="l.url" target="_blank">{{ l.label || l.url }}</a>
-        </div>
-      </td>
-      <td style="min-width: 160px">
-        <div *ngIf="!c.files?.length" style="color: #999">—</div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-in-up">
+    <div
+      *ngFor="let c of contests"
+      class="bg-white rounded-2xl border border-camp-border shadow-sm p-4 sm:p-5 hover:shadow-md transition-all duration-200 flex flex-col gap-3"
+    >
+      <!-- Card header -->
+      <div class="flex items-start gap-3">
         <div
-          *ngFor="let f of c.files"
-          style="
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 4px;
-          "
+          class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-2xl"
+          [style.backgroundColor]="campColorBg"
         >
+          {{ c.emoji || "⚡" }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-start justify-between gap-2 flex-wrap">
+            <h3
+              class="font-bold font-display text-camp-stone text-[1rem] leading-tight truncate"
+            >
+              {{ c.title }}
+            </h3>
+            <div
+              *ngIf="auth.isAdmin()"
+              class="flex items-center gap-1 shrink-0"
+            >
+              <button
+                (click)="startEdit(c)"
+                class="p-1.5 rounded-lg bg-camp-muted hover:bg-camp-border text-camp-gray hover:text-camp-stone transition-all"
+              >
+                <app-icon name="pencil" [size]="14"></app-icon>
+              </button>
+              <button
+                (click)="remove(c.id)"
+                class="p-1.5 rounded-lg bg-camp-muted hover:bg-red-50 text-camp-gray hover:text-red-500 transition-all"
+              >
+                <app-icon name="trash-2" [size]="14"></app-icon>
+              </button>
+            </div>
+          </div>
+          <div
+            *ngIf="c.description"
+            class="text-xs text-camp-gray mt-0.5 line-clamp-2"
+          >
+            {{ c.description }}
+          </div>
+        </div>
+      </div>
+
+      <!-- YouTube links -->
+      <div *ngIf="c.youtube_links?.length" class="flex flex-col gap-1">
+        <div *ngFor="let l of c.youtube_links" class="flex items-center gap-2">
+          <span class="shrink-0">🔗</span>
+          <a
+            [href]="l.url"
+            target="_blank"
+            class="text-xs text-camp-gray hover:text-camp-stone truncate transition-colors underline underline-offset-2"
+            >{{ l.label || l.url }}</a
+          >
+        </div>
+      </div>
+
+      <!-- Files (images) -->
+      <div *ngIf="c.files?.length" class="flex flex-wrap gap-2">
+        <ng-container *ngFor="let f of c.files">
           <ng-container *ngIf="f.file_type === 'image'">
-            <a [href]="f.file_path | mediaUrl" target="_blank">
+            <a [href]="f.file_path | mediaUrl" target="_blank" class="block">
               <img
                 [src]="f.file_path | mediaUrl"
                 [alt]="f.original_name"
-                style="
-                  height: 40px;
-                  width: 40px;
-                  object-fit: cover;
-                  border-radius: 3px;
-                "
+                class="h-14 w-14 object-cover rounded-xl border border-camp-border hover:opacity-90 transition-opacity"
               />
             </a>
           </ng-container>
@@ -165,214 +330,266 @@
             <a
               [href]="f.file_path"
               target="_blank"
-              style="font-size: 22px; text-decoration: none"
+              class="h-14 w-14 rounded-xl bg-camp-muted border border-camp-border flex items-center justify-center text-2xl hover:bg-camp-border transition-colors"
+              [title]="f.original_name"
               >🎬</a
             >
           </ng-container>
-          <span
-            style="
-              font-size: 11px;
-              color: #555;
-              max-width: 90px;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-            "
-            [title]="f.original_name"
-          >
-            {{ f.original_name }}
-          </span>
+        </ng-container>
+      </div>
+
+      <!-- Footer: date + delete files -->
+      <div
+        *ngIf="c.files?.length && auth.isAdmin()"
+        class="border-t border-camp-border pt-2 flex flex-wrap gap-1"
+      >
+        <div
+          *ngFor="let f of c.files"
+          class="flex items-center gap-1 px-2 py-1 bg-camp-muted rounded-lg text-xs text-camp-gray"
+        >
+          <span>{{ fileIcon(f) }}</span>
+          <span class="max-w-[80px] truncate" [title]="f.original_name">{{
+            f.original_name
+          }}</span>
           <button
-            *ngIf="auth.isAdmin()"
             (click)="deleteFile(c.id, f.id)"
-            style="
-              color: red;
-              border: none;
-              background: none;
-              cursor: pointer;
-              font-size: 11px;
-            "
+            class="text-red-400 hover:text-red-600 transition-colors ml-0.5"
           >
-            ✕
+            <app-icon name="x" [size]="12"></app-icon>
           </button>
         </div>
-      </td>
-      <td>{{ c.created_at | date: "dd.MM.yyyy" }}</td>
-      <td *ngIf="auth.isAdmin()">
-        <button (click)="startEdit(c)">✏️</button>
-        <button (click)="remove(c.id)">🗑️</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
+      </div>
 
-<!-- Редактирование -->
-<div
-  *ngIf="editItem"
-  style="margin-top: 16px; border: 1px solid #ccc; padding: 12px"
->
-  <h4>Редактирование: {{ editItem.title }}</h4>
-
-  <!-- Эмодзи с пикером -->
-  <div class="emoji-field">
-    <label>Эмодзи:</label>
-    <div class="emoji-input-wrap">
-      <span class="emoji-preview" (click)="toggleEditEmojiPicker($event)">
-        {{ editItem.emoji || "😀" }}
-      </span>
-      <input
-        [(ngModel)]="editItem.emoji"
-        placeholder="или введите вручную"
-        class="emoji-text-input"
-      />
-      <button class="emoji-btn" (click)="toggleEditEmojiPicker($event)">
-        ☺
-      </button>
-    </div>
-    <div
-      class="emoji-picker-wrap"
-      *ngIf="showEditEmojiPicker"
-      (click)="$event.stopPropagation()"
-    >
-      <emoji-mart
-        (emojiSelect)="onEditEmojiSelect($event)"
-        [showPreview]="false"
-        [i18n]="{
-          search: 'Поиск',
-          categories: { search: 'Результаты', recent: 'Частые' },
-        }"
-      ></emoji-mart>
+      <div class="flex items-center justify-between mt-auto pt-1">
+        <span class="text-[0.65rem] text-camp-subtle">
+          {{ c.created_at | date: "dd.MM.yyyy" }}
+        </span>
+        <!-- yt delete links for admin -->
+        <div
+          *ngIf="c.youtube_links?.length && auth.isAdmin()"
+          class="flex flex-wrap gap-1"
+        >
+          <button
+            *ngFor="let l of c.youtube_links"
+            (click)="deleteYoutubeLink(c.id, l.id)"
+            class="text-[0.6rem] px-2 py-0.5 rounded-full bg-red-50 text-red-400 hover:text-red-600 hover:bg-red-100 transition-colors"
+          >
+            ✕ {{ l.label || "ссылка" }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div>Название: <input [(ngModel)]="editItem.title" /></div>
-  <div>
-    Описание: <textarea [(ngModel)]="editItem.description" rows="3"></textarea>
-  </div>
-
-  <!-- Существующие YouTube ссылки -->
-  <div style="margin-top: 8px">
-    <strong>YouTube ссылки:</strong>
-    <div
-      *ngIf="!editItem.youtube_links?.length"
-      style="color: #999; font-size: 12px"
-    >
-      нет
-    </div>
-    <div
-      *ngFor="let l of editItem.youtube_links"
-      style="display: flex; align-items: center; gap: 8px; margin-top: 4px"
-    >
-      <span>🔗</span>
-      <a
-        [href]="l.url"
-        target="_blank"
-        style="
-          font-size: 12px;
-          max-width: 220px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        "
-      >
-        {{ l.label || l.url }}
-      </a>
-      <button
-        (click)="deleteYoutubeLink(editItem.id, l.id)"
-        style="color: red; border: none; background: none; cursor: pointer"
-      >
-        ✕
-      </button>
-    </div>
-    <button (click)="addEditLink()" style="margin-top: 6px">
-      ➕ Добавить ссылку
-    </button>
-    <div
-      *ngFor="let l of editNewLinks; let i = index"
-      style="display: flex; align-items: center; gap: 6px; margin-top: 4px"
-    >
-      <input
-        [(ngModel)]="l.url"
-        placeholder="https://youtu.be/..."
-        style="width: 240px"
-      />
-      <input [(ngModel)]="l.label" placeholder="Подпись" style="width: 140px" />
-      <button
-        (click)="removeEditNewLink(i)"
-        style="color: red; border: none; background: none; cursor: pointer"
-      >
-        ✕
-      </button>
-    </div>
-  </div>
-
-  <!-- Существующие файлы -->
-  <div *ngIf="editItem.files?.length" style="margin-top: 8px">
-    <strong>Загруженные файлы:</strong>
-    <div
-      *ngFor="let f of editItem.files"
-      style="display: flex; align-items: center; gap: 8px; margin-top: 4px"
-    >
-      <span>{{ fileIcon(f) }}</span>
-      <ng-container *ngIf="f.file_type === 'image'">
-        <img
-          [src]="f.file_path | mediaUrl"
-          [alt]="f.original_name"
-          style="
-            height: 36px;
-            width: 36px;
-            object-fit: cover;
-            border-radius: 3px;
-          "
-        />
-      </ng-container>
-      <span style="font-size: 12px">{{ f.original_name }}</span>
-      <button
-        (click)="deleteFile(editItem.id, f.id)"
-        style="color: red; border: none; background: none; cursor: pointer"
-      >
-        ✕
-      </button>
-    </div>
-  </div>
-
-  <!-- Добавить файлы -->
-  <div style="margin-top: 8px">
-    Добавить файлы:
-    <input
-      type="file"
-      accept="image/*,video/*"
-      multiple
-      (change)="onEditFilesChange($event)"
-    />
-  </div>
+  <!-- Edit Modal -->
   <div
-    *ngIf="editFiles.length"
-    style="margin-top: 4px; padding: 6px; background: #f5f5f5"
+    *ngIf="editItem"
+    class="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4 animate-fade-in-up"
+    (click)="editItem = null; editFiles = []; editNewLinks = []"
   >
     <div
-      *ngFor="let f of editFiles; let i = index"
-      style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px"
+      class="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-5 sm:p-6 space-y-4 animate-fade-in-up"
+      (click)="$event.stopPropagation()"
     >
-      <span>{{ fileIcon(f) }}</span>
-      <span style="font-size: 12px">{{ fileName(f) }}</span>
-      <span style="color: #888; font-size: 11px">({{ fileSize(f) }})</span>
-      <button
-        (click)="removeEditFile(i)"
-        style="color: red; border: none; background: none; cursor: pointer"
-      >
-        ✕
-      </button>
-    </div>
-  </div>
+      <div class="flex items-center justify-between">
+        <h2
+          class="font-display text-[1.1rem] font-bold text-camp-stone flex items-center gap-2"
+        >
+          <app-icon
+            name="pencil"
+            [size]="18"
+            [style.color]="campColor"
+          ></app-icon>
+          Редактирование
+        </h2>
+        <button
+          (click)="editItem = null; editFiles = []; editNewLinks = []"
+          class="text-camp-gray hover:text-camp-stone transition-colors"
+        >
+          <app-icon name="x" [size]="20"></app-icon>
+        </button>
+      </div>
 
-  <div style="margin-top: 10px">
-    <button (click)="saveEdit()">Сохранить</button>
-    <button
-      (click)="editItem = null; editFiles = []; editNewLinks = []"
-      style="margin-left: 8px"
-    >
-      Отмена
-    </button>
+      <!-- Emoji + Title -->
+      <div class="flex items-center gap-3">
+        <div class="relative shrink-0">
+          <button
+            (click)="toggleEditEmojiPicker($event)"
+            class="w-12 h-12 rounded-xl text-2xl flex items-center justify-center border-2 border-camp-border hover:border-camp-orange transition-colors bg-camp-muted"
+          >
+            {{ editItem.emoji || "😀" }}
+          </button>
+          <div
+            class="emoji-picker-wrap absolute z-50 top-14 left-0"
+            *ngIf="showEditEmojiPicker"
+            (click)="$event.stopPropagation()"
+          >
+            <emoji-mart
+              (emojiSelect)="onEditEmojiSelect($event)"
+              [showPreview]="false"
+              [i18n]="{
+                search: 'Поиск',
+                categories: { search: 'Результаты', recent: 'Частые' },
+              }"
+            ></emoji-mart>
+          </div>
+        </div>
+        <input
+          [(ngModel)]="editItem.title"
+          placeholder="Название"
+          class="flex-1 px-4 py-3 rounded-xl border border-camp-border bg-camp-muted text-camp-stone text-sm font-semibold placeholder-camp-subtle focus:outline-none focus:border-camp-orange transition-colors"
+        />
+      </div>
+
+      <textarea
+        [(ngModel)]="editItem.description"
+        placeholder="Описание"
+        rows="2"
+        class="w-full px-4 py-3 rounded-xl border border-camp-border bg-camp-muted text-camp-stone text-sm placeholder-camp-subtle focus:outline-none focus:border-camp-orange transition-colors resize-none"
+      ></textarea>
+
+      <!-- Existing YouTube -->
+      <div *ngIf="editItem.youtube_links?.length" class="space-y-1">
+        <span
+          class="text-xs font-semibold text-camp-gray uppercase tracking-wide"
+          >Ссылки</span
+        >
+        <div
+          *ngFor="let l of editItem.youtube_links"
+          class="flex items-center gap-2 px-3 py-2 bg-camp-muted rounded-xl"
+        >
+          <span>🔗</span>
+          <a
+            [href]="l.url"
+            target="_blank"
+            class="flex-1 text-xs text-camp-gray truncate underline underline-offset-2"
+          >
+            {{ l.label || l.url }}
+          </a>
+          <button
+            (click)="deleteYoutubeLink(editItem.id, l.id)"
+            class="text-red-400 hover:text-red-600 transition-colors"
+          >
+            <app-icon name="x" [size]="14"></app-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- New YouTube links -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <span
+            class="text-xs font-semibold text-camp-gray uppercase tracking-wide"
+            >Добавить ссылки</span
+          >
+          <button
+            (click)="addEditLink()"
+            class="flex items-center gap-1 text-xs px-3 py-1 rounded-full font-semibold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+          >
+            <app-icon name="plus" [size]="12"></app-icon> Добавить
+          </button>
+        </div>
+        <div
+          *ngFor="let l of editNewLinks; let i = index"
+          class="flex items-center gap-2"
+        >
+          <input
+            [(ngModel)]="l.url"
+            placeholder="https://youtu.be/..."
+            class="flex-1 px-3 py-2 rounded-xl border border-camp-border bg-camp-muted text-sm focus:outline-none focus:border-camp-orange transition-colors"
+          />
+          <input
+            [(ngModel)]="l.label"
+            placeholder="Подпись"
+            class="w-28 px-3 py-2 rounded-xl border border-camp-border bg-camp-muted text-sm focus:outline-none focus:border-camp-orange transition-colors"
+          />
+          <button
+            (click)="removeEditNewLink(i)"
+            class="text-red-400 hover:text-red-600 transition-colors shrink-0"
+          >
+            <app-icon name="x" [size]="16"></app-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Existing files -->
+      <div *ngIf="editItem.files?.length" class="space-y-2">
+        <span
+          class="text-xs font-semibold text-camp-gray uppercase tracking-wide"
+          >Загруженные файлы</span
+        >
+        <div class="flex flex-wrap gap-2">
+          <div
+            *ngFor="let f of editItem.files"
+            class="flex items-center gap-1 px-2 py-1 bg-camp-muted rounded-xl text-xs text-camp-gray"
+          >
+            <span>{{ fileIcon(f) }}</span>
+            <span class="max-w-[100px] truncate">{{ f.original_name }}</span>
+            <button
+              (click)="deleteFile(editItem.id, f.id)"
+              class="text-red-400 hover:text-red-600 transition-colors ml-1"
+            >
+              <app-icon name="x" [size]="12"></app-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add files -->
+      <div class="space-y-2">
+        <span
+          class="text-xs font-semibold text-camp-gray uppercase tracking-wide"
+          >Добавить файлы</span
+        >
+        <label
+          class="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-camp-border hover:border-camp-orange bg-camp-muted cursor-pointer transition-colors text-sm text-camp-gray"
+        >
+          <app-icon name="upload" [size]="16"></app-icon>
+          Изображения или видео
+          <input
+            type="file"
+            accept="image/*,video/*"
+            multiple
+            (change)="onEditFilesChange($event)"
+            class="hidden"
+          />
+        </label>
+        <div *ngIf="editFiles.length" class="space-y-1">
+          <div
+            *ngFor="let f of editFiles; let i = index"
+            class="flex items-center gap-2 px-3 py-1.5 bg-camp-muted rounded-xl text-xs"
+          >
+            <span>{{ fileIcon(f) }}</span>
+            <span class="flex-1 truncate text-camp-stone">{{
+              fileName(f)
+            }}</span>
+            <span class="text-camp-subtle">{{ fileSize(f) }}</span>
+            <button
+              (click)="removeEditFile(i)"
+              class="text-red-400 hover:text-red-600 transition-colors"
+            >
+              <app-icon name="x" [size]="14"></app-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-1">
+        <button
+          (click)="saveEdit()"
+          class="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold text-white shadow-camp-btn hover:opacity-90 active:scale-95 transition-all"
+          [style.backgroundColor]="campColor"
+        >
+          <app-icon name="check" [size]="16"></app-icon>
+          Сохранить
+        </button>
+        <button
+          (click)="editItem = null; editFiles = []; editNewLinks = []"
+          class="px-5 py-2.5 rounded-full text-sm font-semibold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+        >
+          Отмена
+        </button>
+      </div>
+    </div>
   </div>
 </div>

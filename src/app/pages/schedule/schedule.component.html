@@ -1,190 +1,522 @@
-<h2>Расписание дня</h2>
-<div *ngIf="error" style="color: red; margin-bottom: 10px">{{ error }}</div>
-<div *ngIf="msg" style="color: green; margin-bottom: 10px">{{ msg }}</div>
-
 <div
-  *ngIf="auth.isAdmin()"
-  style="
-    border: 1px solid #ccc;
-    padding: 12px;
-    margin-bottom: 12px;
-    border-radius: 4px;
-  "
+  class="p-4 sm:p-6 max-w-3xl mx-auto space-y-5 font-nunito animate-fade-in-up"
 >
-  <h3>Добавить пункт</h3>
-  <div style="margin-bottom: 6px">
-    Время: <input [(ngModel)]="form.time" placeholder="08:00" />
-  </div>
-  <div style="margin-bottom: 6px">
-    Название: <input [(ngModel)]="form.title" />
+  <!-- Header -->
+  <div
+    class="flex items-start justify-between flex-wrap gap-3 animate-fade-in-down"
+  >
+    <div>
+      <h1
+        style="font-family: var(--font-display, &quot;Neucha&quot;, sans-serif)"
+        class="font-display text-[1.4rem] sm:text-[1.75rem] font-bold text-camp-stone flex items-center gap-2 leading-tight"
+      >
+        <app-icon
+          name="calendar-days"
+          [size]="26"
+          [style.color]="campColor"
+        ></app-icon
+        >Расписание дня
+      </h1>
+      <p class="text-xs sm:text-sm mt-1 text-camp-gray font-medium">
+        {{ today | date: "EEEE, d MMMM" }}
+      </p>
+    </div>
+
+    <button
+      *ngIf="auth.isAdmin()"
+      (click)="showForm = !showForm"
+      class="flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-semibold shadow-camp-btn transition-all duration-200 hover:opacity-90 active:scale-95 shrink-0"
+      [style.backgroundColor]="campColor"
+    >
+      <app-icon name="plus" [size]="16"></app-icon>
+      Добавить пункт
+    </button>
   </div>
 
-  <!-- Эмодзи с пикером (форма создания) -->
-  <div class="emoji-field" style="margin-bottom: 6px">
-    <label>Эмодзи:</label>
-    <div class="emoji-input-wrap">
-      <span class="emoji-preview" (click)="toggleFormEmojiPicker($event)">
-        {{ form.emoji || "😀" }}
-      </span>
-      <input
-        [(ngModel)]="form.emoji"
-        placeholder="или введите вручную"
-        class="emoji-text-input"
-      />
-      <button class="emoji-btn" (click)="toggleFormEmojiPicker($event)">
-        ☺
+  <!-- Banners -->
+  <div
+    *ngIf="msg"
+    class="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm font-medium animate-fade-in-up"
+  >
+    <app-icon name="check-circle" [size]="16"></app-icon>
+    {{ msg }}
+  </div>
+  <div
+    *ngIf="error"
+    class="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium animate-fade-in-up"
+  >
+    <app-icon name="alert-circle" [size]="16"></app-icon>
+    {{ error }}
+  </div>
+
+  <!-- Create form -->
+  <div
+    *ngIf="auth.isAdmin() && showForm"
+    class="bg-white rounded-2xl shadow-sm border border-camp-border p-4 sm:p-5 space-y-3 animate-fade-in-up"
+  >
+    <h3
+      class="font-display text-base font-bold text-camp-stone flex items-center gap-1.5"
+      style="font-family: var(--font-display, &quot;Neucha&quot;, sans-serif)"
+    >
+      <app-icon
+        name="calendar-plus"
+        [size]="17"
+        [style.color]="campColor"
+      ></app-icon>
+      Новый пункт
+    </h3>
+
+    <div class="grid grid-cols-2 gap-3">
+      <div class="space-y-1.5">
+        <label
+          class="block text-xs font-semibold text-camp-gray uppercase tracking-wide"
+          >Время</label
+        >
+        <input
+          [(ngModel)]="form.time"
+          placeholder="08:00"
+          class="w-full px-3 py-2 rounded-xl border border-camp-border text-sm text-camp-stone bg-camp-muted focus:outline-none focus:ring-2 transition-all placeholder:text-camp-subtle"
+          [style.--tw-ring-color]="campColor"
+        />
+      </div>
+      <div class="space-y-1.5">
+        <label
+          class="block text-xs font-semibold text-camp-gray uppercase tracking-wide"
+          >Название</label
+        >
+        <input
+          [(ngModel)]="form.title"
+          placeholder="Завтрак"
+          class="w-full px-3 py-2 rounded-xl border border-camp-border text-sm text-camp-stone bg-camp-muted focus:outline-none focus:ring-2 transition-all placeholder:text-camp-subtle"
+          [style.--tw-ring-color]="campColor"
+        />
+      </div>
+    </div>
+
+    <!-- Emoji field -->
+    <div class="space-y-1.5">
+      <label
+        class="block text-xs font-semibold text-camp-gray uppercase tracking-wide"
+        >Эмодзи</label
+      >
+      <div class="flex items-center gap-2 relative">
+        <button
+          (click)="toggleFormEmojiPicker($event)"
+          class="w-10 h-10 rounded-xl border border-camp-border bg-camp-muted text-xl flex items-center justify-center hover:bg-camp-border transition-colors shrink-0"
+        >
+          {{ form.emoji || "😀" }}
+        </button>
+        <input
+          [(ngModel)]="form.emoji"
+          placeholder="или введите вручную"
+          class="flex-1 px-3 py-2 rounded-xl border border-camp-border text-sm text-camp-stone bg-camp-muted focus:outline-none focus:ring-2 transition-all placeholder:text-camp-subtle"
+          [style.--tw-ring-color]="campColor"
+        />
+      </div>
+    </div>
+
+    <div class="flex gap-2 pt-1">
+      <button
+        (click)="create()"
+        class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-sm font-semibold shadow-camp-btn transition-all duration-200 hover:opacity-90 active:scale-95"
+        [style.backgroundColor]="campColor"
+      >
+        <app-icon name="plus" [size]="14"></app-icon>
+        Добавить
+      </button>
+      <button
+        (click)="showForm = false; showFormEmojiPicker = false"
+        class="px-4 py-2 rounded-xl text-sm font-semibold text-camp-gray bg-camp-muted hover:bg-camp-border transition-colors"
+      >
+        Отмена
       </button>
     </div>
-    <div
-      class="emoji-picker-wrap"
-      *ngIf="showFormEmojiPicker"
-      (click)="$event.stopPropagation()"
-    >
-      <emoji-mart
-        (emojiSelect)="onFormEmojiSelect($event)"
-        [showPreview]="false"
-        [i18n]="{
-          search: 'Поиск',
-          categories: { search: 'Результаты', recent: 'Частые' },
-        }"
-      ></emoji-mart>
-    </div>
   </div>
 
-  <button (click)="create()">Добавить</button>
-</div>
-
-<div style="border: 1px solid #ccc; border-radius: 4px; overflow: hidden">
+  <!-- "Happening Now" callout -->
   <div
-    style="
-      display: flex;
-      background: #f5f5f5;
-      font-weight: bold;
-      padding: 10px;
-      border-bottom: 1px solid #ccc;
-    "
+    *ngIf="activeIndex >= 0"
+    class="rounded-2xl p-4 sm:p-5 flex items-center gap-4 animate-fade-in-up"
+    [style.backgroundColor]="campColorBg"
+    [style.border]="'2px solid ' + campColor"
   >
-    <div *ngIf="auth.isAdmin()" style="width: 40px"></div>
-    <div style="width: 80px">Порядок</div>
-    <div style="width: 90px">Время</div>
-    <div style="width: 70px">Эмодзи</div>
-    <div style="flex: 1">Название</div>
-    <div *ngIf="auth.isAdmin()" style="width: 90px; text-align: right">
-      Действия
-    </div>
-  </div>
-
-  <div
-    cdkDropList
-    (cdkDropListDropped)="drop($event)"
-    [cdkDropListDisabled]="!auth.isAdmin()"
-    style="background: white"
-  >
-    <div
-      *ngFor="let s of items"
-      cdkDrag
-      style="
-        display: flex;
-        align-items: center;
-        padding: 10px;
-        border-bottom: 1px solid #eee;
-        background: white;
-      "
-    >
+    <div class="text-4xl shrink-0">{{ items[activeIndex]?.emoji || "⏰" }}</div>
+    <div class="min-w-0 flex-1">
       <div
-        *ngIf="auth.isAdmin()"
-        cdkDragHandle
-        style="
-          width: 40px;
-          cursor: grab;
-          color: #888;
-          font-size: 18px;
-          user-select: none;
-        "
+        class="text-[0.65rem] font-bold uppercase tracking-widest mb-1 flex items-center gap-1"
+        [style.color]="campColor"
       >
-        ☰
+        🟢 Сейчас
       </div>
-      <div style="width: 80px">{{ s.order_index }}</div>
-      <div style="width: 90px">{{ s.time }}</div>
-      <div style="width: 70px; font-size: 18px">{{ s.emoji }}</div>
-      <div style="flex: 1; word-break: break-word">{{ s.title }}</div>
-      <div *ngIf="auth.isAdmin()" style="width: 90px; text-align: right">
-        <button
-          (click)="startEdit(s)"
-          style="margin-right: 4px; padding: 2px 6px"
-        >
-          ✏️
-        </button>
-        <button (click)="remove(s.id)" style="padding: 2px 6px">🗑️</button>
+      <div
+        class="font-bold text-base sm:text-lg text-camp-stone leading-tight"
+        style="font-family: var(--font-display, &quot;Neucha&quot;, sans-serif)"
+      >
+        {{ items[activeIndex]?.title }}
       </div>
-      <div *cdkDragPlaceholder style="background: #f0f7ff; height: 100%"></div>
+      <div class="text-xs text-camp-gray flex items-center gap-1.5 mt-1">
+        <app-icon name="clock" [size]="12"></app-icon>
+        {{ items[activeIndex]?.time }}
+      </div>
     </div>
   </div>
+
+  <!-- Empty state -->
+  <div
+    *ngIf="items.length === 0"
+    class="bg-white rounded-2xl border border-camp-border p-10 text-center"
+  >
+    <div class="text-4xl mb-3">📭</div>
+    <p class="text-sm font-medium text-camp-gray">
+      Расписание пока не добавлено
+    </p>
+    <p class="text-xs text-camp-subtle mt-1">
+      Добавьте пункты чтобы спланировать день
+    </p>
+  </div>
+
+  <!-- Timeline -->
+  <div *ngIf="items.length > 0" class="relative">
+    <div
+      cdkDropList
+      (cdkDropListDropped)="drop($event)"
+      [cdkDropListDisabled]="!auth.isAdmin()"
+      class="space-y-2 relative"
+    >
+      <!-- Единая сквозная вертикальная линия таймлайна -->
+      <div
+        class="absolute top-0 bottom-0 pointer-events-none"
+        style="left: 19px; width: 2px; background-color: #e7e5e4; z-index: 0"
+      ></div>
+      <div
+        *ngFor="let s of items; let i = index"
+        cdkDrag
+        class="flex gap-3 items-start group"
+      >
+        <!-- Timeline dot -->
+        <div class="relative z-10 flex-shrink-0 w-10 flex justify-center pt-6">
+          <!-- Вертикальная линия убрана отсюда — теперь единая линия на весь контейнер -->
+          <div
+            class="relative z-10 w-4 h-4 rounded-full transition-all duration-300"
+            [style.backgroundColor]="
+              i === activeIndex
+                ? campColor
+                : i < activeIndex
+                  ? '#D4D4D4'
+                  : 'white'
+            "
+            [style.border]="
+              i === activeIndex
+                ? '2px solid ' + campColor
+                : i < activeIndex
+                  ? '2px solid #D4D4D4'
+                  : '2px solid rgba(0,0,0,0.15)'
+            "
+            [style.boxShadow]="
+              i === activeIndex ? '0 0 0 4px ' + campColorBg : 'none'
+            "
+          ></div>
+        </div>
+
+        <!-- Card -->
+        <div
+          class="flex-1 min-w-0 rounded-2xl px-3 sm:px-4 py-3 flex items-center gap-3 transition-all duration-200"
+          [class.opacity-50]="i < activeIndex"
+          [style.backgroundColor]="
+            i === activeIndex
+              ? campColorLight
+              : i < activeIndex
+                ? '#FAFAF8'
+                : '#ffffff'
+          "
+          [style.border]="
+            i === activeIndex
+              ? '1.5px solid ' + campColor + '60'
+              : '1px solid rgba(0,0,0,0.06)'
+          "
+          [style.boxShadow]="
+            i === activeIndex ? '0 2px 12px ' + campColor + '25' : 'none'
+          "
+        >
+          <!-- Drag handle (admin) -->
+          <div
+            *ngIf="auth.isAdmin()"
+            cdkDragHandle
+            class="text-camp-subtle cursor-grab active:cursor-grabbing shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+          >
+            <app-icon name="grip-vertical" [size]="14"></app-icon>
+          </div>
+
+          <!-- Emoji -->
+          <span class="text-xl sm:text-2xl shrink-0">{{
+            s.emoji || "📌"
+          }}</span>
+
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <div
+              class="text-xs sm:text-sm font-semibold text-camp-stone truncate"
+            >
+              {{ s.title }}
+            </div>
+            <div
+              class="text-[0.65rem] sm:text-xs text-camp-gray flex items-center gap-1 mt-0.5"
+            >
+              <app-icon name="clock" [size]="11"></app-icon>
+              {{ s.time }}
+            </div>
+          </div>
+
+          <!-- Admin actions -->
+          <div
+            *ngIf="auth.isAdmin()"
+            class="flex items-center gap-1 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+          >
+            <button
+              (click)="startEdit(s)"
+              class="p-1.5 rounded-lg text-camp-gray hover:bg-camp-border hover:text-camp-stone transition-colors"
+            >
+              <app-icon name="pencil" [size]="13"></app-icon>
+            </button>
+            <button
+              (click)="remove(s.id)"
+              class="p-1.5 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+            >
+              <app-icon name="trash-2" [size]="13"></app-icon>
+            </button>
+          </div>
+        </div>
+
+        <div
+          *cdkDragPlaceholder
+          class="flex-1 h-12 rounded-2xl bg-camp-muted border-2 border-dashed border-camp-border"
+        ></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit modal -->
 </div>
 
-<!-- Редактирование -->
+<!-- ═══════════════ EDIT MODAL ═══════════════ -->
 <div
   *ngIf="editItem"
-  style="
-    margin-top: 16px;
-    border: 1px solid #ccc;
-    padding: 12px;
-    border-radius: 4px;
-  "
+  class="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center p-4 z-[9999]"
+  style="background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(2px)"
+  (click)="editItem = null; showEditEmojiPicker = false"
 >
-  <h4>Редактирование</h4>
-  <div style="margin-bottom: 6px">
-    Время: <input [(ngModel)]="editItem.time" />
-  </div>
-  <div style="margin-bottom: 6px">
-    Название: <input [(ngModel)]="editItem.title" />
-  </div>
+  <div
+    class="bg-white rounded-2xl shadow-camp w-full max-w-md animate-pop-in overflow-y-auto"
+    style="max-height: calc(100dvh - 2rem)"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-5">
+        <h2
+          class="font-display text-base font-bold text-camp-stone flex items-center gap-2"
+          style="
+            font-family: var(--font-display, &quot;Neucha&quot;, sans-serif);
+          "
+        >
+          <app-icon
+            name="pencil"
+            [size]="16"
+            [style.color]="campColor"
+          ></app-icon>
+          {{ editItem.title }}
+        </h2>
+        <button
+          class="w-8 h-8 flex items-center justify-center rounded-xl bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+          (click)="editItem = null; showEditEmojiPicker = false"
+        >
+          <app-icon name="x" [size]="14"></app-icon>
+        </button>
+      </div>
 
-  <!-- Эмодзи с пикером (форма редактирования) -->
-  <div class="emoji-field" style="margin-bottom: 6px">
-    <label>Эмодзи:</label>
-    <div class="emoji-input-wrap">
-      <span class="emoji-preview" (click)="toggleEditEmojiPicker($event)">
-        {{ editItem.emoji || "😀" }}
-      </span>
-      <input
-        [(ngModel)]="editItem.emoji"
-        placeholder="или введите вручную"
-        class="emoji-text-input"
-      />
-      <button class="emoji-btn" (click)="toggleEditEmojiPicker($event)">
-        ☺
+      <div class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label
+              class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+              >Время</label
+            >
+            <input
+              [(ngModel)]="editItem.time"
+              class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+              (focus)="
+                $any($event.target).style.borderColor = campColor;
+                $any($event.target).style.backgroundColor = 'white'
+              "
+              (blur)="
+                $any($event.target).style.borderColor = 'transparent';
+                $any($event.target).style.backgroundColor = ''
+              "
+            />
+          </div>
+          <div>
+            <label
+              class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+              >Порядок</label
+            >
+            <input
+              type="number"
+              [(ngModel)]="editItem.order_index"
+              class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+              (focus)="
+                $any($event.target).style.borderColor = campColor;
+                $any($event.target).style.backgroundColor = 'white'
+              "
+              (blur)="
+                $any($event.target).style.borderColor = 'transparent';
+                $any($event.target).style.backgroundColor = ''
+              "
+            />
+          </div>
+        </div>
+
+        <div>
+          <label
+            class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+            >Название</label
+          >
+          <input
+            [(ngModel)]="editItem.title"
+            class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+            (focus)="
+              $any($event.target).style.borderColor = campColor;
+              $any($event.target).style.backgroundColor = 'white'
+            "
+            (blur)="
+              $any($event.target).style.borderColor = 'transparent';
+              $any($event.target).style.backgroundColor = ''
+            "
+          />
+        </div>
+
+        <!-- Emoji field -->
+        <div>
+          <label
+            class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-2"
+            >Эмодзи</label
+          >
+          <div class="flex gap-4 flex-wrap items-center">
+            <div class="relative emoji-field">
+              <button
+                type="button"
+                class="w-16 h-16 rounded-2xl border-2 overflow-hidden flex items-center justify-center shrink-0 transition-all hover:scale-105 active:scale-95"
+                [style.borderColor]="editItem.emoji ? campColor : '#E7E5E4'"
+                [style.backgroundColor]="campColorBg"
+                (click)="toggleEditEmojiPicker($event)"
+                title="Нажмите для выбора эмодзи"
+              >
+                <span *ngIf="editItem.emoji" class="text-3xl leading-none">{{
+                  editItem.emoji
+                }}</span>
+                <div
+                  *ngIf="!editItem.emoji"
+                  class="flex flex-col items-center gap-0.5"
+                >
+                  <app-icon
+                    name="smile"
+                    [size]="20"
+                    class="text-camp-subtle"
+                  ></app-icon>
+                  <span
+                    class="text-[0.55rem] font-bold text-camp-subtle uppercase tracking-wide"
+                    >эмодзи</span
+                  >
+                </div>
+              </button>
+              <button
+                *ngIf="editItem.emoji"
+                type="button"
+                class="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-[#FEE2E2] text-camp-error hover:bg-[#FECACA] transition-colors shadow-sm z-10"
+                (click)="editItem.emoji = ''; $event.stopPropagation()"
+              >
+                <app-icon name="x" [size]="10"></app-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-2 mt-5">
+        <button
+          (click)="saveEdit()"
+          class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px"
+          [style.backgroundColor]="campColor"
+        >
+          <app-icon name="check" [size]="15"></app-icon>
+          Сохранить
+        </button>
+        <button
+          (click)="editItem = null; showEditEmojiPicker = false"
+          class="px-4 py-2.5 rounded-xl text-sm font-bold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+        >
+          Отмена
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ EMOJI PICKER MODAL ═══════════════ -->
+<div
+  *ngIf="showFormEmojiPicker || showEditEmojiPicker"
+  class="fixed inset-0 flex items-end sm:items-center justify-center z-[10000]"
+  style="background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(2px)"
+  (click)="showFormEmojiPicker = false; showEditEmojiPicker = false"
+>
+  <div
+    class="bg-white w-full sm:w-auto rounded-t-2xl sm:rounded-2xl shadow-camp animate-pop-in flex flex-col overflow-hidden"
+    style="max-height: 75dvh; max-height: 75vh"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Шапка -->
+    <div
+      class="flex items-center justify-between px-4 py-3 border-b border-camp-border shrink-0 rounded-t-2xl"
+      [style.background]="campColorBg"
+    >
+      <div class="flex items-center gap-2">
+        <app-icon name="smile" [size]="16" [style.color]="campColor"></app-icon>
+        <span class="font-display text-sm font-bold text-camp-stone"
+          >Выберите эмодзи</span
+        >
+      </div>
+      <button
+        type="button"
+        class="w-7 h-7 flex items-center justify-center rounded-xl bg-white/70 text-camp-gray hover:bg-white transition-colors"
+        (click)="showFormEmojiPicker = false; showEditEmojiPicker = false"
+      >
+        <app-icon name="x" [size]="14"></app-icon>
       </button>
     </div>
-    <div
-      class="emoji-picker-wrap"
-      *ngIf="showEditEmojiPicker"
-      (click)="$event.stopPropagation()"
-    >
+    <!-- Пикер -->
+    <div class="flex-1 min-h-0 overflow-hidden">
       <emoji-mart
-        (emojiSelect)="onEditEmojiSelect($event)"
+        *ngIf="showFormEmojiPicker"
+        (emojiSelect)="onFormEmojiSelect($event)"
+        [darkMode]="false"
         [showPreview]="false"
-        [i18n]="{
-          search: 'Поиск',
-          categories: { search: 'Результаты', recent: 'Частые' },
-        }"
+        [enableSearch]="false"
+        [recent]="[]"
+        [totalFrequentLines]="0"
+        [exclude]="['recent']"
+        [color]="campColor"
+        [perLine]="8"
+      ></emoji-mart>
+      <emoji-mart
+        *ngIf="showEditEmojiPicker"
+        (emojiSelect)="onEditEmojiSelect($event)"
+        [darkMode]="false"
+        [showPreview]="false"
+        [enableSearch]="false"
+        [recent]="[]"
+        [totalFrequentLines]="0"
+        [exclude]="['recent']"
+        [color]="campColor"
+        [perLine]="8"
       ></emoji-mart>
     </div>
   </div>
-
-  <div style="margin-bottom: 6px">
-    Порядок:
-    <input
-      type="number"
-      [(ngModel)]="editItem.order_index"
-      style="width: 60px"
-    />
-  </div>
-  <button (click)="saveEdit()">Сохранить</button>
-  <button
-    (click)="editItem = null; showEditEmojiPicker = false"
-    style="margin-left: 8px"
-  >
-    Отмена
-  </button>
 </div>
