@@ -8,6 +8,13 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   {
+    path: 'error/no-access',
+    loadComponent: () =>
+      import('./pages/error-no-token/error-no-token.component').then(
+        (m) => m.ErrorNoTokenComponent,
+      ),
+  },
+  {
     path: '',
     component: LayoutComponent,
     canActivate: [authGuard],
@@ -85,6 +92,11 @@ export const routes: Routes = [
           import('./pages/settings/settings.component').then(
             (m) => m.SettingsComponent,
           ),
+      },
+      {
+        path: 'error',
+        loadComponent: () =>
+          import('./pages/error/error.component').then((m) => m.ErrorComponent),
       },
     ],
   },

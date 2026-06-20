@@ -11,7 +11,6 @@ import { AuthService } from '../../services/auth.service';
 import { SettingsService } from '../../services/settings.service';
 import { IconComponent } from '../../shared/icon.component';
 import { MediaUrlPipe } from '../../pipes/media-url.pipe';
-
 @Component({
   selector: 'app-dashboard',
   standalone: true,

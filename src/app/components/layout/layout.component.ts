@@ -1,11 +1,21 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import {
+  RouterOutlet,
+  RouterLink,
+  RouterLinkActive,
+  Router,
+  NavigationStart,
+  NavigationEnd,
+  NavigationCancel,
+  NavigationError,
+} from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { SettingsService, CampSettings } from '../../services/settings.service';
 import { MediaUrlPipe } from '../../pipes/media-url.pipe';
 import { IconComponent } from '../../shared/icon.component';
+import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-layout',
@@ -17,6 +27,7 @@ import { IconComponent } from '../../shared/icon.component';
     RouterLinkActive,
     MediaUrlPipe,
     IconComponent,
+    LoadingSpinnerComponent,
   ],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css',
@@ -32,11 +43,16 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
   mobileMenuOpen = false;
 
+  /** true между NavigationStart и завершением навигации — показывает спиннер вместо router-outlet */
+  routeLoading = false;
+
   private liveSub?: Subscription;
+  private routerEventsSub?: Subscription;
 
   constructor(
     public auth: AuthService,
     private settingsService: SettingsService,
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -53,10 +69,25 @@ export class LayoutComponent implements OnInit, OnDestroy {
         this.applySettings(d as CampSettings);
       }
     });
+
+    // Спиннер на время навигации между страницами (особенно полезно
+    // для lazy-loaded chunks через loadComponent).
+    this.routerEventsSub = this.router.events.subscribe((event) => {
+      if (event instanceof NavigationStart) {
+        this.routeLoading = true;
+      } else if (
+        event instanceof NavigationEnd ||
+        event instanceof NavigationCancel ||
+        event instanceof NavigationError
+      ) {
+        this.routeLoading = false;
+      }
+    });
   }
 
   ngOnDestroy() {
     this.liveSub?.unsubscribe();
+    this.routerEventsSub?.unsubscribe();
   }
 
   private applySettings(d: Partial<CampSettings>): void {

@@ -1,379 +1,662 @@
-<h2>Настройки</h2>
-<div *ngIf="error" style="color: red; margin-bottom: 8px">{{ error }}</div>
-<div *ngIf="msg" style="color: green; margin-bottom: 8px">{{ msg }}</div>
-
 <div
-  *ngIf="auth.isAdmin()"
-  style="display: flex; flex-direction: column; gap: 16px; max-width: 560px"
+  class="p-4 sm:p-6 max-w-7xl mx-auto space-y-5 font-nunito animate-fade-in-up"
 >
-  <!-- ── Информация о заезде ────────────────────────────────────────── -->
-  <section style="border: 1px solid #ccc; border-radius: 6px; padding: 16px">
-    <h3 style="margin-top: 0">Информация о заезде</h3>
+  <!-- Loading state -->
+  <app-loading-spinner *ngIf="loading"></app-loading-spinner>
 
-    <div style="margin-bottom: 10px">
-      <label
-        style="display: block; font-size: 13px; color: #555; margin-bottom: 3px"
-        >Название заезда</label
+  <ng-container *ngIf="!loading">
+    <!-- Header -->
+    <div class="animate-fade-in-down">
+      <h1
+        style="font-family: var(--font-display, &quot;Neucha&quot;, sans-serif)"
+        class="font-display text-[1.4rem] sm:text-[1.75rem] font-bold text-camp-stone flex items-center gap-2 leading-tight"
       >
-      <input
-        [(ngModel)]="campName"
-        (ngModelChange)="onCampNameChange($event)"
-        style="width: 100%; box-sizing: border-box"
-        placeholder="Лагерь «Солнышко»"
-      />
+        <app-icon
+          name="settings"
+          [size]="26"
+          [style.color]="campColor"
+        ></app-icon>
+        Настройки
+      </h1>
+      <p class="text-xs sm:text-sm mt-1 text-camp-gray font-medium">
+        Заезд, баллы и оформление лагеря
+      </p>
     </div>
 
-    <div style="margin-bottom: 10px">
-      <label
-        style="display: block; font-size: 13px; color: #555; margin-bottom: 3px"
-        >Организация</label
-      >
-      <input
-        [(ngModel)]="campOrganization"
-        (ngModelChange)="onOrganizationChange($event)"
-        style="width: 100%; box-sizing: border-box"
-        placeholder="МБОУ «Школа №1»"
-      />
+    <!-- Доступ только для админов -->
+    <div
+      *ngIf="!auth.isAdmin()"
+      class="bg-white rounded-2xl shadow-sm border border-camp-border p-5 sm:p-6 flex items-center gap-3 text-camp-gray animate-fade-in-up"
+    >
+      <app-icon
+        name="shield-alert"
+        [size]="20"
+        class="shrink-0 text-camp-subtle"
+      ></app-icon>
+      <span class="text-sm font-medium">
+        Настройки доступны только администратору.
+      </span>
     </div>
 
-    <!-- Иконка: эмодзи или картинка -->
-    <div style="margin-bottom: 10px">
-      <label
-        style="display: block; font-size: 13px; color: #555; margin-bottom: 6px"
-        >Иконка лагеря (эмодзи или картинка)</label
-      >
+    <ng-container *ngIf="auth.isAdmin()">
+      <!-- Toasts -->
       <div
-        style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap"
+        *ngIf="error"
+        class="flex items-center gap-[7px] bg-camp-errorBg text-camp-error rounded-xl px-3 sm:px-4 py-2.5 text-[0.82rem] font-bold animate-shake"
       >
-        <!-- Превью -->
-        <div
-          style="
-            width: 56px;
-            height: 56px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            background: #f9f9f9;
-          "
+        <app-icon name="circle-alert" [size]="15" class="shrink-0"></app-icon>
+        {{ error }}
+      </div>
+      <div
+        *ngIf="msg"
+        class="flex items-center gap-[7px] rounded-xl px-3 sm:px-4 py-2.5 text-[0.82rem] font-bold animate-fade-in-down"
+        style="background-color: #e8fdf0; color: #16a34a"
+      >
+        <app-icon name="check" [size]="15" class="shrink-0"></app-icon>
+        {{ msg }}
+      </div>
+
+      <!-- ── Информация о заезде ─────────────────────────────────────── -->
+      <section
+        class="bg-white rounded-2xl shadow-sm border border-camp-border p-4 sm:p-5 animate-fade-in-up"
+      >
+        <h2
+          class="font-display text-[1rem] sm:text-[1.15rem] font-bold text-camp-stone flex items-center gap-1.5 mb-4"
         >
-          <img
-            *ngIf="campLogoPath"
-            [src]="campLogoPath | mediaUrl"
-            style="width: 100%; height: 100%; object-fit: cover"
-          />
-          <span *ngIf="!campLogoPath && campEmoji" style="font-size: 32px">{{
-            campEmoji
-          }}</span>
-          <span
-            *ngIf="!campLogoPath && !campEmoji"
-            style="font-size: 24px; color: #ccc"
-            >🏕️</span
-          >
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 6px">
-          <div style="display: flex; align-items: center; gap: 6px">
-            <span style="font-size: 13px; color: #555">Эмодзи:</span>
+          🏕️ Информация о заезде
+        </h2>
+
+        <div class="space-y-3.5">
+          <div>
+            <label
+              class="block text-[0.72rem] sm:text-[0.78rem] font-bold text-camp-gray mb-1.5 uppercase tracking-wide"
+            >
+              Название заезда
+            </label>
             <input
-              [(ngModel)]="campEmoji"
-              (ngModelChange)="onEmojiChange($event)"
-              style="width: 80px"
-              placeholder="🏕️"
-              [disabled]="!!campLogoPath"
+              [(ngModel)]="campName"
+              (ngModelChange)="onCampNameChange($event)"
+              class="w-full px-3 sm:px-[14px] py-[9px] sm:py-[11px] bg-camp-input border-2 rounded-xl text-[0.85rem] sm:text-[0.9rem] font-medium text-camp-stone outline-none transition-colors duration-200 placeholder:text-[#c7bfb8]"
+              style="border-color: transparent"
+              placeholder="Лагерь «Солнышко»"
+              (focus)="
+                $any($event.target).style.borderColor = campColor;
+                $any($event.target).style.backgroundColor = 'white'
+              "
+              (blur)="
+                $any($event.target).style.borderColor = 'transparent';
+                $any($event.target).style.backgroundColor = ''
+              "
             />
           </div>
-          <div style="display: flex; align-items: center; gap: 6px">
-            <span style="font-size: 13px; color: #555">Картинка:</span>
+
+          <div>
             <label
-              style="
-                cursor: pointer;
-                padding: 4px 10px;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                font-size: 13px;
-                background: #fff;
-              "
+              class="block text-[0.72rem] sm:text-[0.78rem] font-bold text-camp-gray mb-1.5 uppercase tracking-wide"
             >
-              {{ logoUploading ? "Загрузка..." : "Выбрать файл" }}
-              <input
-                type="file"
-                accept="image/*"
-                (change)="onLogoChange($event)"
-                style="display: none"
-                [disabled]="logoUploading"
-              />
+              Организация
             </label>
-            <button
-              *ngIf="campLogoPath"
-              (click)="deleteLogo()"
-              style="
-                color: red;
-                border: none;
-                background: none;
-                cursor: pointer;
-                font-size: 13px;
+            <input
+              [(ngModel)]="campOrganization"
+              (ngModelChange)="onOrganizationChange($event)"
+              class="w-full px-3 sm:px-[14px] py-[9px] sm:py-[11px] bg-camp-input border-2 rounded-xl text-[0.85rem] sm:text-[0.9rem] font-medium text-camp-stone outline-none transition-colors duration-200 placeholder:text-[#c7bfb8]"
+              style="border-color: transparent"
+              placeholder="МБОУ «Школа №1»"
+              (focus)="
+                $any($event.target).style.borderColor = campColor;
+                $any($event.target).style.backgroundColor = 'white'
               "
-            >
-              ✕ удалить
-            </button>
+              (blur)="
+                $any($event.target).style.borderColor = 'transparent';
+                $any($event.target).style.backgroundColor = ''
+              "
+            />
           </div>
-          <div style="font-size: 11px; color: #999">
-            Картинка заменяет эмодзи. Выберите что-то одно.
+
+          <!-- Иконка лагеря -->
+          <div>
+            <label
+              class="block text-[0.72rem] sm:text-[0.78rem] font-bold text-camp-gray mb-2 uppercase tracking-wide"
+            >
+              Иконка лагеря
+            </label>
+            <div class="flex items-center gap-3 sm:gap-4 flex-wrap">
+              <!-- Превью -->
+              <div
+                class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden shadow-sm"
+                [style.backgroundColor]="campColorBg"
+              >
+                <img
+                  *ngIf="campLogoPath"
+                  [src]="campLogoPath | mediaUrl"
+                  class="w-full h-full object-cover"
+                />
+                <span
+                  *ngIf="!campLogoPath && campEmoji"
+                  class="text-3xl leading-none"
+                  >{{ campEmoji }}</span
+                >
+                <span
+                  *ngIf="!campLogoPath && !campEmoji"
+                  class="text-2xl leading-none text-camp-subtle"
+                  >🏕️</span
+                >
+              </div>
+
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-semibold text-camp-gray"
+                    >Эмодзи</span
+                  >
+                  <button
+                    type="button"
+                    (click)="showEmojiPicker = true"
+                    [disabled]="!!campLogoPath"
+                    class="w-16 px-2.5 py-1.5 bg-camp-input border-2 rounded-lg text-base text-center transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-camp-muted"
+                    style="border-color: transparent"
+                  >
+                    {{ campEmoji || "🏕️" }}
+                  </button>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-semibold text-camp-gray"
+                    >Картинка</span
+                  >
+                  <label
+                    class="cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+                  >
+                    <app-icon name="image" [size]="13"></app-icon>
+                    {{ logoUploading ? "Загрузка..." : "Выбрать файл" }}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      (change)="onLogoChange($event)"
+                      class="hidden"
+                      [disabled]="logoUploading"
+                    />
+                  </label>
+                  <button
+                    *ngIf="campLogoPath"
+                    (click)="deleteLogo()"
+                    type="button"
+                    class="flex items-center gap-1 text-xs font-semibold text-camp-error hover:opacity-75 transition-opacity"
+                  >
+                    <app-icon name="x" [size]="13"></app-icon>
+                    удалить
+                  </button>
+                </div>
+                <div class="text-[0.65rem] text-camp-subtle">
+                  Картинка заменяет эмодзи. Выберите что-то одно.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Даты -->
+          <div class="flex gap-3">
+            <div class="flex-1">
+              <label
+                class="block text-[0.72rem] sm:text-[0.78rem] font-bold text-camp-gray mb-1.5 uppercase tracking-wide"
+              >
+                Дата начала
+              </label>
+              <input
+                type="date"
+                [(ngModel)]="campDateStart"
+                (ngModelChange)="onDateStartChange($event)"
+                class="w-full px-3 py-[9px] sm:py-[11px] bg-camp-input border-2 rounded-xl text-[0.82rem] sm:text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200"
+                style="border-color: transparent"
+                (focus)="$any($event.target).style.borderColor = campColor"
+                (blur)="$any($event.target).style.borderColor = 'transparent'"
+              />
+            </div>
+            <div class="flex-1">
+              <label
+                class="block text-[0.72rem] sm:text-[0.78rem] font-bold text-camp-gray mb-1.5 uppercase tracking-wide"
+              >
+                Дата окончания
+              </label>
+              <input
+                type="date"
+                [(ngModel)]="campDateEnd"
+                (ngModelChange)="onDateEndChange($event)"
+                class="w-full px-3 py-[9px] sm:py-[11px] bg-camp-input border-2 rounded-xl text-[0.82rem] sm:text-[0.88rem] font-medium text-camp-stone outline-none transition-colors duration-200"
+                style="border-color: transparent"
+                (focus)="$any($event.target).style.borderColor = campColor"
+                (blur)="$any($event.target).style.borderColor = 'transparent'"
+              />
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <div style="margin-bottom: 10px">
-      <label
-        style="display: block; font-size: 13px; color: #555; margin-bottom: 3px"
-        >Цвет акцента</label
+      <!-- ── Цвет акцента ─────────────────────────────────────────────── -->
+      <section
+        class="bg-white rounded-2xl shadow-sm border border-camp-border p-4 sm:p-5 animate-fade-in-up"
       >
-      <div style="display: flex; align-items: center; gap: 10px">
-        <input
-          type="color"
-          [(ngModel)]="campColor"
-          (ngModelChange)="onColorChange($event)"
-          style="
-            width: 48px;
-            height: 36px;
-            cursor: pointer;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 2px;
-          "
-        />
-        <input
-          [(ngModel)]="campColor"
-          (ngModelChange)="onColorChange($event)"
-          style="width: 100px"
-          placeholder="#4f7ef8"
-        />
-        <div
-          style="
-            width: 36px;
-            height: 36px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-          "
-          [style.background]="campColor"
-        ></div>
-      </div>
-    </div>
-
-    <div style="display: flex; gap: 12px; margin-bottom: 10px">
-      <div style="flex: 1">
-        <label
-          style="
-            display: block;
-            font-size: 13px;
-            color: #555;
-            margin-bottom: 3px;
-          "
-          >Дата начала</label
+        <h2
+          class="font-display text-[1rem] sm:text-[1.15rem] font-bold text-camp-stone flex items-center gap-1.5 mb-1"
         >
-        <input
-          type="date"
-          [(ngModel)]="campDateStart"
-          (ngModelChange)="onDateStartChange($event)"
-          style="width: 100%; box-sizing: border-box"
-        />
-      </div>
-      <div style="flex: 1">
-        <label
-          style="
-            display: block;
-            font-size: 13px;
-            color: #555;
-            margin-bottom: 3px;
-          "
-          >Дата окончания</label
+          <app-icon
+            name="palette"
+            [size]="18"
+            [style.color]="campColor"
+          ></app-icon>
+          Цвет акцента
+        </h2>
+        <p class="text-xs sm:text-sm text-camp-gray mb-4">
+          Этот цвет используется в кнопках, выделениях, активной навигации и
+          прогресс-барах по всему приложению.
+        </p>
+
+        <!-- Пресеты -->
+        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2.5 sm:gap-3 mb-5">
+          <button
+            *ngFor="let p of presets"
+            type="button"
+            (click)="selectPreset(p.color)"
+            class="flex flex-col items-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-2xl border-2 transition-all duration-150"
+            [style.backgroundColor]="p.color + '15'"
+            [style.borderColor]="
+              isPresetActive(p.color) ? p.color : 'transparent'
+            "
+            [style.boxShadow]="
+              isPresetActive(p.color) ? '0 2px 12px ' + p.color + '40' : 'none'
+            "
+          >
+            <div
+              class="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-lg sm:text-xl relative"
+              [style.backgroundColor]="p.color"
+            >
+              <app-icon
+                *ngIf="isPresetActive(p.color)"
+                name="check"
+                [size]="16"
+                class="text-white"
+              ></app-icon>
+              <span *ngIf="!isPresetActive(p.color)">{{ p.emoji }}</span>
+            </div>
+            <span
+              class="text-[0.68rem] sm:text-xs font-semibold text-camp-stone"
+              >{{ p.name }}</span
+            >
+          </button>
+        </div>
+
+        <!-- Свой цвет -->
+        <div class="flex items-center gap-3 sm:gap-4 flex-wrap">
+          <label class="text-sm font-semibold text-camp-stone shrink-0"
+            >Свой цвет:</label
+          >
+          <div class="flex items-center gap-3">
+            <input
+              type="color"
+              [(ngModel)]="campColor"
+              (ngModelChange)="onColorChange($event)"
+              class="w-12 h-10 rounded-xl border-2 border-camp-border cursor-pointer p-0.5"
+            />
+            <input
+              [(ngModel)]="campColor"
+              (ngModelChange)="onColorChange($event)"
+              class="w-28 px-2.5 py-1.5 bg-camp-input border-2 rounded-lg text-sm font-mono text-camp-stone outline-none transition-colors duration-200"
+              style="border-color: transparent"
+              placeholder="#F59E0B"
+              (focus)="$any($event.target).style.borderColor = campColor"
+              (blur)="$any($event.target).style.borderColor = 'transparent'"
+            />
+          </div>
+        </div>
+
+        <!-- Превью -->
+        <div class="mt-4 p-3.5 sm:p-4 rounded-xl bg-camp-muted">
+          <div
+            class="text-[0.65rem] font-bold uppercase tracking-wide text-camp-subtle mb-3"
+          >
+            Предпросмотр
+          </div>
+          <div class="flex items-center gap-3 flex-wrap">
+            <button
+              type="button"
+              class="px-4 py-2 rounded-xl text-white text-sm font-semibold shadow-camp-btn"
+              [style.backgroundColor]="campColor"
+            >
+              Кнопка
+            </button>
+            <div class="flex items-center gap-2">
+              <span
+                class="w-2.5 h-2.5 rounded-full"
+                [style.backgroundColor]="campColor"
+              ></span>
+              <span class="text-sm font-semibold" [style.color]="campColor"
+                >Активный пункт</span
+              >
+            </div>
+            <div class="flex-1 h-2.5 rounded-full bg-camp-border min-w-24">
+              <div
+                class="h-2.5 rounded-full w-2/3 transition-all duration-300"
+                [style.backgroundColor]="campColor"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Баллы участников ─────────────────────────────────────────── -->
+      <section
+        class="bg-white rounded-2xl shadow-sm border border-camp-border p-4 sm:p-5 animate-fade-in-up"
+      >
+        <h2
+          class="font-display text-[1rem] sm:text-[1.15rem] font-bold text-camp-stone flex items-center gap-1.5 mb-3"
         >
-        <input
-          type="date"
-          [(ngModel)]="campDateEnd"
-          (ngModelChange)="onDateEndChange($event)"
-          style="width: 100%; box-sizing: border-box"
-        />
+          <app-icon
+            name="star"
+            [size]="18"
+            [style.color]="campColor"
+          ></app-icon>
+          Система баллов участников
+        </h2>
+        <label
+          class="flex items-center gap-2.5 cursor-pointer text-sm font-medium text-camp-stone"
+        >
+          <input
+            type="checkbox"
+            [(ngModel)]="participantPointsEnabled"
+            class="w-4 h-4 rounded accent-camp-orange cursor-pointer"
+            [style.accentColor]="campColor"
+          />
+          Включена (участники могут получать/терять баллы)
+        </label>
+      </section>
+
+      <!-- ── Баллы за посещение ───────────────────────────────────────── -->
+      <section
+        class="bg-white rounded-2xl shadow-sm border border-camp-border p-4 sm:p-5 animate-fade-in-up"
+      >
+        <h2
+          class="font-display text-[1rem] sm:text-[1.15rem] font-bold text-camp-stone flex items-center gap-1.5 mb-1"
+        >
+          <app-icon
+            name="clipboard-list"
+            [size]="18"
+            [style.color]="campColor"
+          ></app-icon>
+          Баллы за посещение
+        </h2>
+        <p class="text-xs sm:text-sm text-camp-gray mb-3">
+          При отметке участника как «был» на перекличке автоматически
+          начисляются баллы. При изменении статуса баллы корректируются.
+        </p>
+        <label
+          class="flex items-center gap-2.5 cursor-pointer text-sm font-medium text-camp-stone mb-3"
+        >
+          <input
+            type="checkbox"
+            [(ngModel)]="attendanceEnabled"
+            class="w-4 h-4 rounded cursor-pointer"
+            [style.accentColor]="campColor"
+          />
+          Включено
+        </label>
+        <div class="flex items-center gap-2.5">
+          <span class="text-sm text-camp-gray font-medium"
+            >Баллов за посещение:</span
+          >
+          <input
+            type="number"
+            [(ngModel)]="attendanceValue"
+            [disabled]="!attendanceEnabled"
+            class="w-20 px-2.5 py-1.5 bg-camp-input border-2 rounded-lg text-sm font-semibold text-camp-stone outline-none transition-colors duration-200 disabled:opacity-50"
+            style="border-color: transparent"
+            (focus)="$any($event.target).style.borderColor = campColor"
+            (blur)="$any($event.target).style.borderColor = 'transparent'"
+          />
+        </div>
+      </section>
+
+      <!-- ── Баллы за опоздание ───────────────────────────────────────── -->
+      <section
+        class="bg-white rounded-2xl shadow-sm border border-camp-border p-4 sm:p-5 animate-fade-in-up"
+      >
+        <h2
+          class="font-display text-[1rem] sm:text-[1.15rem] font-bold text-camp-stone flex items-center gap-1.5 mb-1"
+        >
+          <app-icon
+            name="clock"
+            [size]="18"
+            [style.color]="campColor"
+          ></app-icon>
+          Баллы за опоздание
+        </h2>
+        <p class="text-xs sm:text-sm text-camp-gray mb-3">
+          Обычно отрицательное число (штраф). Может быть и положительным — на
+          ваше усмотрение.
+        </p>
+        <label
+          class="flex items-center gap-2.5 cursor-pointer text-sm font-medium text-camp-stone mb-3"
+        >
+          <input
+            type="checkbox"
+            [(ngModel)]="lateEnabled"
+            class="w-4 h-4 rounded cursor-pointer"
+            [style.accentColor]="campColor"
+          />
+          Включено
+        </label>
+        <div class="flex items-center gap-2.5">
+          <span class="text-sm text-camp-gray font-medium"
+            >Баллов за опоздание:</span
+          >
+          <input
+            type="number"
+            [(ngModel)]="lateValue"
+            [disabled]="!lateEnabled"
+            class="w-20 px-2.5 py-1.5 bg-camp-input border-2 rounded-lg text-sm font-semibold text-camp-stone outline-none transition-colors duration-200 disabled:opacity-50"
+            style="border-color: transparent"
+            (focus)="$any($event.target).style.borderColor = campColor"
+            (blur)="$any($event.target).style.borderColor = 'transparent'"
+          />
+        </div>
+      </section>
+
+      <!-- ── Баллы домику за перекличку ───────────────────────────────── -->
+      <section
+        class="bg-white rounded-2xl shadow-sm border border-camp-border p-4 sm:p-5 animate-fade-in-up"
+      >
+        <h2
+          class="font-display text-[1rem] sm:text-[1.15rem] font-bold text-camp-stone flex items-center gap-1.5 mb-1"
+        >
+          <app-icon
+            name="house"
+            [size]="18"
+            [style.color]="campColor"
+          ></app-icon>
+          Баллы домику за перекличку
+        </h2>
+        <p class="text-xs sm:text-sm text-camp-gray mb-3">
+          Начисляются домику, когда подтверждено, что все его дети отмечены на
+          перекличке (кнопка «Подтвердить домик»).
+        </p>
+        <label
+          class="flex items-center gap-2.5 cursor-pointer text-sm font-medium text-camp-stone mb-3"
+        >
+          <input
+            type="checkbox"
+            [(ngModel)]="houseAttendanceEnabled"
+            class="w-4 h-4 rounded cursor-pointer"
+            [style.accentColor]="campColor"
+          />
+          Включено
+        </label>
+        <div class="flex items-center gap-2.5">
+          <span class="text-sm text-camp-gray font-medium"
+            >Баллов за подтверждение:</span
+          >
+          <input
+            type="number"
+            [(ngModel)]="houseAttendanceValue"
+            [disabled]="!houseAttendanceEnabled"
+            class="w-20 px-2.5 py-1.5 bg-camp-input border-2 rounded-lg text-sm font-semibold text-camp-stone outline-none transition-colors duration-200 disabled:opacity-50"
+            style="border-color: transparent"
+            (focus)="$any($event.target).style.borderColor = campColor"
+            (blur)="$any($event.target).style.borderColor = 'transparent'"
+          />
+        </div>
+      </section>
+
+      <!-- ── Штраф домику за опоздавших ───────────────────────────────── -->
+      <section
+        class="bg-white rounded-2xl shadow-sm border border-camp-border p-4 sm:p-5 animate-fade-in-up"
+      >
+        <h2
+          class="font-display text-[1rem] sm:text-[1.15rem] font-bold text-camp-stone flex items-center gap-1.5 mb-1"
+        >
+          <app-icon
+            name="shield-alert"
+            [size]="18"
+            [style.color]="campColor"
+          ></app-icon>
+          Штраф домику за опоздавших
+        </h2>
+        <p class="text-xs sm:text-sm text-camp-gray mb-3">
+          Если доля опоздавших детей домика на перекличке достигает заданного
+          порога, администратор может вручную выдать домику штраф (кнопка
+          «Штраф» на странице «Перекличка»). Штраф не списывается автоматически.
+        </p>
+        <label
+          class="flex items-center gap-2.5 cursor-pointer text-sm font-medium text-camp-stone mb-3"
+        >
+          <input
+            type="checkbox"
+            [(ngModel)]="housePenaltyEnabled"
+            class="w-4 h-4 rounded cursor-pointer"
+            [style.accentColor]="campColor"
+          />
+          Включено
+        </label>
+        <div class="flex flex-wrap items-center gap-4 sm:gap-6">
+          <div class="flex items-center gap-2.5">
+            <app-icon
+              name="percent"
+              [size]="14"
+              class="text-camp-gray"
+            ></app-icon>
+            <span class="text-sm text-camp-gray font-medium"
+              >Порог опозданий, %:</span
+            >
+            <input
+              type="number"
+              min="0"
+              max="100"
+              [(ngModel)]="housePenaltyThreshold"
+              [disabled]="!housePenaltyEnabled"
+              class="w-20 px-2.5 py-1.5 bg-camp-input border-2 rounded-lg text-sm font-semibold text-camp-stone outline-none transition-colors duration-200 disabled:opacity-50"
+              style="border-color: transparent"
+              (focus)="$any($event.target).style.borderColor = campColor"
+              (blur)="$any($event.target).style.borderColor = 'transparent'"
+            />
+          </div>
+          <div class="flex items-center gap-2.5">
+            <span class="text-sm text-camp-gray font-medium"
+              >Размер штрафа (баллов):</span
+            >
+            <input
+              type="number"
+              min="0"
+              [(ngModel)]="housePenaltyValue"
+              [disabled]="!housePenaltyEnabled"
+              class="w-20 px-2.5 py-1.5 bg-camp-input border-2 rounded-lg text-sm font-semibold text-camp-stone outline-none transition-colors duration-200 disabled:opacity-50"
+              style="border-color: transparent"
+              (focus)="$any($event.target).style.borderColor = campColor"
+              (blur)="$any($event.target).style.borderColor = 'transparent'"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Общая кнопка сохранить + отменить ────────────────────────── -->
+      <div class="flex justify-end items-center gap-3 pb-4 animate-fade-in-up">
+        <button
+          *ngIf="hasUnsavedChanges"
+          type="button"
+          (click)="resetAll()"
+          [disabled]="saving"
+          class="flex items-center gap-2 px-4 sm:px-5 py-3 rounded-xl text-sm font-bold text-camp-gray bg-camp-muted hover:bg-camp-border transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <app-icon name="undo-2" [size]="16"></app-icon>
+          Отменить изменения
+        </button>
+
+        <button
+          type="button"
+          (click)="saveAll()"
+          [disabled]="saving"
+          class="flex items-center gap-2 px-5 sm:px-6 py-3 rounded-xl text-white text-sm font-bold shadow-camp-btn transition-all duration-200 hover:-translate-y-px active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed"
+          [style.backgroundColor]="saved ? '#22C55E' : campColor"
+        >
+          <span *ngIf="!saving && !saved" class="flex items-center gap-2">
+            <app-icon name="save" [size]="16"></app-icon>
+            Сохранить все настройки
+          </span>
+          <span *ngIf="saving" class="flex items-center gap-2">
+            <span
+              class="w-4 h-4 border-[2.5px] border-white/35 border-t-white rounded-full inline-block animate-spin-btn"
+            ></span>
+            Сохранение...
+          </span>
+          <span *ngIf="saved && !saving" class="flex items-center gap-2">
+            <app-icon name="check" [size]="16"></app-icon>
+            Сохранено!
+          </span>
+        </button>
       </div>
-    </div>
-
-    <button (click)="saveCampInfo()">Сохранить</button>
-  </section>
-
-  <!-- ── Баллы участников (глобально) ──────────────────────────────── -->
-  <section style="border: 1px solid #ccc; border-radius: 6px; padding: 16px">
-    <h3 style="margin-top: 0">Система баллов участников</h3>
-    <label
-      style="display: flex; align-items: center; gap: 8px; cursor: pointer"
-    >
-      <input type="checkbox" [(ngModel)]="participantPointsEnabled" />
-      Включена (участники могут получать/терять баллы)
-    </label>
-    <button (click)="saveParticipantPoints()" style="margin-top: 10px">
-      Сохранить
-    </button>
-  </section>
-
-  <!-- ── Баллы за посещение ─────────────────────────────────────────── -->
-  <section style="border: 1px solid #ccc; border-radius: 6px; padding: 16px">
-    <h3 style="margin-top: 0">Баллы за посещение (статус «был»)</h3>
-    <p style="font-size: 13px; color: #666; margin-top: 0">
-      При отметке участника как «был» в перекличке автоматически начисляются
-      баллы. При изменении статуса баллы корректируются.
-    </p>
-    <label
-      style="
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-        margin-bottom: 10px;
-      "
-    >
-      <input type="checkbox" [(ngModel)]="attendanceEnabled" />
-      Включено
-    </label>
-    <div>
-      <label style="font-size: 13px; color: #555"
-        >Баллов за посещение:
-        <input
-          type="number"
-          [(ngModel)]="attendanceValue"
-          style="width: 80px; margin-left: 8px"
-          [disabled]="!attendanceEnabled"
-        />
-      </label>
-    </div>
-    <button (click)="saveAttendancePoints()" style="margin-top: 10px">
-      Сохранить
-    </button>
-  </section>
-
-  <!-- ── Баллы за опоздание ─────────────────────────────────────────── -->
-  <section style="border: 1px solid #ccc; border-radius: 6px; padding: 16px">
-    <h3 style="margin-top: 0">Баллы за опоздание (статус «опоздал»)</h3>
-    <p style="font-size: 13px; color: #666; margin-top: 0">
-      Обычно отрицательное число (штраф). Может быть и положительным — на
-      усмотрение.
-    </p>
-    <label
-      style="
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-        margin-bottom: 10px;
-      "
-    >
-      <input type="checkbox" [(ngModel)]="lateEnabled" />
-      Включено
-    </label>
-    <div>
-      <label style="font-size: 13px; color: #555"
-        >Баллов за опоздание:
-        <input
-          type="number"
-          [(ngModel)]="lateValue"
-          style="width: 80px; margin-left: 8px"
-          [disabled]="!lateEnabled"
-        />
-      </label>
-    </div>
-    <button (click)="saveLatePoints()" style="margin-top: 10px">
-      Сохранить
-    </button>
-  </section>
-
-  <!-- ── Баллы домику за перекличку ────────────────────────────────── -->
-  <section style="border: 1px solid #ccc; border-radius: 6px; padding: 16px">
-    <h3 style="margin-top: 0">Баллы домику за перекличку</h3>
-    <p style="font-size: 13px; color: #666; margin-top: 0">
-      Начисляются домику, когда подтверждено, что все его дети отмечены на
-      перекличке (кнопка «Подтвердить домик»).
-    </p>
-    <label
-      style="
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-        margin-bottom: 10px;
-      "
-    >
-      <input type="checkbox" [(ngModel)]="houseAttendanceEnabled" />
-      Включено
-    </label>
-    <div>
-      <label style="font-size: 13px; color: #555"
-        >Баллов домику за подтверждение:
-        <input
-          type="number"
-          [(ngModel)]="houseAttendanceValue"
-          style="width: 80px; margin-left: 8px"
-          [disabled]="!houseAttendanceEnabled"
-        />
-      </label>
-    </div>
-    <button (click)="saveHouseAttendancePoints()" style="margin-top: 10px">
-      Сохранить
-    </button>
-  </section>
-
-  <!-- ── Штраф домику за опоздавших ────────────────────────────────── -->
-  <section style="border: 1px solid #ccc; border-radius: 6px; padding: 16px">
-    <h3 style="margin-top: 0">Штраф домику за опоздавших</h3>
-    <p style="font-size: 13px; color: #666; margin-top: 0">
-      Если доля опоздавших детей домика на перекличке достигает заданного
-      порога, администратор может вручную выдать домику штраф (кнопка «Штраф» на
-      странице «Перекличка»). Штраф не списывается автоматически.
-    </p>
-    <label
-      style="
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-        margin-bottom: 10px;
-      "
-    >
-      <input type="checkbox" [(ngModel)]="housePenaltyEnabled" />
-      Включено
-    </label>
-    <div style="margin-bottom: 8px">
-      <label style="font-size: 13px; color: #555"
-        >Порог опозданий, %:
-        <input
-          type="number"
-          min="0"
-          max="100"
-          [(ngModel)]="housePenaltyThreshold"
-          style="width: 80px; margin-left: 8px"
-          [disabled]="!housePenaltyEnabled"
-        />
-      </label>
-    </div>
-    <div>
-      <label style="font-size: 13px; color: #555"
-        >Размер штрафа (баллов):
-        <input
-          type="number"
-          min="0"
-          [(ngModel)]="housePenaltyValue"
-          style="width: 80px; margin-left: 8px"
-          [disabled]="!housePenaltyEnabled"
-        />
-      </label>
-    </div>
-    <button (click)="saveHouseLatePenalty()" style="margin-top: 10px">
-      Сохранить
-    </button>
-  </section>
+    </ng-container>
+  </ng-container>
 </div>
 
-<!-- Для не-админов — только читаем -->
-<div *ngIf="!auth.isAdmin()" style="color: #888">
-  Настройки доступны только администратору.
+<!-- ═══════════════ EMOJI PICKER MODAL ═══════════════ -->
+<div
+  *ngIf="showEmojiPicker"
+  class="fixed inset-0 flex items-end sm:items-center justify-center z-[10000]"
+  style="background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(2px)"
+  (click)="showEmojiPicker = false"
+>
+  <div
+    class="bg-white w-full sm:w-auto rounded-t-2xl sm:rounded-2xl shadow-camp animate-pop-in flex flex-col overflow-hidden"
+    style="max-height: 75dvh; max-height: 75vh"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Шапка -->
+    <div
+      class="flex items-center justify-between px-4 py-3 border-b border-camp-border shrink-0 rounded-t-2xl"
+      [style.background]="campColorBg"
+    >
+      <div class="flex items-center gap-2">
+        <app-icon name="smile" [size]="16" [style.color]="campColor"></app-icon>
+        <span class="font-display text-sm font-bold text-camp-stone"
+          >Выберите эмодзи</span
+        >
+      </div>
+      <button
+        type="button"
+        class="w-7 h-7 flex items-center justify-center rounded-xl bg-white/70 text-camp-gray hover:bg-white transition-colors"
+        (click)="showEmojiPicker = false"
+      >
+        <app-icon name="x" [size]="14"></app-icon>
+      </button>
+    </div>
+    <!-- Пикер -->
+    <div class="flex-1 min-h-0 overflow-hidden">
+      <emoji-mart
+        (emojiSelect)="onCampEmojiSelect($event)"
+        [darkMode]="false"
+        [showPreview]="false"
+        [enableSearch]="false"
+        [recent]="[]"
+        [totalFrequentLines]="0"
+        [exclude]="['recent']"
+        [color]="campColor"
+        [perLine]="8"
+      ></emoji-mart>
+    </div>
+  </div>
 </div>

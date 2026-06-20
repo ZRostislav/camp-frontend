@@ -6,5 +6,8 @@ export const authGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
   if (auth.isLoggedIn) return true;
-  return router.createUrlTree(['/login']);
+  // Нет токена и человек намеренно пытается открыть защищённый route
+  // напрямую по ссылке (а не получил 401 во время сессии — это
+  // обрабатывает authInterceptor через auth.logout() → /login).
+  return router.createUrlTree(['/error/no-access']);
 };

@@ -516,6 +516,7 @@
     class="flex-1 overflow-y-auto lg:min-h-screen pt-14 lg:pt-0"
     style="background-color: #fefcf3"
   >
-    <router-outlet />
+    <app-loading-spinner *ngIf="routeLoading"></app-loading-spinner>
+    <router-outlet *ngIf="!routeLoading" />
   </main>
 </div>

@@ -1,0 +1,49 @@
+<div
+  class="min-h-screen flex items-center justify-center p-4 font-nunito animate-fade-in-up"
+>
+  <div
+    class="w-full max-w-md bg-white rounded-2xl shadow-sm border border-camp-border p-6 sm:p-8 text-center animate-fade-in-down"
+  >
+    <!-- Эмодзи-иконка -->
+    <div
+      class="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-2xl flex items-center justify-center text-3xl sm:text-4xl mb-4"
+      [style.backgroundColor]="campColorBg"
+    >
+      🔑
+    </div>
+
+    <!-- Бейдж -->
+    <div
+      class="inline-block px-3 py-1 rounded-full text-xs font-bold text-white mb-3"
+      [style.backgroundColor]="campColor"
+    >
+      Доступ закрыт
+    </div>
+
+    <!-- Заголовок -->
+    <h1
+      style="font-family: var(--font-display, &quot;Neucha&quot;, sans-serif)"
+      class="font-display text-xl sm:text-2xl font-bold text-camp-stone mb-2 leading-tight"
+    >
+      Нужно войти
+    </h1>
+
+    <!-- Сообщение -->
+    <p class="text-sm text-camp-gray leading-relaxed mb-6">
+      Чтобы открыть эту страницу, сначала войдите в систему.
+    </p>
+
+    <!-- Действие -->
+    <a
+      routerLink="/login"
+      class="inline-block px-5 py-2.5 rounded-xl text-sm font-bold text-white shadow-camp-btn transition-transform hover:scale-[1.02] no-underline"
+      [style.backgroundColor]="campColor"
+    >
+      🚪 Войти
+    </a>
+
+    <p *ngIf="campName" class="text-xs text-camp-subtle mt-6">
+      🏕️ {{ campName }}
+    </p>
+  </div>
+</div>

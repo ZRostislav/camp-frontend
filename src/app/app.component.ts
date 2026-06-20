@@ -29,7 +29,11 @@ export class AppComponent implements OnInit, OnDestroy {
       startWith(null),
       map(() => {
         const url = this.router.url;
-        return url.startsWith('/login') || url.startsWith('/register');
+        return (
+          url.startsWith('/login') ||
+          url.startsWith('/register') ||
+          url.startsWith('/error/no-access')
+        );
       }),
     );
 
