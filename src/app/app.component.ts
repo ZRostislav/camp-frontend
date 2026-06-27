@@ -6,6 +6,8 @@ import { Subscription } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { AuthBackgroundComponent } from './shared/auth-background/auth-background.component';
 import { SettingsService } from './services/settings.service';
+import { ThemeService } from './services/theme.service';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -23,6 +25,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private router: Router,
     private title: Title,
     private settings: SettingsService,
+    private theme: ThemeService,
+    private auth: AuthService,
   ) {
     this.isAuthRoute$ = this.router.events.pipe(
       filter((e) => e instanceof NavigationEnd),
@@ -38,6 +42,8 @@ export class AppComponent implements OnInit, OnDestroy {
     );
 
     this.applyTitleFromCache();
+    // Apply theme immediately from cache, then sync from server
+    this.theme.init(this.auth.token);
   }
 
   ngOnInit(): void {

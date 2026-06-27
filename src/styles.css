@@ -3,11 +3,114 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    font-family: "Nunito", sans-serif;
-  }
+/* ─── Design tokens (light) ───────────────────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --bg-page:       #fefcf3;
+  --bg-card:       #ffffff;
+  --bg-muted:      #f5f5f4;
+  --bg-input:      #fafaf8;
+  --bg-sidebar:    #1a5c38;
+  --bg-hover:      rgba(255,255,255,0.08);
+
+  /* Borders */
+  --border-color:  #e7e5e4;
+  --border-muted:  #d6d3d1;
+
+  /* Text */
+  --text-stone:    #1c1917;
+  --text-gray:     #78716c;
+  --text-subtle:   #a8a29e;
+
+  /* Semantic */
+  --color-error:      #dc2626;
+  --color-error-bg:   #fef2f2;
+  --color-success:    #16a34a;
+  --color-success-bg: #dcfce7;
+
+  /* Shadows */
+  --shadow-btn: 0 2px 8px rgba(0,0,0,0.12);
+
+  /* Sidebar text */
+  --sidebar-text: rgba(255,255,255,0.8);
+  --sidebar-border: rgba(255,255,255,0.1);
 }
+
+/* ─── Dark mode tokens ────────────────────────────────────────────────────── */
+html.dark {
+  --bg-page:       #1c1917;
+  --bg-card:       #292524;
+  --bg-muted:      #3c3836;  /* warmer than stone-700 */
+  --bg-input:      #2c2926;
+  --bg-sidebar:    #0f2e1c;
+  --bg-hover:      rgba(255,255,255,0.06);
+
+  --border-color:  #44403c;
+  --border-muted:  #57534e;
+
+  --text-stone:    #f5f5f4;
+  --text-gray:     #a8a29e;
+  --text-subtle:   #78716c;
+
+  --color-error:      #f87171;
+  --color-error-bg:   #3b1515;
+  --color-success:    #4ade80;
+  --color-success-bg: #14332a;
+
+  --shadow-btn: 0 2px 8px rgba(0,0,0,0.4);
+
+  --sidebar-text: rgba(255,255,255,0.75);
+  --sidebar-border: rgba(255,255,255,0.08);
+}
+
+/* ─── Map CSS vars → Tailwind arbitrary-value classes ────────────────────── */
+/*
+  Since we don't have access to tailwind.config.js, we patch the
+  camp-* tokens via global CSS classes. Tailwind's JIT will have
+  already generated the class names; we just override the colour
+  values they resolve to using CSS variables.
+*/
+
+/* text-camp-stone / text-camp-gray / text-camp-subtle */
+.text-camp-stone  { color: var(--text-stone)  !important; }
+.text-camp-gray   { color: var(--text-gray)   !important; }
+.text-camp-subtle { color: var(--text-subtle) !important; }
+.text-camp-error  { color: var(--color-error) !important; }
+.text-camp-success{ color: var(--color-success) !important; }
+.text-camp-border { color: var(--border-color) !important; }
+
+/* bg-camp-* */
+.bg-camp-muted    { background-color: var(--bg-muted)          !important; }
+.bg-camp-input    { background-color: var(--bg-input)          !important; }
+.bg-camp-border   { background-color: var(--border-color)      !important; }
+.bg-camp-errorBg  { background-color: var(--color-error-bg)    !important; }
+.bg-camp-successBg{ background-color: var(--color-success-bg)  !important; }
+.bg-camp-success  { background-color: var(--color-success)     !important; }
+.bg-camp-mid      { background-color: var(--bg-muted)          !important; }
+
+/* border-camp-* */
+.border-camp-border { border-color: var(--border-color) !important; }
+.border-camp-muted  { border-color: var(--border-muted) !important; }
+.border-camp-orange { border-color: #f59e0b !important; }
+
+/* shadow-camp-btn */
+.shadow-camp-btn { box-shadow: var(--shadow-btn) !important; }
+
+/* bg-white — override in dark mode */
+html.dark .bg-white { background-color: var(--bg-card) !important; }
+
+/* ─── Global dark-mode page background ───────────────────────────────────── */
+html.dark body {
+  background-color: var(--bg-page);
+  color: var(--text-stone);
+}
+
+/* Layout backgrounds driven by vars */
+[data-theme-bg="page"]    { background-color: var(--bg-page)    !important; }
+[data-theme-bg="card"]    { background-color: var(--bg-card)    !important; }
+[data-theme-bg="sidebar"] { background-color: var(--bg-sidebar) !important; }
+
+
 
 @layer utilities {
   .font-nunito {

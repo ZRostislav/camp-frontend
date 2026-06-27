@@ -1,0 +1,279 @@
+<div class="min-h-screen p-4 lg:p-8 font-nunito" style="background-color: var(--bg-page)">
+
+  <!-- ── Loading ─────────────────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="flex flex-col items-center justify-center min-h-64 gap-4">
+    <div
+      class="w-10 h-10 rounded-full border-4 spin"
+      style="border-color: var(--border-color); border-top-color: #1a5c38"
+    ></div>
+    <span class="text-sm font-medium" style="color: var(--text-subtle)">Загружаем профиль…</span>
+  </div>
+
+  <!-- ── Error ────────────────────────────────────────────────────────────── -->
+  <div
+    *ngIf="!loading && error"
+    class="max-w-lg mx-auto mt-12 rounded-2xl p-6 text-center profile-enter"
+    style="background-color: var(--color-error-bg); color: var(--color-error)"
+  >
+    <app-icon name="circle-alert" [size]="32" class="mx-auto mb-2 block" />
+    <p class="font-semibold">{{ error }}</p>
+  </div>
+
+  <!-- ── Content ──────────────────────────────────────────────────────────── -->
+  <div *ngIf="!loading && !error && profile" class="max-w-2xl mx-auto space-y-4">
+
+    <!-- ── Hero card ──────────────────────────────────────────────────────── -->
+    <div
+      class="rounded-3xl p-6 shadow-sm profile-enter"
+      style="background-color: var(--bg-card); border: 1px solid var(--border-color)"
+    >
+      <div class="flex items-center gap-5 flex-wrap">
+        <!-- Avatar -->
+        <div
+          class="avatar-ring w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold shrink-0 shadow-lg"
+          style="background: linear-gradient(135deg, #1a5c38, #2d8a5a); color: #fff; letter-spacing: -1px"
+        >
+          {{ getUserInitials() }}
+        </div>
+
+        <!-- Name + badges -->
+        <div class="flex-1 min-w-0">
+          <h1
+            class="text-2xl font-bold truncate"
+            style="color: var(--text-stone); font-family: var(--font-display, 'Neucha', sans-serif)"
+          >
+            {{ displayName }}
+          </h1>
+          <div class="flex flex-wrap items-center gap-2 mt-2">
+            <span
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
+              style="background-color: var(--color-success-bg); color: var(--color-success)"
+            >
+              <app-icon name="shield" [size]="11" />
+              {{ roleLabel }}
+            </span>
+            <span
+              *ngIf="profile.house_name"
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
+              style="background: #fef9c3; color: #854d0e"
+            >
+              <app-icon name="home" [size]="11" />
+              {{ profile.house_name }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Points (participant) -->
+        <div
+          *ngIf="profile.role === 'participant' && profile.has_points"
+          class="points-badge shrink-0 flex flex-col items-center justify-center rounded-2xl px-5 py-3 shadow-sm"
+          style="background: #fef9c3; border: 2px solid #fde047"
+        >
+          <span class="text-3xl font-black leading-none" style="color: #854d0e">{{ profile.total_points }}</span>
+          <span class="text-[10px] font-bold uppercase tracking-wide mt-0.5" style="color: #a16207">баллов</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Details card ───────────────────────────────────────────────────── -->
+    <div
+      class="rounded-3xl p-6 shadow-sm profile-enter card-delay-1"
+      style="background-color: var(--bg-card); border: 1px solid var(--border-color)"
+    >
+      <h2
+        class="text-sm font-bold uppercase tracking-wider mb-4"
+        style="color: var(--text-subtle); font-family: var(--font-display, 'Neucha', sans-serif)"
+      >
+        Личные данные
+      </h2>
+
+      <div class="space-y-1">
+        <!-- Username -->
+        <div *ngIf="profile.username" class="info-row flex items-center gap-3">
+          <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style="background-color: var(--bg-muted)">
+            <app-icon name="user" [size]="15" style="color: var(--text-gray)" />
+          </div>
+          <div>
+            <div class="text-[11px] font-semibold uppercase tracking-wide" style="color: var(--text-subtle)">Логин</div>
+            <div class="text-sm font-semibold" style="color: var(--text-stone)">{{ profile.username }}</div>
+          </div>
+        </div>
+
+        <!-- Birth date -->
+        <div *ngIf="profile.birth_date" class="info-row flex items-center gap-3">
+          <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style="background-color: var(--bg-muted)">
+            <app-icon name="calendar-days" [size]="15" style="color: var(--text-gray)" />
+          </div>
+          <div>
+            <div class="text-[11px] font-semibold uppercase tracking-wide" style="color: var(--text-subtle)">Дата рождения</div>
+            <div class="text-sm font-semibold" style="color: var(--text-stone)">
+              {{ formatDate(profile.birth_date) }}
+              <span *ngIf="profile.age" class="ml-2 text-xs font-normal" style="color: var(--text-subtle)">{{ profile.age }} лет</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gender -->
+        <div *ngIf="genderLabel" class="info-row flex items-center gap-3">
+          <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style="background-color: var(--bg-muted)">
+            <app-icon name="smile" [size]="15" style="color: var(--text-gray)" />
+          </div>
+          <div>
+            <div class="text-[11px] font-semibold uppercase tracking-wide" style="color: var(--text-subtle)">Пол</div>
+            <div class="text-sm font-semibold" style="color: var(--text-stone)">{{ genderLabel }}</div>
+          </div>
+        </div>
+
+        <!-- City -->
+        <div *ngIf="profile.city" class="info-row flex items-center gap-3">
+          <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style="background-color: var(--bg-muted)">
+            <app-icon name="map-pin" [size]="15" style="color: var(--text-gray)" />
+          </div>
+          <div>
+            <div class="text-[11px] font-semibold uppercase tracking-wide" style="color: var(--text-subtle)">Город</div>
+            <div class="text-sm font-semibold" style="color: var(--text-stone)">{{ profile.city }}</div>
+          </div>
+        </div>
+
+        <!-- Responsible houses (staff) -->
+        <div *ngIf="profile.responsible_houses?.length" class="info-row flex items-start gap-3">
+          <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style="background-color: var(--bg-muted)">
+            <app-icon name="house" [size]="15" style="color: var(--text-gray)" />
+          </div>
+          <div>
+            <div class="text-[11px] font-semibold uppercase tracking-wide mb-1.5" style="color: var(--text-subtle)">Закреплённые домики</div>
+            <div class="flex flex-wrap gap-1.5">
+              <span
+                *ngFor="let h of profile.responsible_houses"
+                class="px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                style="background-color: var(--color-success-bg); color: var(--color-success)"
+              >{{ h.name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Theme card ──────────────────────────────────────────────────────── -->
+    <div
+      class="rounded-3xl p-6 shadow-sm profile-enter card-delay-2"
+      style="background-color: var(--bg-card); border: 1px solid var(--border-color)"
+    >
+      <!-- Header row -->
+      <div class="flex items-center justify-between mb-5">
+        <h2
+          class="text-sm font-bold uppercase tracking-wider"
+          style="color: var(--text-subtle); font-family: var(--font-display, 'Neucha', sans-serif)"
+        >
+          Тема оформления
+        </h2>
+
+        <!-- Status badges -->
+        <span
+          *ngIf="themeSuccess"
+          class="status-badge flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full"
+          style="background-color: var(--color-success-bg); color: var(--color-success)"
+        >
+          <app-icon name="circle-check" [size]="13" />
+          Сохранено
+        </span>
+        <span
+          *ngIf="themeError"
+          class="status-badge flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full"
+          style="background-color: var(--color-error-bg); color: var(--color-error)"
+        >
+          <app-icon name="circle-alert" [size]="13" />
+          Ошибка
+        </span>
+        <span
+          *ngIf="themeLoading"
+          class="flex items-center gap-1.5 text-xs font-medium"
+          style="color: var(--text-subtle)"
+        >
+          <div class="w-3.5 h-3.5 rounded-full border-2 spin" style="border-color: var(--border-color); border-top-color: #1a5c38"></div>
+          Сохраняем…
+        </span>
+      </div>
+
+      <!-- Toggle buttons -->
+      <div class="grid grid-cols-2 gap-3">
+
+        <!-- Light -->
+        <button
+          (click)="setTheme('light')"
+          [disabled]="themeLoading"
+          class="theme-btn flex flex-col items-center gap-3 py-5 px-4 rounded-2xl border-2 focus:outline-none"
+          [class.active]="!isDark"
+          [style.borderColor]="!isDark ? '#1a5c38' : 'var(--border-color)'"
+          [style.backgroundColor]="!isDark ? 'rgba(26,92,56,0.06)' : 'var(--bg-muted)'"
+        >
+          <!-- Mini light UI preview -->
+          <div class="theme-preview w-full rounded-xl overflow-hidden shadow-sm" style="height: 56px; background: #fefcf3; border: 1px solid #e7e5e4; display: flex">
+            <div style="width: 28%; background: #1a5c38; display: flex; flex-direction: column; padding: 6px 4px; gap: 3px">
+              <div style="height: 4px; border-radius: 3px; background: rgba(255,255,255,0.5); width: 80%"></div>
+              <div style="height: 3px; border-radius: 3px; background: rgba(255,255,255,0.25); width: 65%"></div>
+              <div style="height: 3px; border-radius: 3px; background: rgba(255,255,255,0.25); width: 55%"></div>
+            </div>
+            <div style="flex: 1; padding: 6px; display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 5px; border-radius: 3px; background: #e7e5e4; width: 80%"></div>
+              <div style="height: 5px; border-radius: 3px; background: #e7e5e4; width: 55%"></div>
+              <div style="height: 12px; border-radius: 6px; background: #fff; border: 1px solid #e7e5e4; margin-top: 2px"></div>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-center gap-1">
+            <span class="text-sm font-bold" style="color: var(--text-stone)">☀️ Светлая</span>
+            <div
+              *ngIf="!isDark"
+              class="w-5 h-5 rounded-full flex items-center justify-center"
+              style="background: #1a5c38"
+            >
+              <app-icon name="circle-check" [size]="12" style="color: white" />
+            </div>
+          </div>
+        </button>
+
+        <!-- Dark -->
+        <button
+          (click)="setTheme('dark')"
+          [disabled]="themeLoading"
+          class="theme-btn flex flex-col items-center gap-3 py-5 px-4 rounded-2xl border-2 focus:outline-none"
+          [class.active]="isDark"
+          [style.borderColor]="isDark ? '#1a5c38' : 'var(--border-color)'"
+          [style.backgroundColor]="isDark ? 'rgba(26,92,56,0.06)' : 'var(--bg-muted)'"
+        >
+          <!-- Mini dark UI preview -->
+          <div class="theme-preview w-full rounded-xl overflow-hidden shadow-sm" style="height: 56px; background: #1c1917; border: 1px solid #44403c; display: flex">
+            <div style="width: 28%; background: #0f2e1c; display: flex; flex-direction: column; padding: 6px 4px; gap: 3px">
+              <div style="height: 4px; border-radius: 3px; background: rgba(255,255,255,0.35); width: 80%"></div>
+              <div style="height: 3px; border-radius: 3px; background: rgba(255,255,255,0.15); width: 65%"></div>
+              <div style="height: 3px; border-radius: 3px; background: rgba(255,255,255,0.15); width: 55%"></div>
+            </div>
+            <div style="flex: 1; padding: 6px; display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 5px; border-radius: 3px; background: #44403c; width: 80%"></div>
+              <div style="height: 5px; border-radius: 3px; background: #44403c; width: 55%"></div>
+              <div style="height: 12px; border-radius: 6px; background: #292524; border: 1px solid #57534e; margin-top: 2px"></div>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-center gap-1">
+            <span class="text-sm font-bold" style="color: var(--text-stone)">🌙 Тёмная</span>
+            <div
+              *ngIf="isDark"
+              class="w-5 h-5 rounded-full flex items-center justify-center"
+              style="background: #1a5c38"
+            >
+              <app-icon name="circle-check" [size]="12" style="color: white" />
+            </div>
+          </div>
+        </button>
+
+      </div>
+
+      <p class="mt-4 text-xs text-center" style="color: var(--text-subtle)">
+        Тема применяется мгновенно и сохраняется на сервере
+      </p>
+    </div>
+
+  </div>
+</div>

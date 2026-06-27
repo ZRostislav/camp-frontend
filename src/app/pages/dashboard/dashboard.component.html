@@ -17,7 +17,9 @@
           Главная
           <app-icon name="sun" [size]="26" [style.color]="campColor"></app-icon>
         </h1>
-        <p class="text-xs sm:text-sm mt-1 text-camp-gray font-medium">
+        <p
+          class="text-xs sm:text-sm mt-1 text-camp-gray font-medium capitalize"
+        >
           {{ today | date: "EEEE, d MMMM"
           }}<ng-container *ngIf="campName"> · {{ campName }}</ng-container>
         </p>

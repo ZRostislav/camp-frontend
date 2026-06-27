@@ -98,6 +98,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/error/error.component').then((m) => m.ErrorComponent),
       },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./pages/profile/profile.component').then(
+            (m) => m.ProfileComponent,
+          ),
+      },
     ],
   },
   { path: '**', redirectTo: '' },
