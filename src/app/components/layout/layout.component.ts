@@ -13,6 +13,7 @@ import {
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { SettingsService, CampSettings } from '../../services/settings.service';
+import { ThemeService } from '../../services/theme.service';
 import { MediaUrlPipe } from '../../pipes/media-url.pipe';
 import { IconComponent } from '../../shared/icon.component';
 import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
@@ -51,6 +52,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
   constructor(
     public auth: AuthService,
+    public themeService: ThemeService,
     private settingsService: SettingsService,
     private router: Router,
   ) {}
@@ -122,5 +124,14 @@ export class LayoutComponent implements OnInit, OnDestroy {
     if (!iso) return '';
     const [y, m, d] = iso.split('-');
     return `${d}.${m}.${y}`;
+  }
+
+  toggleTheme() {
+    const next = this.themeService.current === 'dark' ? 'light' : 'dark';
+    this.themeService.setTheme(next, this.auth.token);
+  }
+
+  get isDark(): boolean {
+    return this.themeService.current === 'dark';
   }
 }

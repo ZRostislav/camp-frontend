@@ -168,7 +168,8 @@
 
     <div
       *ngFor="let u of users"
-      class="bg-white rounded-2xl border border-camp-border shadow-sm p-4 flex items-center gap-3"
+      class="bg-white rounded-2xl border border-camp-border shadow-sm p-4 flex items-center gap-3 cursor-pointer transition-colors hover:bg-amber-50/40"
+      (click)="viewUser(u)"
     >
       <!-- Аватар -->
       <div
@@ -207,7 +208,7 @@
       </div>
 
       <!-- Действия -->
-      <div *ngIf="auth.isAdmin()" class="flex flex-col gap-1.5 shrink-0">
+      <div *ngIf="auth.isAdmin()" class="flex flex-col gap-1.5 shrink-0" (click)="$event.stopPropagation()">
         <button
           (click)="startEdit(u)"
           class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
@@ -277,9 +278,10 @@
       <tbody>
         <tr
           *ngFor="let u of users; let last = last"
-          class="transition-colors hover:bg-amber-50/30"
+          class="transition-colors hover:bg-amber-50/30 cursor-pointer"
           [class.border-b]="!last"
           [class.border-camp-border]="!last"
+          (click)="viewUser(u)"
         >
           <td class="px-5 py-3.5">
             <div class="flex items-center gap-3">
@@ -325,7 +327,7 @@
             }}</span>
           </td>
           <td class="px-5 py-3.5">
-            <div class="flex items-center gap-1.5 justify-end">
+            <div class="flex items-center gap-1.5 justify-end" (click)="$event.stopPropagation()">
               <button
                 *ngIf="auth.isAdmin()"
                 (click)="startEdit(u)"

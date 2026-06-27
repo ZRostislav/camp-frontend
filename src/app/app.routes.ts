@@ -99,6 +99,13 @@ export const routes: Routes = [
           import('./pages/error/error.component').then((m) => m.ErrorComponent),
       },
       {
+        path: 'users/:id',
+        loadComponent: () =>
+          import('./pages/users/user-profile.component').then(
+            (m) => m.UserProfileComponent,
+          ),
+      },
+      {
         path: 'profile',
         loadComponent: () =>
           import('./pages/profile/profile.component').then(

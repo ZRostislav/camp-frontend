@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { SettingsService } from '../../services/settings.service';
@@ -56,6 +57,7 @@ export class UsersComponent implements OnInit {
     public auth: AuthService,
     private api: ApiService,
     private settings: SettingsService,
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -118,6 +120,10 @@ export class UsersComponent implements OnInit {
     this.editUser = { ...u };
     this.newPassword = '';
     this.showCreateForm = false;
+  }
+
+  viewUser(u: any) {
+    this.router.navigate(['/users', u.id]);
   }
 
   saveEdit() {

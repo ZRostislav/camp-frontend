@@ -1,0 +1,124 @@
+<div class="min-h-screen p-4 lg:p-8 font-nunito" style="background-color: var(--bg-page)">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex flex-col items-center justify-center min-h-64 gap-4">
+    <div
+      class="w-10 h-10 rounded-full border-4 spin"
+      style="border-color: var(--border-color); border-top-color: #1a5c38"
+    ></div>
+    <span class="text-sm font-medium" style="color: var(--text-subtle)">Загружаем профиль…</span>
+  </div>
+
+  <!-- Error -->
+  <div
+    *ngIf="!loading && error"
+    class="max-w-lg mx-auto mt-12 rounded-2xl p-6 text-center profile-enter"
+    style="background-color: var(--color-error-bg); color: var(--color-error)"
+  >
+    <app-icon name="circle-alert" [size]="32" class="mx-auto mb-2 block" />
+    <p class="font-semibold">{{ error }}</p>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading && !error && user" class="max-w-2xl mx-auto space-y-4">
+
+    <!-- Hero card -->
+    <div
+      class="rounded-3xl p-6 shadow-sm profile-enter"
+      style="background-color: var(--bg-card); border: 1px solid var(--border-color)"
+    >
+      <div class="flex items-center gap-5 flex-wrap">
+        <!-- Avatar -->
+        <div
+          class="avatar-ring w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold shrink-0 shadow-lg"
+          [style.background]="'linear-gradient(135deg, ' + roleColor + ', ' + roleColor + 'cc)'"
+          style="color: #fff; letter-spacing: -1px"
+        >
+          {{ getUserInitials() }}
+        </div>
+
+        <!-- Name + badges -->
+        <div class="flex-1 min-w-0">
+          <h1
+            class="text-2xl font-bold truncate"
+            style="color: var(--text-stone); font-family: var(--font-display, 'Neucha', sans-serif)"
+          >
+            {{ user.full_name }}
+          </h1>
+          <div class="flex flex-wrap items-center gap-2 mt-2">
+            <span
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
+              [style.backgroundColor]="roleColorBg"
+              [style.color]="roleColor"
+            >
+              <app-icon name="shield" [size]="11" />
+              {{ roleLabel }}
+            </span>
+            <span
+              class="inline-block px-3 py-1 rounded-full text-xs font-bold"
+              [style.backgroundColor]="user.is_active ? 'var(--color-success-bg)' : 'var(--bg-muted)'"
+              [style.color]="user.is_active ? 'var(--color-success)' : 'var(--text-subtle)'"
+            >
+              {{ user.is_active ? 'Активен' : 'Неактивен' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Details card -->
+    <div
+      class="rounded-3xl p-6 shadow-sm profile-enter card-delay-1"
+      style="background-color: var(--bg-card); border: 1px solid var(--border-color)"
+    >
+      <h2
+        class="text-sm font-bold uppercase tracking-wider mb-4"
+        style="color: var(--text-subtle); font-family: var(--font-display, 'Neucha', sans-serif)"
+      >
+        Личные данные
+      </h2>
+
+      <div class="space-y-1">
+        <!-- Username -->
+        <div class="info-row flex items-center gap-3">
+          <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style="background-color: var(--bg-muted)">
+            <app-icon name="user" [size]="15" style="color: var(--text-gray)" />
+          </div>
+          <div>
+            <div class="text-[11px] font-semibold uppercase tracking-wide" style="color: var(--text-subtle)">Логин</div>
+            <div class="text-sm font-semibold" style="color: var(--text-stone)">{{ user.username }}</div>
+          </div>
+        </div>
+
+        <!-- Role -->
+        <div class="info-row flex items-center gap-3">
+          <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style="background-color: var(--bg-muted)">
+            <app-icon name="shield" [size]="15" style="color: var(--text-gray)" />
+          </div>
+          <div>
+            <div class="text-[11px] font-semibold uppercase tracking-wide" style="color: var(--text-subtle)">Роль</div>
+            <div class="text-sm font-semibold" style="color: var(--text-stone)">{{ roleLabel }}</div>
+          </div>
+        </div>
+
+        <!-- Responsible houses -->
+        <div *ngIf="user.responsible_houses?.length" class="info-row flex items-start gap-3">
+          <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style="background-color: var(--bg-muted)">
+            <app-icon name="house" [size]="15" style="color: var(--text-gray)" />
+          </div>
+          <div>
+            <div class="text-[11px] font-semibold uppercase tracking-wide mb-1.5" style="color: var(--text-subtle)">Закреплённые домики</div>
+            <div class="flex flex-wrap gap-1.5">
+              <span
+                *ngFor="let h of user.responsible_houses"
+                class="px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                style="background-color: var(--color-success-bg); color: var(--color-success)"
+              >{{ h.name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
