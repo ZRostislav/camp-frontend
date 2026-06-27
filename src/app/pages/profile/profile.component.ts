@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
@@ -13,6 +14,9 @@ interface UserData {
   role: string;
   is_active: boolean;
   theme?: string;
+  password_plain?: string;
+  created_at?: string;
+  updated_at?: string;
   // participant fields
   last_name?: string;
   first_name?: string;
@@ -30,7 +34,7 @@ interface UserData {
 @Component({
   selector: 'app-user-profile',
   standalone: true,
-  imports: [CommonModule, IconComponent],
+  imports: [CommonModule, FormsModule, IconComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
 })
@@ -45,6 +49,14 @@ export class UserProfileComponent implements OnInit {
   themeLoading = false;
   themeSuccess = false;
   themeError = false;
+
+  // ─── Модалка редактирования ───
+  editUser: any = null;
+  newPassword = '';
+  saving = false;
+  saveError = '';
+
+  readonly roles = ['admin', 'counselor', 'helper', 'staff'];
 
   private readonly roleColors: Record<string, string> = {
     superadmin: '#7C3AED',
@@ -64,34 +76,40 @@ export class UserProfileComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Если маршрут /profile — редиректим на /users/:myId
-    if (this.route.snapshot.routeConfig?.path === 'profile/me') {
-      const myId = this.auth.currentUser()?.id;
-      if (myId) {
-        this.router.navigate(['/users', myId], { replaceUrl: true });
-        return;
-      }
-    }
-
     const routeId = this.route.snapshot.paramMap.get('id');
     const myId = this.auth.currentUser()?.id;
-    this.isSelf = routeId !== null && Number(routeId) === myId;
 
-    // Для себя берём /auth/me (содержит тему, баллы, домик участника)
-    const endpoint = this.isSelf ? '/auth/me' : `/users/${routeId}`;
+    // Если зашли на /users/:id и это наш id — редиректим на /profile/me
+    if (routeId !== null && Number(routeId) === myId) {
+      this.router.navigate(['/profile/me'], { replaceUrl: true });
+      return;
+    }
 
-    this.api.get<UserData>(endpoint).subscribe({
+    // Если зашли на /profile/me — грузим себя
+    if (this.route.snapshot.routeConfig?.path === 'profile/me') {
+      this.isSelf = true;
+      this.api.get<UserData>('/auth/me').subscribe({
+        next: (data) => {
+          this.user = data;
+          this.loading = false;
+          if (data.theme && data.theme !== this.themeService.current) {
+            this.themeService.setTheme(data.theme as Theme, this.auth.token);
+          }
+        },
+        error: () => {
+          this.error = 'Не удалось загрузить данные профиля';
+          this.loading = false;
+        },
+      });
+      return;
+    }
+
+    // Чужой профиль — /users/:id
+    this.isSelf = false;
+    this.api.get<UserData>(`/users/${routeId}`).subscribe({
       next: (data) => {
         this.user = data;
         this.loading = false;
-        // Синхронизируем локальную тему если смотрим на себя
-        if (this.isSelf && data.theme) {
-          // ThemeService уже применил тему при старте, но на случай
-          // если пользователь сменил тему с другого устройства
-          if (data.theme !== this.themeService.current) {
-            this.themeService.setTheme(data.theme as Theme, this.auth.token);
-          }
-        }
       },
       error: () => {
         this.error = 'Не удалось загрузить данные профиля';
@@ -178,5 +196,65 @@ export class UserProfileComponent implements OnInit {
       .slice(0, 2)
       .map((w) => w[0].toUpperCase())
       .join('');
+  }
+
+  // ─── Редактирование профиля (модалка) ───
+
+  startEdit() {
+    if (!this.user) return;
+    this.editUser = { ...this.user };
+    this.newPassword = '';
+    this.saveError = '';
+  }
+
+  closeEdit() {
+    this.editUser = null;
+    this.newPassword = '';
+    this.saveError = '';
+  }
+
+  saveEdit() {
+    if (!this.editUser) return;
+    const body: any = {
+      fullName: this.editUser.full_name,
+      username: this.editUser.username,
+      role: this.editUser.role,
+      isActive: this.editUser.is_active,
+    };
+    if (this.newPassword) body.password = this.newPassword;
+
+    this.saving = true;
+    this.saveError = '';
+    this.api.patch(`/users/${this.editUser.id}`, body).subscribe({
+      next: () => {
+        if (this.user) {
+          this.user.full_name = this.editUser.full_name;
+          this.user.username = this.editUser.username;
+          this.user.role = this.editUser.role;
+          this.user.is_active = this.editUser.is_active;
+        }
+        this.saving = false;
+        this.closeEdit();
+      },
+      error: (e) => {
+        this.saveError = e.error?.error || 'Ошибка сохранения';
+        this.saving = false;
+      },
+    });
+  }
+
+  roleSelectLabel(role: string): string {
+    const map: Record<string, string> = {
+      superadmin: 'Суперадмин',
+      admin: 'Администратор',
+      counselor: 'Вожатый',
+      helper: 'Помощник',
+      staff: 'Персонал',
+    };
+    return map[role] ?? role;
+  }
+
+  get isSuperAdmin(): boolean {
+    return this.auth.currentUser()?.role === 'superadmin';
   }
 }
