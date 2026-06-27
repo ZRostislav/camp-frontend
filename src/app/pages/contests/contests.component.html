@@ -372,7 +372,7 @@
           <button
             *ngFor="let l of c.youtube_links"
             (click)="deleteYoutubeLink(c.id, l.id)"
-            class="text-[0.6rem] px-2 py-0.5 rounded-full bg-red-50 text-red-400 hover:text-red-600 hover:bg-red-100 transition-colors"
+            class="bg-camp-muted text-[0.6rem] px-2 py-0.5 rounded-full bg-red-50 text-red-400 hover:text-red-600 hover:bg-red-100 transition-colors"
           >
             ✕ {{ l.label || "ссылка" }}
           </button>

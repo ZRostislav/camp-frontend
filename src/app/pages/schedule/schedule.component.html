@@ -186,7 +186,12 @@
       <!-- Единая сквозная вертикальная линия таймлайна -->
       <div
         class="absolute top-0 bottom-0 pointer-events-none"
-        style="left: 19px; width: 2px; background-color: #e7e5e4; z-index: 0"
+        style="
+          left: 19px;
+          width: 2px;
+          background-color: var(--border-color);
+          z-index: 0;
+        "
       ></div>
       <div
         *ngFor="let s of items; let i = index"
@@ -202,15 +207,15 @@
               i === activeIndex
                 ? campColor
                 : i < activeIndex
-                  ? '#D4D4D4'
-                  : 'white'
+                  ? 'var(--timeline-dot-past)'
+                  : 'var(--bg-card)'
             "
             [style.border]="
               i === activeIndex
                 ? '2px solid ' + campColor
                 : i < activeIndex
-                  ? '2px solid #D4D4D4'
-                  : '2px solid rgba(0,0,0,0.15)'
+                  ? '2px solid var(--timeline-dot-past)'
+                  : '2px solid var(--border-color)'
             "
             [style.boxShadow]="
               i === activeIndex ? '0 0 0 4px ' + campColorBg : 'none'
@@ -226,13 +231,13 @@
             i === activeIndex
               ? campColorLight
               : i < activeIndex
-                ? '#FAFAF8'
-                : '#ffffff'
+                ? 'var(--bg-muted)'
+                : 'var(--bg-card)'
           "
           [style.border]="
             i === activeIndex
               ? '1.5px solid ' + campColor + '60'
-              : '1px solid rgba(0,0,0,0.06)'
+              : '1px solid var(--border-color)'
           "
           [style.boxShadow]="
             i === activeIndex ? '0 2px 12px ' + campColor + '25' : 'none'
@@ -345,7 +350,7 @@
               class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
               (focus)="
                 $any($event.target).style.borderColor = campColor;
-                $any($event.target).style.backgroundColor = 'white'
+                $any($event.target).style.backgroundColor = 'var(--bg-card)'
               "
               (blur)="
                 $any($event.target).style.borderColor = 'transparent';
@@ -364,7 +369,7 @@
               class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
               (focus)="
                 $any($event.target).style.borderColor = campColor;
-                $any($event.target).style.backgroundColor = 'white'
+                $any($event.target).style.backgroundColor = 'var(--bg-card)'
               "
               (blur)="
                 $any($event.target).style.borderColor = 'transparent';
@@ -384,7 +389,7 @@
             class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
             (focus)="
               $any($event.target).style.borderColor = campColor;
-              $any($event.target).style.backgroundColor = 'white'
+              $any($event.target).style.backgroundColor = 'var(--bg-card)'
             "
             (blur)="
               $any($event.target).style.borderColor = 'transparent';

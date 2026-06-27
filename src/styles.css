@@ -6,61 +6,71 @@
 /* ─── Design tokens (light) ───────────────────────────────────────────────── */
 :root {
   /* Backgrounds */
-  --bg-page:       #fefcf3;
-  --bg-card:       #ffffff;
-  --bg-muted:      #f5f5f4;
-  --bg-input:      #fafaf8;
-  --bg-sidebar:    #1a5c38;
-  --bg-hover:      rgba(255,255,255,0.08);
+  --bg-page: #fefcf3;
+  --bg-card: #ffffff;
+  --bg-muted: #f5f5f4;
+  --bg-input: #fafaf8;
+  --bg-sidebar: #1a5c38;
+  --bg-hover: rgba(255, 255, 255, 0.08);
+  --bg-error-soft: #fee2e2;
+  --bg-error-soft-hover: #fecaca;
+  --bg-success-soft: #dcfce7;
+
+  --timeline-dot-past: #d4d4d4;
 
   /* Borders */
-  --border-color:  #e7e5e4;
-  --border-muted:  #d6d3d1;
+  --border-color: #e7e5e4;
+  --border-muted: #d6d3d1;
 
   /* Text */
-  --text-stone:    #1c1917;
-  --text-gray:     #78716c;
-  --text-subtle:   #a8a29e;
+  --text-stone: #1c1917;
+  --text-gray: #78716c;
+  --text-subtle: #a8a29e;
 
   /* Semantic */
-  --color-error:      #dc2626;
-  --color-error-bg:   #fef2f2;
-  --color-success:    #16a34a;
+  --color-error: #dc2626;
+  --color-error-bg: #fef2f2;
+  --color-success: #16a34a;
   --color-success-bg: #dcfce7;
 
   /* Shadows */
-  --shadow-btn: 0 2px 8px rgba(0,0,0,0.12);
+  --shadow-btn: 0 2px 8px rgba(0, 0, 0, 0.12);
 
   /* Sidebar text */
-  --sidebar-text: rgba(255,255,255,0.8);
-  --sidebar-border: rgba(255,255,255,0.1);
+  --sidebar-text: rgba(255, 255, 255, 0.8);
+  --sidebar-border: rgba(255, 255, 255, 0.1);
 }
 
 /* ─── Dark mode tokens ────────────────────────────────────────────────────── */
 html.dark {
-  --bg-page:       #1c1917;
-  --bg-card:       #292524;
-  --bg-muted:      #3c3836;  /* warmer than stone-700 */
-  --bg-input:      #2c2926;
-  --bg-sidebar:    #0f2e1c;
-  --bg-hover:      rgba(255,255,255,0.06);
+  --bg-page: #1c1917;
+  --bg-card: #292524;
+  --bg-muted: #3c3836; /* warmer than stone-700 */
+  --bg-input: #2c2926;
+  --bg-sidebar: #0f2e1c;
+  --bg-hover: rgba(255, 255, 255, 0.06);
+  --bg-error-soft: #3b1515;
+  --bg-error-soft-hover: #4f1a1a;
+  --bg-success-soft: #14332a;
 
-  --border-color:  #44403c;
-  --border-muted:  #57534e;
+  --timeline-dot-past: #57534e;
 
-  --text-stone:    #f5f5f4;
-  --text-gray:     #a8a29e;
-  --text-subtle:   #78716c;
+  --border-color: #44403c;
+  --border-muted: #57534e;
 
-  --color-error:      #f87171;
-  --color-error-bg:   #3b1515;
-  --color-success:    #4ade80;
+  --text-stone: #f5f5f4;
+  --text-gray: #a8a29e;
+  --text-subtle: #78716c;
+
+  --color-error: #f87171;
+  --color-error-bg: #3b1515;
+  --color-success: #4ade80;
   --color-success-bg: #14332a;
 
-  --shadow-btn: 0 2px 8px rgba(0,0,0,0.4);
+  --shadow-btn: 0 2px 8px rgba(0, 0, 0, 0.4);
 
-  --sidebar-text: rgba(255,255,255,0.75);
-  --sidebar-border: rgba(255,255,255,0.08);
+  --sidebar-text: rgba(255, 255, 255, 0.75);
+  --sidebar-border: rgba(255, 255, 255, 0.08);
 }
 
 /* ─── Map CSS vars → Tailwind arbitrary-value classes ────────────────────── */
@@ -72,32 +82,128 @@ html.dark {
 */
 
 /* text-camp-stone / text-camp-gray / text-camp-subtle */
-.text-camp-stone  { color: var(--text-stone)  !important; }
-.text-camp-gray   { color: var(--text-gray)   !important; }
-.text-camp-subtle { color: var(--text-subtle) !important; }
-.text-camp-error  { color: var(--color-error) !important; }
-.text-camp-success{ color: var(--color-success) !important; }
-.text-camp-border { color: var(--border-color) !important; }
+.text-camp-stone {
+  color: var(--text-stone) !important;
+}
+.text-camp-gray {
+  color: var(--text-gray) !important;
+}
+.text-camp-subtle {
+  color: var(--text-subtle) !important;
+}
+.text-camp-error {
+  color: var(--color-error) !important;
+}
+.text-camp-success {
+  color: var(--color-success) !important;
+}
+.text-camp-border {
+  color: var(--border-color) !important;
+}
 
 /* bg-camp-* */
-.bg-camp-muted    { background-color: var(--bg-muted)          !important; }
-.bg-camp-input    { background-color: var(--bg-input)          !important; }
-.bg-camp-border   { background-color: var(--border-color)      !important; }
-.bg-camp-errorBg  { background-color: var(--color-error-bg)    !important; }
-.bg-camp-successBg{ background-color: var(--color-success-bg)  !important; }
-.bg-camp-success  { background-color: var(--color-success)     !important; }
-.bg-camp-mid      { background-color: var(--bg-muted)          !important; }
+.bg-camp-card {
+  background-color: var(--bg-card) !important;
+}
+.bg-camp-muted {
+  background-color: var(--bg-muted) !important;
+}
+.bg-camp-input {
+  background-color: var(--bg-input) !important;
+}
+.bg-camp-border {
+  background-color: var(--border-color) !important;
+}
+.bg-camp-errorBg {
+  background-color: var(--color-error-bg) !important;
+}
+.bg-camp-successBg {
+  background-color: var(--color-success-bg) !important;
+}
+.bg-camp-success {
+  background-color: var(--color-success) !important;
+}
+.bg-camp-mid {
+  background-color: var(--bg-muted) !important;
+}
+
+/* Кнопки удаления / отклонения (красный мягкий фон) */
+.bg-camp-errorSoft {
+  background-color: var(--bg-error-soft) !important;
+}
+.hover\:bg-camp-errorSoft:hover {
+  background-color: var(--bg-error-soft-hover) !important;
+}
+
+/* Статус-бейджи */
+.bg-camp-successSoft {
+  background-color: var(--bg-success-soft) !important;
+}
 
 /* border-camp-* */
-.border-camp-border { border-color: var(--border-color) !important; }
-.border-camp-muted  { border-color: var(--border-muted) !important; }
-.border-camp-orange { border-color: #f59e0b !important; }
+.border-camp-border {
+  border-color: var(--border-color) !important;
+}
+.border-camp-muted {
+  border-color: var(--border-muted) !important;
+}
+.border-camp-orange {
+  border-color: #f59e0b !important;
+}
 
 /* shadow-camp-btn */
-.shadow-camp-btn { box-shadow: var(--shadow-btn) !important; }
+.shadow-camp-btn {
+  box-shadow: var(--shadow-btn) !important;
+}
 
 /* bg-white — override in dark mode */
-html.dark .bg-white { background-color: var(--bg-card) !important; }
+html.dark .bg-white {
+  background-color: var(--bg-card) !important;
+}
+
+/* bg-white/70 — полупрозрачный белый (кнопки поверх картинок) */
+html.dark .bg-white\/70 {
+  background-color: rgba(41, 37, 36, 0.7) !important;
+}
+
+/* amber hover — в тёмной теме заменяем на нейтральный muted hover */
+html.dark .hover\:bg-amber-50\/40:hover,
+html.dark .hover\:bg-amber-50\/30:hover {
+  background-color: var(--bg-muted) !important;
+}
+
+/* Инпуты: при фокусе JavaScript ставит backgroundColor = 'white' —
+   в тёмной теме перебиваем это через CSS */
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  background-color: var(--bg-card) !important;
+}
+
+/* Success toast (хардкод #e8fdf0 в шаблонах) */
+html.dark [style*="#e8fdf0"],
+html.dark [style*="background-color: #e8fdf0"] {
+  background-color: var(--color-success-bg) !important;
+  color: var(--color-success) !important;
+}
+
+/* Статус-бейджи «Неактивен» (#F5F5F0) и «Одобрен/Отклонён» (#DCFCE7 / #FEE2E2) */
+html.dark [style*="#F5F5F0"],
+html.dark [style*="#f5f5f0"] {
+  background-color: var(--bg-muted) !important;
+}
+html.dark [style*="#DCFCE7"],
+html.dark [style*="#dcfce7"] {
+  background-color: var(--color-success-bg) !important;
+}
+html.dark [style*="#FEE2E2"],
+html.dark [style*="#fee2e2"] {
+  background-color: var(--bg-error-soft) !important;
+}
+html.dark [style*="#FECACA"],
+html.dark [style*="#fecaca"] {
+  background-color: var(--bg-error-soft-hover) !important;
+}
 
 /* ─── Global dark-mode page background ───────────────────────────────────── */
 html.dark body {
@@ -106,11 +212,15 @@ html.dark body {
 }
 
 /* Layout backgrounds driven by vars */
-[data-theme-bg="page"]    { background-color: var(--bg-page)    !important; }
-[data-theme-bg="card"]    { background-color: var(--bg-card)    !important; }
-[data-theme-bg="sidebar"] { background-color: var(--bg-sidebar) !important; }
-
-
+[data-theme-bg="page"] {
+  background-color: var(--bg-page) !important;
+}
+[data-theme-bg="card"] {
+  background-color: var(--bg-card) !important;
+}
+[data-theme-bg="sidebar"] {
+  background-color: var(--bg-sidebar) !important;
+}
 
 @layer utilities {
   .font-nunito {
@@ -245,4 +355,53 @@ app-register {
     width: 100% !important;
     max-width: 100% !important;
   }
+}
+
+/* ─── Emoji Mart: тёмная тема ─────────────────────────────────────── */
+html.dark .emoji-mart-category-label span {
+  background: var(--bg-card) !important;
+  color: var(--text-stone) !important;
+}
+
+html.dark .emoji-mart-bar:first-child {
+  border-bottom-color: var(--border-color) !important;
+}
+
+html.dark .emoji-mart-anchor {
+  color: var(--text-gray) !important;
+}
+
+html.dark .emoji-mart-anchor-selected,
+html.dark .emoji-mart-anchor:hover {
+  color: var(--text-stone) !important;
+}
+
+html.dark .emoji-mart-anchor-bar {
+  background-color: var(--text-stone) !important;
+}
+
+html.dark .emoji-mart-search input {
+  background-color: var(--bg-input) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-stone) !important;
+}
+
+html.dark .emoji-mart-search-icon svg {
+  fill: var(--text-gray) !important;
+}
+
+/* Кнопки эмодзи (.emoji-btn) в компонентах расписания и конкурсов */
+html.dark .emoji-btn {
+  background: var(--bg-input) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-stone) !important;
+}
+
+html.dark .emoji-btn:hover,
+html.dark .emoji-preview:hover {
+  background: var(--bg-muted) !important;
+}
+
+html.dark .emoji-mart-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-muted) !important;
 }

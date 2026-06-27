@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { SettingsService } from '../../services/settings.service';
 import { ThemeService, Theme } from '../../services/theme.service';
 import { IconComponent } from '../../shared/icon.component';
 
@@ -50,6 +51,8 @@ export class UserProfileComponent implements OnInit {
   themeSuccess = false;
   themeError = false;
 
+  campColor = '#1a5c38';
+
   // ─── Модалка редактирования ───
   editUser: any = null;
   newPassword = '';
@@ -71,21 +74,27 @@ export class UserProfileComponent implements OnInit {
     public auth: AuthService,
     public themeService: ThemeService,
     private api: ApiService,
+    private settings: SettingsService,
     private route: ActivatedRoute,
     private router: Router,
   ) {}
 
   ngOnInit() {
+    this.settings.get().subscribe({
+      next: (d) => {
+        this.campColor = (d['camp_color'] as string) ?? '#1a5c38';
+      },
+      error: () => {},
+    });
+
     const routeId = this.route.snapshot.paramMap.get('id');
     const myId = this.auth.currentUser()?.id;
 
-    // Если зашли на /users/:id и это наш id — редиректим на /profile/me
     if (routeId !== null && Number(routeId) === myId) {
       this.router.navigate(['/profile/me'], { replaceUrl: true });
       return;
     }
 
-    // Если зашли на /profile/me — грузим себя
     if (this.route.snapshot.routeConfig?.path === 'profile/me') {
       this.isSelf = true;
       this.api.get<UserData>('/auth/me').subscribe({
@@ -104,7 +113,6 @@ export class UserProfileComponent implements OnInit {
       return;
     }
 
-    // Чужой профиль — /users/:id
     this.isSelf = false;
     this.api.get<UserData>(`/users/${routeId}`).subscribe({
       next: (data) => {
@@ -120,6 +128,14 @@ export class UserProfileComponent implements OnInit {
 
   get isDark(): boolean {
     return this.themeService.current === 'dark';
+  }
+
+  get campColorBg(): string {
+    const num = parseInt(this.campColor.replace('#', ''), 16);
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return `rgba(${r},${g},${b},0.08)`;
   }
 
   async setTheme(theme: Theme) {
@@ -197,8 +213,6 @@ export class UserProfileComponent implements OnInit {
       .map((w) => w[0].toUpperCase())
       .join('');
   }
-
-  // ─── Редактирование профиля (модалка) ───
 
   startEdit() {
     if (!this.user) return;

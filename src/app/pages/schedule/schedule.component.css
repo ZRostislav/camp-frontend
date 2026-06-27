@@ -35,7 +35,7 @@
 }
 
 .emoji-preview:hover {
-  background: #f0f0f0;
+  background: var(--bg-muted, #f0f0f0);
 }
 
 .emoji-text-input {
@@ -44,8 +44,9 @@
 
 .emoji-btn {
   font-size: 18px;
-  border: 1px solid #ccc;
-  background: #fff;
+  border: 1px solid var(--border-color, #ccc);
+  background: var(--bg-input, #fff);
+  color: var(--text-stone, #1c1917);
   border-radius: 4px;
   cursor: pointer;
   padding: 2px 6px;
@@ -53,7 +54,7 @@
 }
 
 .emoji-btn:hover {
-  background: #f0f0f0;
+  background: var(--bg-muted, #f0f0f0);
 }
 
 .emoji-picker-wrap {

@@ -39,7 +39,8 @@
   <div
     *ngIf="msg"
     class="flex items-center gap-[7px] rounded-xl px-3 sm:px-4 py-2.5 text-[0.82rem] font-bold animate-fade-in-down"
-    style="background-color: #e8fdf0; color: #16a34a"
+    [style.backgroundColor]="'var(--color-success-bg)'"
+    [style.color]="'var(--color-success)'"
   >
     <app-icon name="check" [size]="15" class="shrink-0"></app-icon>
     {{ msg }}
@@ -73,7 +74,7 @@
           class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
           (focus)="
             $any($event.target).style.borderColor = campColor;
-            $any($event.target).style.backgroundColor = 'white'
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
           "
           (blur)="
             $any($event.target).style.borderColor = 'transparent';
@@ -92,7 +93,7 @@
           class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
           (focus)="
             $any($event.target).style.borderColor = campColor;
-            $any($event.target).style.backgroundColor = 'white'
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
           "
           (blur)="
             $any($event.target).style.borderColor = 'transparent';
@@ -128,7 +129,7 @@
           class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
           (focus)="
             $any($event.target).style.borderColor = campColor;
-            $any($event.target).style.backgroundColor = 'white'
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
           "
           (blur)="
             $any($event.target).style.borderColor = 'transparent';
@@ -199,8 +200,12 @@
           </span>
           <span
             class="inline-block px-2 py-0.5 rounded-full text-[0.65rem] font-semibold"
-            [style.backgroundColor]="u.is_active ? '#DCFCE7' : '#F5F5F0'"
-            [style.color]="u.is_active ? '#16A34A' : '#A8A29E'"
+            [style.backgroundColor]="
+              u.is_active ? 'var(--color-success-bg)' : 'var(--bg-muted)'
+            "
+            [style.color]="
+              u.is_active ? 'var(--color-success)' : 'var(--text-subtle)'
+            "
           >
             {{ u.is_active ? "Активен" : "Неактивен" }}
           </span>
@@ -208,7 +213,11 @@
       </div>
 
       <!-- Действия -->
-      <div *ngIf="auth.isAdmin()" class="flex flex-col gap-1.5 shrink-0" (click)="$event.stopPropagation()">
+      <div
+        *ngIf="auth.isAdmin()"
+        class="flex flex-col gap-1.5 shrink-0"
+        (click)="$event.stopPropagation()"
+      >
         <button
           (click)="startEdit(u)"
           class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
@@ -220,7 +229,7 @@
         <button
           (click)="remove(u.id)"
           [disabled]="u.role === 'superadmin'"
-          class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#FEE2E2] text-camp-error hover:bg-[#FECACA] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          class="w-8 h-8 flex items-center justify-center rounded-lg bg-error-soft text-camp-error hover:bg-error-soft-hover transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
           <app-icon name="trash-2" [size]="14"></app-icon>
         </button>
@@ -239,10 +248,7 @@
 
     <table *ngIf="users.length" class="w-full">
       <thead>
-        <tr
-          class="border-b border-camp-border"
-          style="background-color: #fafaf8"
-        >
+        <tr class="border-b border-camp-border">
           <th
             class="text-left px-5 py-3 text-[0.68rem] font-bold text-camp-gray uppercase tracking-wide"
           >
@@ -315,8 +321,12 @@
           <td class="px-5 py-3.5">
             <span
               class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold"
-              [style.backgroundColor]="u.is_active ? '#DCFCE7' : '#F5F5F0'"
-              [style.color]="u.is_active ? '#16A34A' : '#A8A29E'"
+              [style.backgroundColor]="
+                u.is_active ? 'var(--color-success-bg)' : 'var(--bg-muted)'
+              "
+              [style.color]="
+                u.is_active ? 'var(--color-success)' : 'var(--text-subtle)'
+              "
             >
               {{ u.is_active ? "Активен" : "Неактивен" }}
             </span>
@@ -327,7 +337,10 @@
             }}</span>
           </td>
           <td class="px-5 py-3.5">
-            <div class="flex items-center gap-1.5 justify-end" (click)="$event.stopPropagation()">
+            <div
+              class="flex items-center gap-1.5 justify-end"
+              (click)="$event.stopPropagation()"
+            >
               <button
                 *ngIf="auth.isAdmin()"
                 (click)="startEdit(u)"
@@ -343,7 +356,7 @@
                 (click)="remove(u.id)"
                 [disabled]="u.role === 'superadmin'"
                 title="Удалить"
-                class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#FEE2E2] text-camp-error hover:bg-[#FECACA] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                class="w-8 h-8 flex items-center justify-center rounded-lg bg-camp-errorSoft text-camp-error hover:bg-camp-errorSoft transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <app-icon name="trash-2" [size]="14"></app-icon>
               </button>
@@ -376,7 +389,11 @@
           [style.backgroundColor]="
             registrationsStatus === s.value ? campColor : 'transparent'
           "
-          [style.color]="registrationsStatus === s.value ? 'white' : '#78716C'"
+          [style.color]="
+            registrationsStatus === s.value
+              ? 'var(--bg-card)'
+              : 'var(--text-gray)'
+          "
         >
           {{ s.label }}
         </button>
@@ -397,7 +414,7 @@
 
       <div *ngFor="let r of registrations; let last = last">
         <div
-          class="flex flex-wrap items-center gap-3 px-4 sm:px-5 py-4 transition-colors hover:bg-camp-muted/40"
+          class="flex flex-wrap items-center gap-3 px-4 sm:px-5 py-4 transition-colors"
           [class.border-b]="!last"
           [class.border-camp-border]="!last"
         >
@@ -442,9 +459,15 @@
             *ngIf="registrationsStatus !== 'pending'"
             class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold shrink-0"
             [style.backgroundColor]="
-              r.status === 'approved' ? '#DCFCE7' : '#FEE2E2'
+              r.status === 'approved'
+                ? 'var(--bg-success-soft)'
+                : 'var(--bg-error-soft)'
             "
-            [style.color]="r.status === 'approved' ? '#16A34A' : '#DC2626'"
+            [style.color]="
+              r.status === 'approved'
+                ? 'var(--color-success)'
+                : 'var(--color-error)'
+            "
           >
             {{ r.status === "approved" ? "Одобрена" : "Отклонена" }}
           </span>
@@ -471,8 +494,7 @@
             <button
               (click)="approve(r)"
               title="Одобрить"
-              class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white transition-all hover:-translate-y-px"
-              style="background-color: #16a34a"
+              class="btn-success flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white transition-all hover:-translate-y-px"
             >
               <app-icon name="check" [size]="13"></app-icon>
               Одобрить
@@ -481,7 +503,10 @@
               (click)="reject(r)"
               title="Отклонить"
               class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:-translate-y-px"
-              style="background-color: #fee2e2; color: #dc2626"
+              style="
+                background-color: var(--color-error-bg);
+                color: var(--color-error);
+              "
             >
               <app-icon name="x" [size]="13"></app-icon>
               Отклонить
@@ -489,8 +514,7 @@
             <button
               (click)="deleteRegistration(r.id)"
               title="Удалить заявку"
-              class="w-8 h-8 flex items-center justify-center rounded-lg bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
-            >
+              class="w-8 h-8 flex items-center justify-center rounded-lg bg-camp-errorSoft text-camp-error hover:bg-camp-errorSoft transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
               <app-icon name="trash-2" [size]="13"></app-icon>
             </button>
           </div>
@@ -546,7 +570,7 @@
           class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
           (focus)="
             $any($event.target).style.borderColor = campColor;
-            $any($event.target).style.backgroundColor = 'white'
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
           "
           (blur)="
             $any($event.target).style.borderColor = 'transparent';
@@ -564,7 +588,7 @@
           class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
           (focus)="
             $any($event.target).style.borderColor = campColor;
-            $any($event.target).style.backgroundColor = 'white'
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
           "
           (blur)="
             $any($event.target).style.borderColor = 'transparent';
@@ -614,7 +638,7 @@
           class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
           (focus)="
             $any($event.target).style.borderColor = campColor;
-            $any($event.target).style.backgroundColor = 'white'
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
           "
           (blur)="
             $any($event.target).style.borderColor = 'transparent';

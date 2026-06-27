@@ -1,12 +1,8 @@
-<div
-  class="min-h-screen p-4 lg:p-8 font-nunito"
-  style="background-color: var(--bg-page)"
->
+<div class="min-h-screen p-4 lg:p-8 font-nunito bg-[var(--bg-page)]">
   <!-- Error -->
   <div
     *ngIf="!loading && error"
-    class="max-w-lg mx-auto mt-12 rounded-2xl p-6 text-center profile-enter"
-    style="background-color: var(--color-error-bg); color: var(--color-error)"
+    class="max-w-lg mx-auto mt-12 rounded-2xl p-6 text-center profile-enter bg-camp-errorBg text-camp-error"
   >
     <app-icon name="circle-alert" [size]="32" class="mx-auto mb-2 block" />
     <p class="font-semibold">{{ error }}</p>
@@ -14,12 +10,11 @@
 
   <!-- Content -->
   <div *ngIf="!loading && !error && user" class="max-w-2xl mx-auto space-y-4">
-    <!-- Back button (only when viewing someone else) -->
+    <!-- Back button -->
     <div *ngIf="!isSelf" class="profile-enter">
       <button
         (click)="goBack()"
-        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold transition-all hover:-translate-x-0.5"
-        style="color: var(--text-gray); background-color: var(--bg-muted)"
+        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold text-camp-gray bg-camp-muted transition-all hover:-translate-x-0.5"
       >
         <app-icon name="arrow-left" [size]="15" />
         К списку пользователей
@@ -28,21 +23,17 @@
 
     <!-- Hero card -->
     <div
-      class="rounded-3xl p-6 shadow-sm profile-enter"
+      class="rounded-3xl p-6 shadow-sm profile-enter border border-camp-border bg-[var(--bg-card)]"
       [class.card-delay-1]="!isSelf"
-      style="
-        background-color: var(--bg-card);
-        border: 1px solid var(--border-color);
-      "
     >
       <div class="flex items-center gap-5 flex-wrap">
         <!-- Avatar -->
         <div
-          class="avatar-ring w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold shrink-0 shadow-lg"
+          class="avatar-ring w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold shrink-0 shadow-lg text-white"
+          style="letter-spacing: -1px"
           [style.background]="
             'linear-gradient(135deg, ' + roleColor + ', ' + roleColor + 'cc)'
           "
-          style="color: #fff; letter-spacing: -1px"
         >
           {{ getUserInitials() }}
         </div>
@@ -63,11 +54,12 @@
             >
               {{ displayName }}
             </h1>
-            <!-- "Это вы" badge -->
+            <!-- «Это вы» badge -->
             <span
               *ngIf="isSelf"
               class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold"
-              style="background: rgba(26, 92, 56, 0.1); color: #1a5c38"
+              [style.backgroundColor]="campColorBg"
+              [style.color]="campColor"
             >
               <app-icon name="user" [size]="10" />
               Вы
@@ -84,8 +76,7 @@
             </span>
             <span
               *ngIf="user.house_name"
-              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
-              style="background: #fef9c3; color: #854d0e"
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-900"
             >
               <app-icon name="home" [size]="11" />
               {{ user.house_name }}
@@ -108,17 +99,13 @@
         <!-- Points badge (participant) -->
         <div
           *ngIf="user.role === 'participant' && user.has_points"
-          class="points-badge shrink-0 flex flex-col items-center justify-center rounded-2xl px-5 py-3 shadow-sm"
-          style="background: #fef9c3; border: 2px solid #fde047"
+          class="points-badge shrink-0 flex flex-col items-center justify-center rounded-2xl px-5 py-3 shadow-sm bg-yellow-100 border-2 border-yellow-300"
         >
+          <span class="text-3xl font-black leading-none text-yellow-900">{{
+            user.total_points
+          }}</span>
           <span
-            class="text-3xl font-black leading-none"
-            style="color: #854d0e"
-            >{{ user.total_points }}</span
-          >
-          <span
-            class="text-[10px] font-bold uppercase tracking-wide mt-0.5"
-            style="color: #a16207"
+            class="text-[10px] font-bold uppercase tracking-wide mt-0.5 text-yellow-700"
             >баллов</span
           >
         </div>
@@ -127,40 +114,30 @@
 
     <!-- Details card -->
     <div
-      class="rounded-3xl p-6 shadow-sm profile-enter"
+      class="rounded-3xl p-6 shadow-sm profile-enter border border-camp-border bg-[var(--bg-card)]"
       [class.card-delay-1]="isSelf"
       [class.card-delay-2]="!isSelf"
-      style="
-        background-color: var(--bg-card);
-        border: 1px solid var(--border-color);
-      "
     >
       <h2
-        class="text-sm font-bold uppercase tracking-wider mb-4"
-        style="
-          color: var(--text-subtle);
-          font-family: var(--font-display, &quot;Neucha&quot;, sans-serif);
-        "
+        class="font-display text-sm font-bold uppercase tracking-wider mb-4 text-camp-subtle"
       >
         Личные данные
       </h2>
       <div class="space-y-1">
-        <!-- Username (staff) -->
+        <!-- Username -->
         <div *ngIf="user.username" class="info-row flex items-center gap-3">
           <div
-            class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-            style="background-color: var(--bg-muted)"
+            class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-camp-muted"
           >
-            <app-icon name="user" [size]="15" style="color: var(--text-gray)" />
+            <app-icon name="user" [size]="15" class="text-camp-gray" />
           </div>
           <div>
             <div
-              class="text-[11px] font-semibold uppercase tracking-wide"
-              style="color: var(--text-subtle)"
+              class="text-[11px] font-semibold uppercase tracking-wide text-camp-subtle"
             >
               Логин
             </div>
-            <div class="text-sm font-semibold" style="color: var(--text-stone)">
+            <div class="text-sm font-semibold text-camp-stone">
               {{ user.username }}
             </div>
           </div>
@@ -169,167 +146,127 @@
         <!-- Role -->
         <div class="info-row flex items-center gap-3">
           <div
-            class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-            style="background-color: var(--bg-muted)"
+            class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-camp-muted"
           >
-            <app-icon
-              name="shield"
-              [size]="15"
-              style="color: var(--text-gray)"
-            />
+            <app-icon name="shield" [size]="15" class="text-camp-gray" />
           </div>
           <div>
             <div
-              class="text-[11px] font-semibold uppercase tracking-wide"
-              style="color: var(--text-subtle)"
+              class="text-[11px] font-semibold uppercase tracking-wide text-camp-subtle"
             >
               Роль
             </div>
-            <div class="text-sm font-semibold" style="color: var(--text-stone)">
+            <div class="text-sm font-semibold text-camp-stone">
               {{ roleLabel }}
             </div>
           </div>
         </div>
 
-        <!-- Birth date (participant) -->
+        <!-- Birth date -->
         <div *ngIf="user.birth_date" class="info-row flex items-center gap-3">
           <div
-            class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-            style="background-color: var(--bg-muted)"
+            class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-camp-muted"
           >
-            <app-icon
-              name="calendar-days"
-              [size]="15"
-              style="color: var(--text-gray)"
-            />
+            <app-icon name="calendar-days" [size]="15" class="text-camp-gray" />
           </div>
           <div>
             <div
-              class="text-[11px] font-semibold uppercase tracking-wide"
-              style="color: var(--text-subtle)"
+              class="text-[11px] font-semibold uppercase tracking-wide text-camp-subtle"
             >
               Дата рождения
             </div>
-            <div class="text-sm font-semibold" style="color: var(--text-stone)">
+            <div class="text-sm font-semibold text-camp-stone">
               {{ formatDate(user.birth_date) }}
               <span
                 *ngIf="user.age"
-                class="ml-2 text-xs font-normal"
-                style="color: var(--text-subtle)"
+                class="ml-2 text-xs font-normal text-camp-subtle"
                 >{{ user.age }} лет</span
               >
             </div>
           </div>
         </div>
 
-        <!-- Gender (participant) -->
+        <!-- Gender -->
         <div *ngIf="genderLabel" class="info-row flex items-center gap-3">
           <div
-            class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-            style="background-color: var(--bg-muted)"
+            class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-camp-muted"
           >
-            <app-icon
-              name="smile"
-              [size]="15"
-              style="color: var(--text-gray)"
-            />
+            <app-icon name="smile" [size]="15" class="text-camp-gray" />
           </div>
           <div>
             <div
-              class="text-[11px] font-semibold uppercase tracking-wide"
-              style="color: var(--text-subtle)"
+              class="text-[11px] font-semibold uppercase tracking-wide text-camp-subtle"
             >
               Пол
             </div>
-            <div class="text-sm font-semibold" style="color: var(--text-stone)">
+            <div class="text-sm font-semibold text-camp-stone">
               {{ genderLabel }}
             </div>
           </div>
         </div>
 
-        <!-- City (participant) -->
+        <!-- City -->
         <div *ngIf="user.city" class="info-row flex items-center gap-3">
           <div
-            class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-            style="background-color: var(--bg-muted)"
+            class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-camp-muted"
           >
-            <app-icon
-              name="map-pin"
-              [size]="15"
-              style="color: var(--text-gray)"
-            />
+            <app-icon name="map-pin" [size]="15" class="text-camp-gray" />
           </div>
           <div>
             <div
-              class="text-[11px] font-semibold uppercase tracking-wide"
-              style="color: var(--text-subtle)"
+              class="text-[11px] font-semibold uppercase tracking-wide text-camp-subtle"
             >
               Город
             </div>
-            <div class="text-sm font-semibold" style="color: var(--text-stone)">
+            <div class="text-sm font-semibold text-camp-stone">
               {{ user.city }}
             </div>
           </div>
         </div>
 
-        <!-- Responsible houses (staff) -->
+        <!-- Responsible houses -->
         <div
           *ngIf="user.responsible_houses?.length"
           class="info-row flex items-start gap-3"
         >
           <div
-            class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
-            style="background-color: var(--bg-muted)"
+            class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 bg-camp-muted"
           >
-            <app-icon
-              name="house"
-              [size]="15"
-              style="color: var(--text-gray)"
-            />
+            <app-icon name="house" [size]="15" class="text-camp-gray" />
           </div>
           <div>
             <div
-              class="text-[11px] font-semibold uppercase tracking-wide mb-1.5"
-              style="color: var(--text-subtle)"
+              class="text-[11px] font-semibold uppercase tracking-wide mb-1.5 text-camp-subtle"
             >
               Закреплённые домики
             </div>
             <div class="flex flex-wrap gap-1.5">
               <span
                 *ngFor="let h of user.responsible_houses"
-                class="px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                style="
-                  background-color: var(--color-success-bg);
-                  color: var(--color-success);
-                "
+                class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-camp-successBg text-camp-success"
                 >{{ h.name }}</span
               >
             </div>
           </div>
         </div>
 
-        <!-- Password (только суперадмин) -->
+        <!-- Password (суперадмин) -->
         <div
           *ngIf="isSuperAdmin && user.password_plain"
           class="info-row flex items-center gap-3"
         >
           <div
-            class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-            style="background-color: var(--bg-muted)"
+            class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-camp-muted"
           >
-            <app-icon name="key" [size]="15" style="color: var(--text-gray)" />
+            <app-icon name="key" [size]="15" class="text-camp-gray" />
           </div>
           <div>
             <div
-              class="text-[11px] font-semibold uppercase tracking-wide"
-              style="color: var(--text-subtle)"
+              class="text-[11px] font-semibold uppercase tracking-wide text-camp-subtle"
             >
               Пароль
             </div>
-            <div
-              class="text-sm font-mono font-semibold"
-              style="color: var(--text-stone)"
-            >
+            <div class="text-sm font-mono font-semibold text-camp-stone">
               {{ user.password_plain }}
             </div>
           </div>
@@ -341,38 +278,31 @@
           class="info-row flex items-center gap-3"
         >
           <div
-            class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-            style="background-color: var(--bg-muted)"
+            class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-camp-muted"
           >
-            <app-icon
-              name="calendar-plus"
-              [size]="15"
-              style="color: var(--text-gray)"
-            />
+            <app-icon name="calendar-plus" [size]="15" class="text-camp-gray" />
           </div>
           <div>
             <div
-              class="text-[11px] font-semibold uppercase tracking-wide"
-              style="color: var(--text-subtle)"
+              class="text-[11px] font-semibold uppercase tracking-wide text-camp-subtle"
             >
               Создан
             </div>
-            <div class="text-sm font-semibold" style="color: var(--text-stone)">
+            <div class="text-sm font-semibold text-camp-stone">
               {{ formatDate(user.created_at) }}
             </div>
           </div>
         </div>
 
-        <!-- Кнопка редактирования (суперадмин или админ, только чужой профиль) -->
+        <!-- Кнопка редактирования -->
         <div
           *ngIf="!isSelf && (isSuperAdmin || auth.isAdmin())"
-          class="mt-4 pt-4"
-          style="border-top: 1px solid var(--border-color)"
+          class="mt-4 pt-4 border-t border-camp-border"
         >
           <button
             (click)="startEdit()"
-            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
-            style="background-color: #1a5c38; color: white"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 shadow-camp-btn"
+            [style.backgroundColor]="campColor"
           >
             <app-icon name="pencil" [size]="14" />
             Редактировать профиль
@@ -384,50 +314,33 @@
     <!-- Theme card (only for self) -->
     <div
       *ngIf="isSelf"
-      class="rounded-3xl p-6 shadow-sm profile-enter card-delay-2"
-      style="
-        background-color: var(--bg-card);
-        border: 1px solid var(--border-color);
-      "
+      class="rounded-3xl p-6 shadow-sm profile-enter card-delay-2 border border-camp-border bg-[var(--bg-card)]"
     >
       <div class="flex items-center justify-between mb-5">
         <h2
-          class="text-sm font-bold uppercase tracking-wider"
-          style="
-            color: var(--text-subtle);
-            font-family: var(--font-display, &quot;Neucha&quot;, sans-serif);
-          "
+          class="font-display text-sm font-bold uppercase tracking-wider text-camp-subtle"
         >
           Тема оформления
         </h2>
         <span
           *ngIf="themeSuccess"
-          class="status-badge flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full"
-          style="
-            background-color: var(--color-success-bg);
-            color: var(--color-success);
-          "
+          class="status-badge flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-camp-successBg text-camp-success"
         >
           <app-icon name="circle-check" [size]="13" /> Сохранено
         </span>
         <span
           *ngIf="themeError"
-          class="status-badge flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full"
-          style="
-            background-color: var(--color-error-bg);
-            color: var(--color-error);
-          "
+          class="status-badge flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-camp-errorBg text-camp-error"
         >
           <app-icon name="circle-alert" [size]="13" /> Ошибка
         </span>
         <span
           *ngIf="themeLoading"
-          class="flex items-center gap-1.5 text-xs font-medium"
-          style="color: var(--text-subtle)"
+          class="flex items-center gap-1.5 text-xs font-medium text-camp-subtle"
         >
           <div
-            class="w-3.5 h-3.5 rounded-full border-2 spin"
-            style="border-color: var(--border-color); border-top-color: #1a5c38"
+            class="w-3.5 h-3.5 rounded-full border-2 spin border-camp-border"
+            [style.borderTopColor]="campColor"
           ></div>
           Сохраняем…
         </span>
@@ -440,11 +353,10 @@
           [disabled]="themeLoading"
           class="theme-btn flex flex-col items-center gap-3 py-5 px-4 rounded-2xl border-2 focus:outline-none"
           [class.active]="!isDark"
-          [style.borderColor]="!isDark ? '#1a5c38' : 'var(--border-color)'"
-          [style.backgroundColor]="
-            !isDark ? 'rgba(26,92,56,0.06)' : 'var(--bg-muted)'
-          "
+          [style.borderColor]="!isDark ? campColor : 'var(--border-color)'"
+          [style.backgroundColor]="!isDark ? campColorBg : 'var(--bg-muted)'"
         >
+          <!-- Light preview (статичный макет, хардкод намеренный — это превью светлой темы) -->
           <div
             class="theme-preview w-full rounded-xl overflow-hidden shadow-sm"
             style="
@@ -526,15 +438,13 @@
             </div>
           </div>
           <div class="flex flex-col items-center gap-1">
-            <span class="text-sm font-bold" style="color: var(--text-stone)"
-              >☀️ Светлая</span
-            >
+            <span class="text-sm font-bold text-camp-stone">☀️ Светлая</span>
             <div
               *ngIf="!isDark"
               class="w-5 h-5 rounded-full flex items-center justify-center"
-              style="background: #1a5c38"
+              [style.backgroundColor]="campColor"
             >
-              <app-icon name="circle-check" [size]="12" style="color: white" />
+              <app-icon name="circle-check" [size]="12" class="text-white" />
             </div>
           </div>
         </button>
@@ -545,11 +455,10 @@
           [disabled]="themeLoading"
           class="theme-btn flex flex-col items-center gap-3 py-5 px-4 rounded-2xl border-2 focus:outline-none"
           [class.active]="isDark"
-          [style.borderColor]="isDark ? '#1a5c38' : 'var(--border-color)'"
-          [style.backgroundColor]="
-            isDark ? 'rgba(26,92,56,0.06)' : 'var(--bg-muted)'
-          "
+          [style.borderColor]="isDark ? campColor : 'var(--border-color)'"
+          [style.backgroundColor]="isDark ? campColorBg : 'var(--bg-muted)'"
         >
+          <!-- Dark preview (статичный макет — хардкод намеренный) -->
           <div
             class="theme-preview w-full rounded-xl overflow-hidden shadow-sm"
             style="
@@ -631,21 +540,19 @@
             </div>
           </div>
           <div class="flex flex-col items-center gap-1">
-            <span class="text-sm font-bold" style="color: var(--text-stone)"
-              >🌙 Тёмная</span
-            >
+            <span class="text-sm font-bold text-camp-stone">🌙 Тёмная</span>
             <div
               *ngIf="isDark"
               class="w-5 h-5 rounded-full flex items-center justify-center"
-              style="background: #1a5c38"
+              [style.backgroundColor]="campColor"
             >
-              <app-icon name="circle-check" [size]="12" style="color: white" />
+              <app-icon name="circle-check" [size]="12" class="text-white" />
             </div>
           </div>
         </button>
       </div>
 
-      <p class="mt-4 text-xs text-center" style="color: var(--text-subtle)">
+      <p class="mt-4 text-xs text-center text-camp-subtle">
         Тема применяется мгновенно и сохраняется на сервере
       </p>
     </div>
@@ -666,28 +573,17 @@
   >
     <!-- Шапка -->
     <div
-      class="flex items-center justify-between px-5 py-4"
-      style="
-        background-color: var(--bg-muted);
-        border-bottom: 1px solid var(--border-color);
-      "
+      class="flex items-center justify-between px-5 py-4 border-b border-camp-border bg-camp-muted"
     >
       <div class="flex items-center gap-2">
-        <app-icon name="pencil" [size]="16" style="color: #1a5c38" />
-        <span
-          class="text-sm font-bold"
-          style="
-            color: var(--text-stone);
-            font-family: var(--font-display, &quot;Neucha&quot;, sans-serif);
-          "
-        >
+        <app-icon name="pencil" [size]="16" [style.color]="campColor" />
+        <span class="font-display text-sm font-bold text-camp-stone">
           Редактирование: {{ editUser.username }}
         </span>
       </div>
       <button
         (click)="closeEdit()"
-        class="w-7 h-7 flex items-center justify-center rounded-xl transition-colors"
-        style="background-color: var(--bg-card); color: var(--text-gray)"
+        class="w-7 h-7 flex items-center justify-center rounded-xl transition-colors bg-[var(--bg-card)] text-camp-gray hover:bg-camp-muted"
       >
         <app-icon name="x" [size]="14" />
       </button>
@@ -696,8 +592,7 @@
     <!-- Ошибка сохранения -->
     <div
       *ngIf="saveError"
-      class="mx-5 mt-4 flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold"
-      style="background-color: var(--color-error-bg); color: var(--color-error)"
+      class="mx-5 mt-4 flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold bg-camp-errorBg text-camp-error"
     >
       <app-icon name="circle-alert" [size]="14" class="shrink-0" />
       {{ saveError }}
@@ -707,58 +602,37 @@
     <div class="p-5 space-y-3">
       <div>
         <label
-          class="block text-[0.7rem] font-bold uppercase tracking-wide mb-1"
-          style="color: var(--text-gray)"
+          class="block text-[0.7rem] font-bold uppercase tracking-wide mb-1 text-camp-gray"
+          >ФИО</label
         >
-          ФИО
-        </label>
         <input
           [(ngModel)]="editUser.full_name"
-          class="w-full px-3 py-2 border-2 rounded-xl text-sm font-medium outline-none transition-colors"
-          style="
-            background-color: var(--bg-muted);
-            border-color: transparent;
-            color: var(--text-stone);
-          "
-          (focus)="$any($event.target).style.borderColor = '#1a5c38'"
+          class="w-full px-3 py-2 border-2 border-transparent rounded-xl text-sm font-medium outline-none transition-colors bg-camp-muted text-camp-stone"
+          (focus)="$any($event.target).style.borderColor = campColor"
           (blur)="$any($event.target).style.borderColor = 'transparent'"
         />
       </div>
       <div>
         <label
-          class="block text-[0.7rem] font-bold uppercase tracking-wide mb-1"
-          style="color: var(--text-gray)"
+          class="block text-[0.7rem] font-bold uppercase tracking-wide mb-1 text-camp-gray"
+          >Логин</label
         >
-          Логин
-        </label>
         <input
           [(ngModel)]="editUser.username"
-          class="w-full px-3 py-2 border-2 rounded-xl text-sm font-medium outline-none transition-colors"
-          style="
-            background-color: var(--bg-muted);
-            border-color: transparent;
-            color: var(--text-stone);
-          "
-          (focus)="$any($event.target).style.borderColor = '#1a5c38'"
+          class="w-full px-3 py-2 border-2 border-transparent rounded-xl text-sm font-medium outline-none transition-colors bg-camp-muted text-camp-stone"
+          (focus)="$any($event.target).style.borderColor = campColor"
           (blur)="$any($event.target).style.borderColor = 'transparent'"
         />
       </div>
       <div>
         <label
-          class="block text-[0.7rem] font-bold uppercase tracking-wide mb-1"
-          style="color: var(--text-gray)"
+          class="block text-[0.7rem] font-bold uppercase tracking-wide mb-1 text-camp-gray"
+          >Роль</label
         >
-          Роль
-        </label>
         <select
           [(ngModel)]="editUser.role"
-          class="w-full px-3 py-2 border-2 rounded-xl text-sm font-medium outline-none transition-colors"
-          style="
-            background-color: var(--bg-muted);
-            border-color: transparent;
-            color: var(--text-stone);
-          "
-          (focus)="$any($event.target).style.borderColor = '#1a5c38'"
+          class="w-full px-3 py-2 border-2 border-transparent rounded-xl text-sm font-medium outline-none transition-colors bg-camp-muted text-camp-stone"
+          (focus)="$any($event.target).style.borderColor = campColor"
           (blur)="$any($event.target).style.borderColor = 'transparent'"
         >
           <option *ngFor="let r of roles" [value]="r">
@@ -767,21 +641,19 @@
         </select>
       </div>
       <label
-        class="flex items-center gap-2.5 cursor-pointer text-sm font-medium"
-        style="color: var(--text-stone)"
+        class="flex items-center gap-2.5 cursor-pointer text-sm font-medium text-camp-stone"
       >
         <input
           type="checkbox"
           [(ngModel)]="editUser.is_active"
           class="w-4 h-4 rounded cursor-pointer"
-          style="accent-color: #1a5c38"
+          [style.accentColor]="campColor"
         />
         Активен
       </label>
       <div>
         <label
-          class="block text-[0.7rem] font-bold uppercase tracking-wide mb-1"
-          style="color: var(--text-gray)"
+          class="block text-[0.7rem] font-bold uppercase tracking-wide mb-1 text-camp-gray"
         >
           Новый пароль
           <span class="normal-case font-normal"
@@ -792,13 +664,8 @@
           type="password"
           [(ngModel)]="newPassword"
           placeholder="••••••••"
-          class="w-full px-3 py-2 border-2 rounded-xl text-sm font-medium outline-none transition-colors"
-          style="
-            background-color: var(--bg-muted);
-            border-color: transparent;
-            color: var(--text-stone);
-          "
-          (focus)="$any($event.target).style.borderColor = '#1a5c38'"
+          class="w-full px-3 py-2 border-2 border-transparent rounded-xl text-sm font-medium outline-none transition-colors bg-camp-muted text-camp-stone"
+          (focus)="$any($event.target).style.borderColor = campColor"
           (blur)="$any($event.target).style.borderColor = 'transparent'"
         />
       </div>
@@ -809,16 +676,15 @@
       <button
         (click)="saveEdit()"
         [disabled]="saving"
-        class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px disabled:opacity-60"
-        style="background-color: #1a5c38"
+        class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px disabled:opacity-60 shadow-camp-btn"
+        [style.backgroundColor]="campColor"
       >
         <app-icon name="save" [size]="15" />
         {{ saving ? "Сохранение…" : "Сохранить" }}
       </button>
       <button
         (click)="closeEdit()"
-        class="px-4 py-2.5 rounded-xl text-sm font-bold transition-colors"
-        style="background-color: var(--bg-muted); color: var(--text-gray)"
+        class="px-4 py-2.5 rounded-xl text-sm font-bold transition-colors bg-camp-muted text-camp-gray hover:bg-camp-border"
       >
         Отмена
       </button>
