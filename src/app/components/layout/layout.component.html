@@ -194,11 +194,11 @@
       style="border-top: 1px solid rgba(255, 255, 255, 0.1)"
     >
       <a
-        routerLink="/profile"
+        routerLink="/profile/me"
         class="flex items-center gap-3 px-2 rounded-xl py-1.5 transition-all duration-150 block"
         style="color: inherit"
-        onmouseenter="this.style.backgroundColor='rgba(255,255,255,0.08)'"
-        onmouseleave="this.style.backgroundColor='transparent'"
+        onmouseenter="this.style.backgroundColor = 'rgba(255,255,255,0.08)'"
+        onmouseleave="this.style.backgroundColor = 'transparent'"
       >
         <div
           class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
@@ -215,17 +215,28 @@
             {{ auth.role }}
           </div>
         </div>
-        <app-icon name="arrow-right" [size]="14" style="color: rgba(255,255,255,0.35)" class="shrink-0" />
+        <app-icon
+          name="arrow-right"
+          [size]="14"
+          style="color: rgba(255, 255, 255, 0.35)"
+          class="shrink-0"
+        />
       </a>
       <button
         (click)="toggleTheme()"
         class="mt-2 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
         style="color: rgba(255, 255, 255, 0.6)"
-        onmouseenter="this.style.backgroundColor='rgba(255,255,255,0.1)'; this.style.color='rgba(255,255,255,0.9)'"
-        onmouseleave="this.style.backgroundColor='transparent'; this.style.color='rgba(255,255,255,0.6)'"
+        onmouseenter="
+          this.style.backgroundColor = 'rgba(255,255,255,0.1)';
+          this.style.color = 'rgba(255,255,255,0.9)';
+        "
+        onmouseleave="
+          this.style.backgroundColor = 'transparent';
+          this.style.color = 'rgba(255,255,255,0.6)';
+        "
       >
-        <span>{{ isDark ? '☀️' : '🌙' }}</span>
-        {{ isDark ? 'Светлая тема' : 'Тёмная тема' }}
+        <span>{{ isDark ? "☀️" : "🌙" }}</span>
+        {{ isDark ? "Светлая тема" : "Тёмная тема" }}
       </button>
       <button
         (click)="auth.logout()"
@@ -487,12 +498,12 @@
         style="border-top: 1px solid rgba(255, 255, 255, 0.1)"
       >
         <a
-          routerLink="/profile"
+          routerLink="/profile/me"
           (click)="mobileMenuOpen = false"
           class="flex items-center gap-3 px-2 mb-3 rounded-xl py-1.5 transition-all duration-150 block"
           style="color: inherit"
-          onmouseenter="this.style.backgroundColor='rgba(255,255,255,0.08)'"
-          onmouseleave="this.style.backgroundColor='transparent'"
+          onmouseenter="this.style.backgroundColor = 'rgba(255,255,255,0.08)'"
+          onmouseleave="this.style.backgroundColor = 'transparent'"
         >
           <div
             class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all duration-150"
@@ -514,17 +525,28 @@
               {{ auth.role }}
             </div>
           </div>
-          <app-icon name="arrow-right" [size]="14" style="color: rgba(255,255,255,0.35)" class="shrink-0" />
+          <app-icon
+            name="arrow-right"
+            [size]="14"
+            style="color: rgba(255, 255, 255, 0.35)"
+            class="shrink-0"
+          />
         </a>
         <button
           (click)="toggleTheme()"
           class="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all mb-1"
           style="color: rgba(255, 255, 255, 0.6)"
-          onmouseenter="this.style.backgroundColor='rgba(255,255,255,0.1)'; this.style.color='rgba(255,255,255,0.9)'"
-          onmouseleave="this.style.backgroundColor='transparent'; this.style.color='rgba(255,255,255,0.6)'"
+          onmouseenter="
+            this.style.backgroundColor = 'rgba(255,255,255,0.1)';
+            this.style.color = 'rgba(255,255,255,0.9)';
+          "
+          onmouseleave="
+            this.style.backgroundColor = 'transparent';
+            this.style.color = 'rgba(255,255,255,0.6)';
+          "
         >
-          <span>{{ isDark ? '☀️' : '🌙' }}</span>
-          {{ isDark ? 'Светлая тема' : 'Тёмная тема' }}
+          <span>{{ isDark ? "☀️" : "🌙" }}</span>
+          {{ isDark ? "Светлая тема" : "Тёмная тема" }}
         </button>
         <button
           (click)="auth.logout()"

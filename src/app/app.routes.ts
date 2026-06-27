@@ -33,6 +33,20 @@ export const routes: Routes = [
           import('./pages/users/users.component').then((m) => m.UsersComponent),
       },
       {
+        path: 'profile/me',
+        loadComponent: () =>
+          import('./pages/profile/profile.component').then(
+            (m) => m.UserProfileComponent,
+          ),
+      },
+      {
+        path: 'users/:id',
+        loadComponent: () =>
+          import('./pages/profile/profile.component').then(
+            (m) => m.UserProfileComponent,
+          ),
+      },
+      {
         path: 'participants',
         loadComponent: () =>
           import('./pages/participants/participants.component').then(
@@ -97,20 +111,6 @@ export const routes: Routes = [
         path: 'error',
         loadComponent: () =>
           import('./pages/error/error.component').then((m) => m.ErrorComponent),
-      },
-      {
-        path: 'users/:id',
-        loadComponent: () =>
-          import('./pages/users/user-profile.component').then(
-            (m) => m.UserProfileComponent,
-          ),
-      },
-      {
-        path: 'profile',
-        loadComponent: () =>
-          import('./pages/profile/profile.component').then(
-            (m) => m.ProfileComponent,
-          ),
       },
     ],
   },

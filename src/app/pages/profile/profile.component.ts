@@ -1,57 +1,97 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService, Theme } from '../../services/theme.service';
 import { IconComponent } from '../../shared/icon.component';
 
-interface ProfileData {
+interface UserData {
+  id: number;
+  full_name: string;
+  username: string;
   role: string;
-  full_name?: string;
-  fullName?: string;
-  username?: string;
-  id?: number;
+  is_active: boolean;
+  theme?: string;
+  // participant fields
   last_name?: string;
   first_name?: string;
   birth_date?: string;
   age?: number;
   gender?: string;
   city?: string;
-  house_id?: number;
   house_name?: string;
   has_points?: boolean;
   total_points?: number;
-  theme?: string;
+  // staff fields
   responsible_houses?: { id: number; name: string; rank_level: number }[];
 }
 
 @Component({
-  selector: 'app-profile',
+  selector: 'app-user-profile',
   standalone: true,
   imports: [CommonModule, IconComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
 })
-export class ProfileComponent implements OnInit {
-  profile: ProfileData | null = null;
+export class UserProfileComponent implements OnInit {
+  user: UserData | null = null;
   loading = true;
   error = '';
+
+  /** true когда смотрим на себя (/profile или /users/myId) */
+  isSelf = false;
 
   themeLoading = false;
   themeSuccess = false;
   themeError = false;
 
+  private readonly roleColors: Record<string, string> = {
+    superadmin: '#7C3AED',
+    admin: '#0EA5E9',
+    counselor: '#22C55E',
+    helper: '#F97316',
+    staff: '#78716C',
+    participant: '#1a5c38',
+  };
+
   constructor(
     public auth: AuthService,
     public themeService: ThemeService,
     private api: ApiService,
+    private route: ActivatedRoute,
+    private router: Router,
   ) {}
 
   ngOnInit() {
-    this.api.get<ProfileData>('/auth/me').subscribe({
+    // Если маршрут /profile — редиректим на /users/:myId
+    if (this.route.snapshot.routeConfig?.path === 'profile/me') {
+      const myId = this.auth.currentUser()?.id;
+      if (myId) {
+        this.router.navigate(['/users', myId], { replaceUrl: true });
+        return;
+      }
+    }
+
+    const routeId = this.route.snapshot.paramMap.get('id');
+    const myId = this.auth.currentUser()?.id;
+    this.isSelf = routeId !== null && Number(routeId) === myId;
+
+    // Для себя берём /auth/me (содержит тему, баллы, домик участника)
+    const endpoint = this.isSelf ? '/auth/me' : `/users/${routeId}`;
+
+    this.api.get<UserData>(endpoint).subscribe({
       next: (data) => {
-        this.profile = data;
+        this.user = data;
         this.loading = false;
+        // Синхронизируем локальную тему если смотрим на себя
+        if (this.isSelf && data.theme) {
+          // ThemeService уже применил тему при старте, но на случай
+          // если пользователь сменил тему с другого устройства
+          if (data.theme !== this.themeService.current) {
+            this.themeService.setTheme(data.theme as Theme, this.auth.token);
+          }
+        }
       },
       error: () => {
         this.error = 'Не удалось загрузить данные профиля';
@@ -69,10 +109,9 @@ export class ProfileComponent implements OnInit {
     this.themeLoading = true;
     this.themeSuccess = false;
     this.themeError = false;
-
     try {
       await this.themeService.setTheme(theme, this.auth.token);
-      if (this.profile) this.profile.theme = theme;
+      if (this.user) this.user.theme = theme;
       this.themeSuccess = true;
       setTimeout(() => (this.themeSuccess = false), 2500);
     } catch {
@@ -83,11 +122,14 @@ export class ProfileComponent implements OnInit {
     }
   }
 
+  goBack() {
+    this.router.navigate(['/users']);
+  }
+
   get displayName(): string {
     return (
-      this.profile?.full_name ||
-      this.profile?.fullName ||
-      [this.profile?.last_name, this.profile?.first_name].filter(Boolean).join(' ') ||
+      this.user?.full_name ||
+      [this.user?.last_name, this.user?.first_name].filter(Boolean).join(' ') ||
       '—'
     );
   }
@@ -98,15 +140,29 @@ export class ProfileComponent implements OnInit {
       admin: 'Администратор',
       counselor: 'Вожатый',
       helper: 'Помощник',
+      staff: 'Персонал',
       participant: 'Участник',
     };
-    return map[this.profile?.role ?? ''] ?? this.profile?.role ?? '—';
+    return map[this.user?.role ?? ''] ?? this.user?.role ?? '—';
   }
 
-  get genderLabel(): string {
-    if (this.profile?.gender === 'male') return 'Мужской';
-    if (this.profile?.gender === 'female') return 'Женский';
-    return null as any;
+  get roleColor(): string {
+    return this.roleColors[this.user?.role ?? ''] ?? '#78716C';
+  }
+
+  get roleColorBg(): string {
+    const c = this.roleColor;
+    const num = parseInt(c.replace('#', ''), 16);
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return `rgba(${r},${g},${b},0.1)`;
+  }
+
+  get genderLabel(): string | null {
+    if (this.user?.gender === 'male') return 'Мужской';
+    if (this.user?.gender === 'female') return 'Женский';
+    return null;
   }
 
   formatDate(iso?: string): string {
@@ -118,9 +174,9 @@ export class ProfileComponent implements OnInit {
   getUserInitials(): string {
     return this.displayName
       .split(' ')
-      .map((n) => n[0])
-      .join('')
+      .filter(Boolean)
       .slice(0, 2)
-      .toUpperCase();
+      .map((w) => w[0].toUpperCase())
+      .join('');
   }
 }
