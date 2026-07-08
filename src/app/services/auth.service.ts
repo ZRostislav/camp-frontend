@@ -44,7 +44,7 @@ export class AuthService {
     return this.role === 'superadmin';
   }
   isStaff() {
-    return ['superadmin', 'admin', 'counselor', 'helper'].includes(
+    return ['superadmin', 'admin', 'counselor', 'helper', 'staff'].includes(
       this.role || '',
     );
   }
@@ -98,10 +98,11 @@ export class AuthService {
     newPassword: string,
     newPasswordConfirm: string,
   ) {
-    return this.http.put<{ message: string }>(
-      `${this.api}/auth/me/password`,
-      { currentPassword, newPassword, newPasswordConfirm },
-    );
+    return this.http.put<{ message: string }>(`${this.api}/auth/me/password`, {
+      currentPassword,
+      newPassword,
+      newPasswordConfirm,
+    });
   }
 
   private saveSession(token: string, user: User) {
