@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { SettingsService } from '../../services/settings.service';
+import { NewsStatusService } from '../../services/news-status.service';
 import { IconComponent } from '../../shared/icon.component';
 
 @Component({
@@ -12,7 +13,7 @@ import { IconComponent } from '../../shared/icon.component';
   imports: [CommonModule, FormsModule, DatePipe, IconComponent],
   templateUrl: './news.component.html',
 })
-export class NewsComponent implements OnInit {
+export class NewsComponent implements OnInit, OnDestroy {
   news: any[] = [];
   form: any = { title: '', text: '', pinned: false };
   editItem: any = null;
@@ -26,6 +27,7 @@ export class NewsComponent implements OnInit {
     public auth: AuthService,
     private api: ApiService,
     private settings: SettingsService,
+    private newsStatus: NewsStatusService,
   ) {}
 
   ngOnInit() {
@@ -38,13 +40,46 @@ export class NewsComponent implements OnInit {
     this.load();
   }
 
+  ngOnDestroy() {
+    // Пользователь уходит со страницы новостей — то, что он успел увидеть,
+    // отмечаем прочитанным на бэкенде (бейджи на главной/в меню погаснут).
+    this.markAllRead();
+  }
+
   load() {
     this.error = '';
     this.msg = '';
     this.api.get('/news').subscribe({
-      next: (d: any) => (this.news = d),
+      next: (d: any) => {
+        // Каждая новость приходит с реальным is_read для текущего
+        // пользователя (см. GET /news на бэкенде). Список не переопределяется
+        // повторно до следующего load(), поэтому бейджи «непрочитано»
+        // остаются видимыми весь визит, даже после markAllRead().
+        this.news = d;
+        this.newsStatus.refresh();
+      },
       error: (e) => (this.error = e.error?.error || 'Ошибка загрузки'),
     });
+  }
+
+  isUnread(n: any): boolean {
+    return !n?.is_read;
+  }
+
+  get unreadCount(): number {
+    return this.news.filter((n) => this.isUnread(n)).length;
+  }
+
+  /** Явная кнопка «отметить всё прочитанным», не дожидаясь ухода со страницы */
+  markAllRead() {
+    const unreadIds = this.news.filter((n) => this.isUnread(n)).map((n) => n.id);
+    if (!unreadIds.length) return;
+    this.newsStatus.markManyRead(unreadIds);
+    // Оптимистично обновляем локально, чтобы подсветка/бейджи погасли сразу,
+    // не дожидаясь ответа сервера.
+    this.news = this.news.map((n) =>
+      unreadIds.includes(n.id) ? { ...n, is_read: true } : n,
+    );
   }
 
   create() {

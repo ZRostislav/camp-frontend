@@ -6,8 +6,9 @@
   "
   [style.--camp-color]="campColor"
 >
-  <!-- ===== DESKTOP SIDEBAR ===== -->
+  <!-- ===== DESKTOP SIDEBAR (персонал) ===== -->
   <aside
+    *ngIf="!isParticipant"
     class="hidden lg:flex flex-col w-64 shrink-0 h-screen sticky top-0"
     style="
       background-color: var(--bg-sidebar);
@@ -143,6 +144,12 @@
       >
         <app-icon name="newspaper" [size]="18" class="shrink-0" />
         Новости
+        <span
+          *ngIf="unreadNewsCount > 0"
+          class="ml-auto min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[0.65rem] font-extrabold flex items-center justify-center shrink-0 animate-alert-bounce"
+        >
+          {{ unreadNewsCount > 9 ? "9+" : unreadNewsCount }}
+        </span>
       </a>
 
       <a
@@ -257,9 +264,12 @@
     </div>
   </aside>
 
-  <!-- ===== MOBILE TOPBAR ===== -->
+  <!-- ===== TOPBAR ===== -->
+  <!-- Персонал видит её только на мобильных (на десктопе есть боковое меню).
+       Участник видит её всегда — это его единственная верхняя панель. -->
   <div
-    class="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 h-14 shadow-md"
+    [ngClass]="isParticipant ? '' : 'lg:hidden'"
+    class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 h-14 shadow-md"
     style="background-color: var(--bg-sidebar)"
   >
     <div class="flex items-center gap-2.5">
@@ -285,13 +295,197 @@
       </span>
     </div>
 
-    <button class="text-white p-1 rounded-lg" (click)="mobileMenuOpen = true">
+    <!-- Участнику вместо гамбургера — быстрые действия (тема / выход) -->
+    <div *ngIf="isParticipant" class="flex items-center gap-1">
+      <button
+        class="text-white p-2 rounded-lg opacity-80 hover:opacity-100 transition-opacity"
+        (click)="toggleTheme()"
+      >
+        <span class="text-base leading-none">{{ isDark ? "☀️" : "🌙" }}</span>
+      </button>
+      <button
+        class="text-white p-2 rounded-lg opacity-80 hover:opacity-100 transition-opacity"
+        (click)="auth.logout()"
+      >
+        <app-icon name="log-out" [size]="19" />
+      </button>
+    </div>
+
+    <button
+      *ngIf="!isParticipant"
+      class="text-white p-1 rounded-lg"
+      (click)="mobileMenuOpen = true"
+    >
       <app-icon name="menu" [size]="22" />
     </button>
   </div>
 
-  <!-- ===== MOBILE DRAWER ===== -->
-  <div *ngIf="mobileMenuOpen" class="lg:hidden fixed inset-0 z-50 flex">
+  <!-- ===== BOTTOM TAB BAR (только для участников) ===== -->
+  <nav
+    *ngIf="isParticipant"
+    class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-50"
+    style="
+      background-color: var(--bg-card);
+      border-top: 1.5px solid var(--border-color);
+      box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.08);
+    "
+  >
+    <div class="flex items-center justify-around pt-2 pb-3 px-1">
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="participant-tab-active"
+        #dashTab="routerLinkActive"
+        class="flex flex-col items-center gap-0.5 rounded-2xl select-none"
+        style="min-width: 52px; min-height: 52px"
+      >
+        <div
+          class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-200"
+          [style.backgroundColor]="dashTab.isActive ? campColor : 'transparent'"
+        >
+          <app-icon
+            name="layout-dashboard"
+            [size]="20"
+            [color]="dashTab.isActive ? '#ffffff' : 'var(--text-subtle)'"
+          />
+        </div>
+        <span
+          class="text-[10px] font-extrabold"
+          [style.color]="dashTab.isActive ? campColor : 'var(--text-subtle)'"
+          >Главная</span
+        >
+      </a>
+
+      <a
+        *ngIf="auth.canViewMyHouse()"
+        routerLink="/my-house"
+        routerLinkActive="participant-tab-active"
+        #houseTab="routerLinkActive"
+        class="flex flex-col items-center gap-0.5 rounded-2xl select-none"
+        style="min-width: 52px; min-height: 52px"
+      >
+        <div
+          class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-200"
+          [style.backgroundColor]="houseTab.isActive ? campColor : 'transparent'"
+        >
+          <app-icon
+            name="house"
+            [size]="20"
+            [color]="houseTab.isActive ? '#ffffff' : 'var(--text-subtle)'"
+          />
+        </div>
+        <span
+          class="text-[10px] font-extrabold"
+          [style.color]="houseTab.isActive ? campColor : 'var(--text-subtle)'"
+          >Мой домик</span
+        >
+      </a>
+
+      <a
+        routerLink="/schedule"
+        routerLinkActive="participant-tab-active"
+        #scheduleTab="routerLinkActive"
+        class="flex flex-col items-center gap-0.5 rounded-2xl select-none"
+        style="min-width: 52px; min-height: 52px"
+      >
+        <div
+          class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-200"
+          [style.backgroundColor]="scheduleTab.isActive ? campColor : 'transparent'"
+        >
+          <app-icon
+            name="calendar-days"
+            [size]="20"
+            [color]="scheduleTab.isActive ? '#ffffff' : 'var(--text-subtle)'"
+          />
+        </div>
+        <span
+          class="text-[10px] font-extrabold"
+          [style.color]="scheduleTab.isActive ? campColor : 'var(--text-subtle)'"
+          >Расписание</span
+        >
+      </a>
+
+      <a
+        routerLink="/news"
+        routerLinkActive="participant-tab-active"
+        #newsTab="routerLinkActive"
+        class="relative flex flex-col items-center gap-0.5 rounded-2xl select-none"
+        style="min-width: 52px; min-height: 52px"
+      >
+        <div
+          class="relative w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-200"
+          [style.backgroundColor]="newsTab.isActive ? campColor : 'transparent'"
+        >
+          <app-icon
+            name="newspaper"
+            [size]="20"
+            [color]="newsTab.isActive ? '#ffffff' : 'var(--text-subtle)'"
+          />
+          <span
+            *ngIf="unreadNewsCount > 0"
+            class="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[0.6rem] font-extrabold flex items-center justify-center"
+          >
+            {{ unreadNewsCount > 9 ? "9+" : unreadNewsCount }}
+          </span>
+        </div>
+        <span
+          class="text-[10px] font-extrabold"
+          [style.color]="newsTab.isActive ? campColor : 'var(--text-subtle)'"
+          >Новости</span
+        >
+      </a>
+
+      <a
+        routerLink="/contests"
+        routerLinkActive="participant-tab-active"
+        #contestsTab="routerLinkActive"
+        class="flex flex-col items-center gap-0.5 rounded-2xl select-none"
+        style="min-width: 52px; min-height: 52px"
+      >
+        <div
+          class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-200"
+          [style.backgroundColor]="contestsTab.isActive ? campColor : 'transparent'"
+        >
+          <app-icon
+            name="trophy"
+            [size]="20"
+            [color]="contestsTab.isActive ? '#ffffff' : 'var(--text-subtle)'"
+          />
+        </div>
+        <span
+          class="text-[10px] font-extrabold"
+          [style.color]="contestsTab.isActive ? campColor : 'var(--text-subtle)'"
+          >События</span
+        >
+      </a>
+
+      <a
+        routerLink="/profile/me"
+        routerLinkActive="participant-tab-active"
+        #profileTab="routerLinkActive"
+        class="flex flex-col items-center gap-0.5 rounded-2xl select-none"
+        style="min-width: 52px; min-height: 52px"
+      >
+        <div
+          class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-200"
+          [style.backgroundColor]="profileTab.isActive ? campColor : 'transparent'"
+        >
+          <app-icon
+            name="user"
+            [size]="20"
+            [color]="profileTab.isActive ? '#ffffff' : 'var(--text-subtle)'"
+          />
+        </div>
+        <span
+          class="text-[10px] font-extrabold"
+          [style.color]="profileTab.isActive ? campColor : 'var(--text-subtle)'"
+          >Профиль</span
+        >
+      </a>
+    </div>
+  </nav>
+
+  <!-- ===== MOBILE DRAWER (персонал) ===== -->
+  <div *ngIf="mobileMenuOpen && !isParticipant" class="lg:hidden fixed inset-0 z-50 flex">
     <!-- Backdrop -->
     <div
       class="absolute inset-0 bg-black/40"
@@ -447,6 +641,12 @@
           style="color: rgba(255, 255, 255, 0.8)"
         >
           <app-icon name="newspaper" [size]="18" class="shrink-0" />Новости
+          <span
+            *ngIf="unreadNewsCount > 0"
+            class="ml-auto min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[0.65rem] font-extrabold flex items-center justify-center shrink-0 animate-alert-bounce"
+          >
+            {{ unreadNewsCount > 9 ? "9+" : unreadNewsCount }}
+          </span>
         </a>
         <a
           routerLink="/schedule"
@@ -570,7 +770,8 @@
 
   <!-- ===== MAIN CONTENT ===== -->
   <main
-    class="flex-1 overflow-y-auto lg:min-h-screen pt-14 lg:pt-0"
+    [ngClass]="isParticipant ? 'pt-14 pb-24' : 'pt-14 lg:pt-0'"
+    class="flex-1 overflow-y-auto lg:min-h-screen"
     style="background-color: var(--bg-page)"
   >
     <app-loading-spinner *ngIf="routeLoading"></app-loading-spinner>

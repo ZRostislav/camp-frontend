@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { SettingsService } from '../../services/settings.service';
@@ -57,6 +58,7 @@ export class ParticipantsComponent implements OnInit {
     public auth: AuthService,
     private api: ApiService,
     private settings: SettingsService,
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -118,6 +120,10 @@ export class ParticipantsComponent implements OnInit {
   startEdit(p: any) {
     this.editItem = { ...p, houseId: p.house_id };
     this.showForm = false;
+  }
+
+  openProfile(p: any) {
+    this.router.navigate(['/participants', p.id]);
   }
 
   saveEdit() {

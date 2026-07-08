@@ -279,13 +279,14 @@
           >
             <button
               (click)="startEdit(s)"
-              class="p-1.5 rounded-lg text-camp-gray hover:bg-camp-border hover:text-camp-stone transition-colors"
+              class="p-1.5 rounded-lg transition-colors text-[var(--text-gray)] hover:bg-[var(--border-color)] hover:text-[var(--text-stone)]"
             >
               <app-icon name="pencil" [size]="13"></app-icon>
             </button>
+
             <button
               (click)="remove(s.id)"
-              class="p-1.5 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+              class="p-1.5 rounded-lg transition-colors text-[var(--color-error)] hover:bg-[var(--bg-error-soft)] hover:text-[var(--color-error)]"
             >
               <app-icon name="trash-2" [size]="13"></app-icon>
             </button>

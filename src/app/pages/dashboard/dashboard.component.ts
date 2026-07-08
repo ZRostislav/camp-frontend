@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import {
   CommonModule,
   DatePipe,
@@ -6,9 +6,11 @@ import {
   SlicePipe,
 } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { SettingsService } from '../../services/settings.service';
+import { NewsStatusService } from '../../services/news-status.service';
 import { IconComponent } from '../../shared/icon.component';
 import { MediaUrlPipe } from '../../pipes/media-url.pipe';
 @Component({
@@ -25,7 +27,7 @@ import { MediaUrlPipe } from '../../pipes/media-url.pipe';
   ],
   templateUrl: './dashboard.component.html',
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   houses: any[] = [];
   news: any[] = [];
   schedule: any[] = [];
@@ -38,10 +40,19 @@ export class DashboardComponent implements OnInit {
   today = new Date();
   medals = ['🥇', '🥈', '🥉'];
 
+  /** Непрочитанные новости — для бейджа/анимации на карточке «Новости» */
+  unreadNewsCount = 0;
+
+  /** «Свежими» считаем события младше суток */
+  private readonly NEW_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+  private newsStatusSub?: Subscription;
+
   constructor(
     public auth: AuthService,
     private api: ApiService,
     private settings: SettingsService,
+    private newsStatus: NewsStatusService,
   ) {}
 
   ngOnInit() {
@@ -79,6 +90,38 @@ export class DashboardComponent implements OnInit {
       next: (d: any) => (this.contests = d),
       error: () => {},
     });
+
+    // Актуализируем список новостей у сервиса и подписываемся на счётчик
+    // непрочитанных — обновится реактивно, если новость появится прямо
+    // во время просмотра главной.
+    this.newsStatus.refresh();
+    this.newsStatusSub = this.newsStatus.unreadCount$.subscribe(
+      (c) => (this.unreadNewsCount = c),
+    );
+  }
+
+  ngOnDestroy() {
+    this.newsStatusSub?.unsubscribe();
+  }
+
+  isUnreadNews(n: any): boolean {
+    return !n?.is_read;
+  }
+
+  /** «Новое» событие — создано меньше суток назад */
+  isNewItem(item: any): boolean {
+    if (!item?.created_at) return false;
+    return (
+      Date.now() - new Date(item.created_at).getTime() < this.NEW_WINDOW_MS
+    );
+  }
+
+  get newEventsCount(): number {
+    return this.contests.filter((c) => this.isNewItem(c)).length;
+  }
+
+  get hasNewEvents(): boolean {
+    return this.newEventsCount > 0;
   }
 
   get campColorBg(): string {

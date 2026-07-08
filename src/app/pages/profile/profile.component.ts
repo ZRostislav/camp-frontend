@@ -7,6 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { SettingsService } from '../../services/settings.service';
 import { ThemeService, Theme } from '../../services/theme.service';
 import { IconComponent } from '../../shared/icon.component';
+import { MediaUrlPipe } from '../../pipes/media-url.pipe';
 
 interface UserData {
   id: number;
@@ -25,9 +26,11 @@ interface UserData {
   age?: number;
   gender?: string;
   city?: string;
+  house_id?: number;
   house_name?: string;
   has_points?: boolean;
   total_points?: number;
+  access_code?: string;
   // staff fields
   responsible_houses?: { id: number; name: string; rank_level: number }[];
 }
@@ -35,7 +38,7 @@ interface UserData {
 @Component({
   selector: 'app-user-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent],
+  imports: [CommonModule, FormsModule, IconComponent, MediaUrlPipe],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
 })
@@ -47,17 +50,37 @@ export class UserProfileComponent implements OnInit {
   /** true когда смотрим на себя (/profile или /users/myId) */
   isSelf = false;
 
+  /** true когда открыт профиль участника лагеря (через /participants/:id) */
+  isParticipant = false;
+
+  /** список домиков — нужен для формы редактирования участника */
+  houses: any[] = [];
+
   themeLoading = false;
   themeSuccess = false;
   themeError = false;
 
   campColor = '#1a5c38';
 
-  // ─── Модалка редактирования ───
+  // ─── Модалка редактирования (staff) ───
   editUser: any = null;
   newPassword = '';
   saving = false;
   saveError = '';
+
+  // ─── Модалка редактирования (participant) ───
+  editParticipant: any = null;
+  savingParticipant = false;
+  saveParticipantError = '';
+
+  // ─── Модалка подтверждения (сброс кода / удаление) ───
+  confirmState: {
+    title: string;
+    message: string;
+    confirmLabel: string;
+    danger: boolean;
+    action: () => void;
+  } | null = null;
 
   readonly roles = ['admin', 'counselor', 'helper', 'staff'];
 
@@ -89,6 +112,27 @@ export class UserProfileComponent implements OnInit {
 
     const routeId = this.route.snapshot.paramMap.get('id');
     const myId = this.auth.currentUser()?.id;
+    const routePath = this.route.snapshot.routeConfig?.path;
+
+    if (routePath === 'participants/:id') {
+      this.isSelf = false;
+      this.isParticipant = true;
+      this.api.get<UserData>(`/participants/${routeId}`).subscribe({
+        next: (data) => {
+          this.user = data;
+          this.loading = false;
+        },
+        error: () => {
+          this.error = 'Не удалось загрузить данные участника';
+          this.loading = false;
+        },
+      });
+      this.api.get('/houses').subscribe({
+        next: (d: any) => (this.houses = d),
+        error: () => {},
+      });
+      return;
+    }
 
     if (routeId !== null && Number(routeId) === myId) {
       this.router.navigate(['/profile/me'], { replaceUrl: true });
@@ -138,6 +182,22 @@ export class UserProfileComponent implements OnInit {
     return `rgba(${r},${g},${b},0.08)`;
   }
 
+  get participantHouse(): any {
+    return this.houses.find((h) => h.id == this.user?.house_id) ?? null;
+  }
+
+  get participantHouseColor(): string {
+    return this.participantHouse?.color || this.campColor;
+  }
+
+  get participantHouseEmoji(): string {
+    return this.participantHouse?.emoji || '';
+  }
+
+  get participantHouseAvatar(): string | null {
+    return this.participantHouse?.avatar_path ?? null;
+  }
+
   async setTheme(theme: Theme) {
     if (this.themeLoading || this.themeService.current === theme) return;
     this.themeLoading = true;
@@ -157,7 +217,7 @@ export class UserProfileComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/users']);
+    this.router.navigate([this.isParticipant ? '/participants' : '/users']);
   }
 
   get displayName(): string {
@@ -216,6 +276,14 @@ export class UserProfileComponent implements OnInit {
 
   startEdit() {
     if (!this.user) return;
+    if (this.isParticipant) {
+      this.editParticipant = {
+        ...this.user,
+        houseId: (this.user as any).house_id,
+      };
+      this.saveParticipantError = '';
+      return;
+    }
     this.editUser = { ...this.user };
     this.newPassword = '';
     this.saveError = '';
@@ -225,6 +293,96 @@ export class UserProfileComponent implements OnInit {
     this.editUser = null;
     this.newPassword = '';
     this.saveError = '';
+  }
+
+  closeEditParticipant() {
+    this.editParticipant = null;
+    this.saveParticipantError = '';
+  }
+
+  saveEditParticipant() {
+    if (!this.editParticipant) return;
+    const body = {
+      lastName: this.editParticipant.last_name,
+      firstName: this.editParticipant.first_name,
+      birthDate: this.editParticipant.birth_date,
+      gender: this.editParticipant.gender,
+      city: this.editParticipant.city,
+      houseId: this.editParticipant.houseId || null,
+      hasPoints: this.editParticipant.has_points,
+    };
+    this.savingParticipant = true;
+    this.saveParticipantError = '';
+    this.api.put(`/participants/${this.editParticipant.id}`, body).subscribe({
+      next: (updated: any) => {
+        this.user = { ...this.user, ...updated };
+        this.savingParticipant = false;
+        this.closeEditParticipant();
+      },
+      error: (e) => {
+        this.saveParticipantError = e.error?.error || 'Ошибка сохранения';
+        this.savingParticipant = false;
+      },
+    });
+  }
+
+  resetParticipantCode() {
+    if (!this.user) return;
+    this.confirmState = {
+      title: 'Сбросить код доступа?',
+      message:
+        'Текущий код перестанет работать. Участнику нужно будет сообщить новый код.',
+      confirmLabel: 'Сбросить',
+      danger: false,
+      action: () => this.doResetParticipantCode(),
+    };
+  }
+
+  private doResetParticipantCode() {
+    if (!this.user) return;
+    this.api
+      .post<any>(`/participants/${this.user.id}/reset-code`, {})
+      .subscribe({
+        next: (d) => {
+          if (this.user) (this.user as any).access_code = d.access_code;
+        },
+        error: () => {
+          this.error = 'Не удалось сбросить код доступа';
+        },
+      });
+  }
+
+  removeParticipant() {
+    if (!this.user) return;
+    this.confirmState = {
+      title: 'Удалить участника?',
+      message: 'Это действие необратимо. Все данные участника будут удалены.',
+      confirmLabel: 'Удалить',
+      danger: true,
+      action: () => this.doRemoveParticipant(),
+    };
+  }
+
+  private doRemoveParticipant() {
+    if (!this.user) return;
+    this.api.delete(`/participants/${this.user.id}`).subscribe({
+      next: () => {
+        this.router.navigate(['/participants']);
+      },
+      error: () => {
+        this.error = 'Не удалось удалить участника';
+      },
+    });
+  }
+
+  confirmYes() {
+    const action = this.confirmState?.action;
+    this.confirmState = null;
+    action?.();
+  }
+
+  confirmNo() {
+    this.confirmState = null;
   }
 
   saveEdit() {

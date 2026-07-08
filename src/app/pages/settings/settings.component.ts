@@ -9,7 +9,6 @@ import { AuthService } from '../../services/auth.service';
 import { SettingsService } from '../../services/settings.service';
 import { MediaUrlPipe } from '../../pipes/media-url.pipe';
 import { IconComponent } from '../../shared/icon.component';
-import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
 
 interface ColorPreset {
   name: string;
@@ -25,7 +24,6 @@ interface ColorPreset {
     FormsModule,
     MediaUrlPipe,
     IconComponent,
-    LoadingSpinnerComponent,
     PickerComponent,
   ],
   templateUrl: './settings.component.html',
@@ -39,6 +37,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
   saving = false;
   saved = false;
   showEmojiPicker = false;
+  showDeleteAllModal = false;
+  deleteAllPassword = '';
+  deleteAllPasswordConfirm = '';
+  deleteAllError = '';
+  deleteAllLoading = false;
 
   readonly presets: ColorPreset[] = [
     { name: 'Солнце', color: '#F59E0B', emoji: '☀️' },
@@ -418,6 +421,50 @@ export class SettingsComponent implements OnInit, OnDestroy {
       },
       error: (e: any) => (this.error = e.error?.error || 'Ошибка'),
     });
+  }
+
+  openDeleteAllModal() {
+    this.deleteAllError = '';
+    this.deleteAllPassword = '';
+    this.deleteAllPasswordConfirm = '';
+    this.deleteAllLoading = false;
+    this.showDeleteAllModal = true;
+  }
+
+  closeDeleteAllModal() {
+    if (this.deleteAllLoading) return;
+    this.showDeleteAllModal = false;
+    this.deleteAllError = '';
+    this.deleteAllPassword = '';
+    this.deleteAllPasswordConfirm = '';
+  }
+
+  deleteAllData() {
+    if (!this.deleteAllPassword || !this.deleteAllPasswordConfirm) {
+      this.deleteAllError = 'Введите пароль дважды';
+      return;
+    }
+    if (this.deleteAllPassword !== this.deleteAllPasswordConfirm) {
+      this.deleteAllError = 'Пароли не совпадают';
+      return;
+    }
+
+    this.deleteAllError = '';
+    this.deleteAllLoading = true;
+
+    this.api
+      .post('/settings/delete-all', { password: this.deleteAllPassword })
+      .subscribe({
+        next: () => {
+          this.deleteAllLoading = false;
+          this.showDeleteAllModal = false;
+          this.auth.logout();
+        },
+        error: (e: any) => {
+          this.deleteAllLoading = false;
+          this.deleteAllError = e.error?.error || 'Не удалось удалить данные';
+        },
+      });
   }
 
   // ── helpers ──────────────────────────────────────────────────────────────

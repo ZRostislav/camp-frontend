@@ -17,7 +17,7 @@
         class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold text-camp-gray bg-camp-muted transition-all hover:-translate-x-0.5"
       >
         <app-icon name="arrow-left" [size]="15" />
-        К списку пользователей
+        {{ isParticipant ? "К списку участников" : "К списку пользователей" }}
       </button>
     </div>
 
@@ -67,6 +67,7 @@
           </div>
           <div class="flex flex-wrap items-center gap-2">
             <span
+              *ngIf="!isParticipant"
               class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
               [style.backgroundColor]="roleColorBg"
               [style.color]="roleColor"
@@ -76,9 +77,37 @@
             </span>
             <span
               *ngIf="user.house_name"
-              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-900"
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
+              [style.backgroundColor]="
+                isParticipant
+                  ? participantHouseColor + '20'
+                  : 'rgb(254 249 195)'
+              "
+              [style.color]="isParticipant ? participantHouseColor : '#854d0e'"
             >
-              <app-icon name="home" [size]="11" />
+              <span
+                *ngIf="isParticipant"
+                class="w-4 h-4 rounded-sm overflow-hidden flex items-center justify-center shrink-0"
+                [style.backgroundColor]="participantHouseColor + '30'"
+              >
+                <img
+                  *ngIf="participantHouseAvatar"
+                  [src]="participantHouseAvatar | mediaUrl"
+                  class="w-full h-full object-cover"
+                />
+                <span
+                  *ngIf="!participantHouseAvatar && participantHouseEmoji"
+                  class="text-[10px] leading-none"
+                  >{{ participantHouseEmoji }}</span
+                >
+                <app-icon
+                  *ngIf="!participantHouseAvatar && !participantHouseEmoji"
+                  name="home"
+                  [size]="9"
+                  [style.color]="participantHouseColor"
+                ></app-icon>
+              </span>
+              <app-icon *ngIf="!isParticipant" name="home" [size]="11" />
               {{ user.house_name }}
             </span>
             <span
@@ -98,11 +127,11 @@
 
         <!-- Points badge (participant) -->
         <div
-          *ngIf="user.role === 'participant' && user.has_points"
+          *ngIf="isParticipant && user.has_points"
           class="points-badge shrink-0 flex flex-col items-center justify-center rounded-2xl px-5 py-3 shadow-sm bg-yellow-100 border-2 border-yellow-300"
         >
           <span class="text-3xl font-black leading-none text-yellow-900">{{
-            user.total_points
+            user.total_points ?? 0
           }}</span>
           <span
             class="text-[10px] font-bold uppercase tracking-wide mt-0.5 text-yellow-700"
@@ -144,7 +173,7 @@
         </div>
 
         <!-- Role -->
-        <div class="info-row flex items-center gap-3">
+        <div *ngIf="!isParticipant" class="info-row flex items-center gap-3">
           <div
             class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-camp-muted"
           >
@@ -224,6 +253,29 @@
           </div>
         </div>
 
+        <!-- Access code (participant) -->
+        <div
+          *ngIf="
+            isParticipant && !auth.isCounselorOrHelper() && user.access_code
+          "
+          class="flex items-center justify-between gap-3 mt-2 px-4 py-3 rounded-xl border-2"
+          [style.borderColor]="campColorBg"
+          [style.backgroundColor]="campColorBg"
+        >
+          <div class="flex items-center gap-2">
+            <app-icon name="key" [size]="15" [style.color]="campColor" />
+            <span
+              class="text-xs font-bold text-camp-gray uppercase tracking-wide"
+              >Код доступа</span
+            >
+          </div>
+          <span
+            class="font-mono font-extrabold text-xl tracking-[0.3em]"
+            [style.color]="campColor"
+            >{{ user.access_code }}</span
+          >
+        </div>
+
         <!-- Responsible houses -->
         <div
           *ngIf="user.responsible_houses?.length"
@@ -294,9 +346,9 @@
           </div>
         </div>
 
-        <!-- Кнопка редактирования -->
+        <!-- Кнопка редактирования (staff) -->
         <div
-          *ngIf="!isSelf && (isSuperAdmin || auth.isAdmin())"
+          *ngIf="!isSelf && !isParticipant && (isSuperAdmin || auth.isAdmin())"
           class="mt-4 pt-4 border-t border-camp-border"
         >
           <button
@@ -306,6 +358,40 @@
           >
             <app-icon name="pencil" [size]="14" />
             Редактировать профиль
+          </button>
+        </div>
+
+        <!-- Кнопки действий (participant, только для админа) -->
+        <div
+          *ngIf="isParticipant && auth.isAdmin()"
+          class="mt-4 pt-4 border-t border-camp-border flex flex-wrap gap-2"
+        >
+          <button
+            (click)="startEdit()"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 shadow-camp-btn"
+            [style.backgroundColor]="campColor"
+          >
+            <app-icon name="pencil" [size]="14" />
+            Редактировать
+          </button>
+          <button
+            *ngIf="!auth.isCounselorOrHelper()"
+            (click)="resetParticipantCode()"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-camp-gray bg-camp-muted hover:bg-camp-border transition-colors"
+          >
+            <app-icon name="key" [size]="14" />
+            Сбросить код
+          </button>
+          <button
+            (click)="removeParticipant()"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
+            style="
+              background-color: var(--color-error-bg);
+              color: var(--color-error);
+            "
+          >
+            <app-icon name="trash-2" [size]="14" />
+            Удалить
           </button>
         </div>
       </div>
@@ -688,6 +774,241 @@
       >
         Отмена
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ EDIT PARTICIPANT MODAL ═══════════════ -->
+<div
+  *ngIf="editParticipant"
+  class="fixed inset-0 flex items-end sm:items-center justify-center z-[9999] p-0 sm:p-4"
+  style="background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(2px)"
+  (click)="closeEditParticipant()"
+>
+  <div
+    class="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-camp overflow-y-auto"
+    style="background-color: var(--bg-card); max-height: calc(100dvh - 2rem)"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Шапка -->
+    <div
+      class="flex items-center justify-between px-5 py-4 border-b border-camp-border bg-camp-muted"
+    >
+      <div class="flex items-center gap-2">
+        <app-icon name="pencil" [size]="16" [style.color]="campColor" />
+        <span class="font-display text-sm font-bold text-camp-stone">
+          Редактирование: {{ editParticipant.last_name }}
+          {{ editParticipant.first_name }}
+        </span>
+      </div>
+      <button
+        (click)="closeEditParticipant()"
+        class="w-7 h-7 flex items-center justify-center rounded-xl transition-colors bg-[var(--bg-card)] text-camp-gray hover:bg-camp-muted"
+      >
+        <app-icon name="x" [size]="14" />
+      </button>
+    </div>
+
+    <!-- Ошибка сохранения -->
+    <div
+      *ngIf="saveParticipantError"
+      class="mx-5 mt-4 flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold bg-camp-errorBg text-camp-error"
+    >
+      <app-icon name="circle-alert" [size]="14" class="shrink-0" />
+      {{ saveParticipantError }}
+    </div>
+
+    <!-- Поля -->
+    <div class="p-5 space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label
+            class="block text-[0.7rem] font-bold uppercase tracking-wide mb-1 text-camp-gray"
+            >Фамилия</label
+          >
+          <input
+            [(ngModel)]="editParticipant.last_name"
+            class="w-full px-3 py-2 border-2 border-transparent rounded-xl text-sm font-medium outline-none transition-colors bg-camp-muted text-camp-stone"
+            (focus)="$any($event.target).style.borderColor = campColor"
+            (blur)="$any($event.target).style.borderColor = 'transparent'"
+          />
+        </div>
+        <div>
+          <label
+            class="block text-[0.7rem] font-bold uppercase tracking-wide mb-1 text-camp-gray"
+            >Имя</label
+          >
+          <input
+            [(ngModel)]="editParticipant.first_name"
+            class="w-full px-3 py-2 border-2 border-transparent rounded-xl text-sm font-medium outline-none transition-colors bg-camp-muted text-camp-stone"
+            (focus)="$any($event.target).style.borderColor = campColor"
+            (blur)="$any($event.target).style.borderColor = 'transparent'"
+          />
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label
+            class="block text-[0.7rem] font-bold uppercase tracking-wide mb-1 text-camp-gray"
+            >Дата рождения</label
+          >
+          <input
+            type="date"
+            [(ngModel)]="editParticipant.birth_date"
+            class="w-full px-3 py-2 border-2 border-transparent rounded-xl text-sm font-medium outline-none transition-colors bg-camp-muted text-camp-stone"
+            (focus)="$any($event.target).style.borderColor = campColor"
+            (blur)="$any($event.target).style.borderColor = 'transparent'"
+          />
+        </div>
+        <div>
+          <label
+            class="block text-[0.7rem] font-bold uppercase tracking-wide mb-1 text-camp-gray"
+            >Пол</label
+          >
+          <select
+            [(ngModel)]="editParticipant.gender"
+            class="w-full px-3 py-2 border-2 border-transparent rounded-xl text-sm font-medium outline-none transition-colors bg-camp-muted text-camp-stone"
+            (focus)="$any($event.target).style.borderColor = campColor"
+            (blur)="$any($event.target).style.borderColor = 'transparent'"
+          >
+            <option value="м">Мужской</option>
+            <option value="ж">Женский</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label
+          class="block text-[0.7rem] font-bold uppercase tracking-wide mb-1 text-camp-gray"
+          >Город</label
+        >
+        <input
+          [(ngModel)]="editParticipant.city"
+          class="w-full px-3 py-2 border-2 border-transparent rounded-xl text-sm font-medium outline-none transition-colors bg-camp-muted text-camp-stone"
+          (focus)="$any($event.target).style.borderColor = campColor"
+          (blur)="$any($event.target).style.borderColor = 'transparent'"
+        />
+      </div>
+      <div>
+        <label
+          class="block text-[0.7rem] font-bold uppercase tracking-wide mb-1 text-camp-gray"
+          >Домик</label
+        >
+        <select
+          [(ngModel)]="editParticipant.houseId"
+          class="w-full px-3 py-2 border-2 border-transparent rounded-xl text-sm font-medium outline-none transition-colors bg-camp-muted text-camp-stone"
+          (focus)="$any($event.target).style.borderColor = campColor"
+          (blur)="$any($event.target).style.borderColor = 'transparent'"
+        >
+          <option value="">— Без домика</option>
+          <option *ngFor="let h of houses" [value]="h.id">
+            {{ h.emoji ? h.emoji + " " : "🏠 " }}{{ h.name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Текущий код доступа -->
+      <div
+        *ngIf="!auth.isCounselorOrHelper() && editParticipant.access_code"
+        class="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border-2"
+        [style.borderColor]="campColorBg"
+        [style.backgroundColor]="campColorBg"
+      >
+        <div class="flex items-center gap-2">
+          <app-icon name="key" [size]="15" [style.color]="campColor" />
+          <span class="text-xs font-bold text-camp-gray uppercase tracking-wide"
+            >Код доступа</span
+          >
+        </div>
+        <span
+          class="font-mono font-extrabold text-xl tracking-[0.3em]"
+          [style.color]="campColor"
+          >{{ editParticipant.access_code }}</span
+        >
+      </div>
+
+      <label class="flex items-center gap-2.5 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          [(ngModel)]="editParticipant.has_points"
+          class="w-4 h-4 accent-camp-orange rounded"
+        />
+        <span class="text-sm font-medium text-camp-gray"
+          >Участвует в баллах</span
+        >
+      </label>
+    </div>
+
+    <!-- Кнопки -->
+    <div class="flex gap-2 px-5 pb-5">
+      <button
+        (click)="saveEditParticipant()"
+        [disabled]="savingParticipant"
+        class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px disabled:opacity-60 shadow-camp-btn"
+        [style.backgroundColor]="campColor"
+      >
+        <app-icon name="save" [size]="15" />
+        {{ savingParticipant ? "Сохранение…" : "Сохранить" }}
+      </button>
+      <button
+        (click)="closeEditParticipant()"
+        class="px-4 py-2.5 rounded-xl text-sm font-bold transition-colors bg-camp-muted text-camp-gray hover:bg-camp-border"
+      >
+        Отмена
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ CONFIRM MODAL ═══════════════ -->
+<div
+  *ngIf="confirmState"
+  class="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center p-4 z-[9999]"
+  style="background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(2px)"
+  (click)="confirmNo()"
+>
+  <div
+    class="bg-white rounded-2xl shadow-camp w-full max-w-sm animate-pop-in overflow-hidden"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="p-6">
+      <div class="flex items-start gap-3 mb-2">
+        <div
+          class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+          [style.backgroundColor]="
+            confirmState.danger ? '#FEE2E2' : campColorBg
+          "
+          [style.color]="confirmState.danger ? '#DC2626' : campColor"
+        >
+          <app-icon
+            [name]="confirmState.danger ? 'trash-2' : 'key'"
+            [size]="18"
+          ></app-icon>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h2 class="font-display text-base font-bold text-camp-stone">
+            {{ confirmState.title }}
+          </h2>
+          <p class="text-sm text-camp-gray mt-1">
+            {{ confirmState.message }}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex gap-2 mt-5">
+        <button
+          class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px"
+          [style.backgroundColor]="confirmState.danger ? '#DC2626' : campColor"
+          (click)="confirmYes()"
+        >
+          {{ confirmState.confirmLabel }}
+        </button>
+        <button
+          class="px-4 py-2.5 rounded-xl text-sm font-bold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+          (click)="confirmNo()"
+        >
+          Отмена
+        </button>
+      </div>
     </div>
   </div>
 </div>

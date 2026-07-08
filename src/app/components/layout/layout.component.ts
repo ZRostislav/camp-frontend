@@ -14,6 +14,7 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { SettingsService, CampSettings } from '../../services/settings.service';
 import { ThemeService } from '../../services/theme.service';
+import { NewsStatusService } from '../../services/news-status.service';
 import { MediaUrlPipe } from '../../pipes/media-url.pipe';
 import { IconComponent } from '../../shared/icon.component';
 import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
@@ -47,17 +48,26 @@ export class LayoutComponent implements OnInit, OnDestroy {
   /** true между NavigationStart и завершением навигации — показывает спиннер вместо router-outlet */
   routeLoading = false;
 
+  /** Непрочитанные новости — бейджик рядом с пунктом «Новости» в меню */
+  unreadNewsCount = 0;
+
   private liveSub?: Subscription;
   private routerEventsSub?: Subscription;
+  private newsStatusSub?: Subscription;
 
   constructor(
     public auth: AuthService,
     public themeService: ThemeService,
     private settingsService: SettingsService,
     private router: Router,
+    private newsStatus: NewsStatusService,
   ) {}
 
   ngOnInit() {
+    this.newsStatusSub = this.newsStatus.unreadCount$.subscribe(
+      (c) => (this.unreadNewsCount = c),
+    );
+
     // Первичная загрузка: memory → localStorage → HTTP
     this.settingsService.get().subscribe({
       next: (d) => this.applySettings(d),
@@ -90,6 +100,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.liveSub?.unsubscribe();
     this.routerEventsSub?.unsubscribe();
+    this.newsStatusSub?.unsubscribe();
   }
 
   private applySettings(d: Partial<CampSettings>): void {
@@ -133,5 +144,10 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
   get isDark(): boolean {
     return this.themeService.current === 'dark';
+  }
+
+  /** Участник получает упрощённую навигацию — нижнюю панель вкладок вместо бокового меню персонала. */
+  get isParticipant(): boolean {
+    return this.auth.role === 'participant';
   }
 }

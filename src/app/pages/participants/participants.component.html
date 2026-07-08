@@ -342,9 +342,10 @@
 
     <div
       *ngFor="let p of participants; let last = last"
-      class="flex items-center gap-3 px-4 py-3 group hover:bg-camp-muted transition-colors"
+      class="flex items-center gap-3 px-4 py-3 group hover:bg-camp-muted transition-colors cursor-pointer"
       [class.border-b]="!last"
       [class.border-camp-border]="!last"
+      (click)="openProfile(p)"
     >
       <!-- Аватар участника (инициалы) -->
       <div
@@ -429,6 +430,7 @@
       <div
         *ngIf="auth.isAdmin()"
         class="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0"
+        (click)="$event.stopPropagation()"
       >
         <button
           class="w-8 h-8 flex items-center justify-center rounded-lg bg-camp-muted hover:bg-camp-border text-camp-gray transition-colors"
@@ -467,7 +469,8 @@
 
     <div
       *ngFor="let p of participants"
-      class="flex items-center gap-3 bg-white rounded-xl border border-camp-border px-3 py-2 group hover:shadow-sm transition-shadow"
+      class="flex items-center gap-3 bg-white rounded-xl border border-camp-border px-3 py-2 group hover:shadow-sm transition-shadow cursor-pointer"
+      (click)="openProfile(p)"
     >
       <!-- Color dot -->
       <div
@@ -541,6 +544,7 @@
       <div
         *ngIf="auth.isAdmin()"
         class="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0"
+        (click)="$event.stopPropagation()"
       >
         <button
           class="w-7 h-7 flex items-center justify-center rounded-lg bg-camp-muted hover:bg-camp-border text-camp-gray transition-colors"
@@ -579,7 +583,8 @@
 
     <div
       *ngFor="let p of participants"
-      class="bg-white rounded-2xl border border-camp-border shadow-sm p-4 sm:p-5 hover:shadow-md transition-shadow group"
+      class="bg-white rounded-2xl border border-camp-border shadow-sm p-4 sm:p-5 hover:shadow-md transition-shadow group cursor-pointer"
+      (click)="openProfile(p)"
     >
       <div class="flex items-start gap-3 mb-3">
         <div
@@ -601,6 +606,7 @@
         <div
           *ngIf="auth.isAdmin()"
           class="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0"
+          (click)="$event.stopPropagation()"
         >
           <button
             class="w-7 h-7 flex items-center justify-center rounded-lg bg-camp-muted hover:bg-camp-border text-camp-gray transition-colors"

@@ -161,6 +161,17 @@ html.dark .bg-white {
   background-color: var(--bg-card) !important;
 }
 
+/* Карточка непрочитанной новости — лёгкая красноватая подсветка,
+   работает поверх .bg-white и border-camp-border в обеих темах */
+.news-card-unread {
+  background-color: #fef2f2 !important;
+  border-color: #fca5a5 !important;
+}
+html.dark .news-card-unread {
+  background-color: rgba(239, 68, 68, 0.08) !important;
+  border-color: rgba(248, 113, 113, 0.35) !important;
+}
+
 /* bg-white/70 — полупрозрачный белый (кнопки поверх картинок) */
 html.dark .bg-white\/70 {
   background-color: rgba(41, 37, 36, 0.7) !important;
@@ -280,6 +291,50 @@ html.dark body {
     }
     50% {
       transform: scale(1.12);
+    }
+  }
+
+  /* Восклицательный знак-приглашение: покачивается + пульсирует свечением,
+     чтобы хотелось нажать на карточку с новинками */
+  .animate-alert-bounce {
+    animation: alertBounce 2.4s ease-in-out infinite;
+  }
+  @keyframes alertBounce {
+    0%,
+    46%,
+    100% {
+      transform: scale(1) rotate(0deg);
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55);
+    }
+    8% {
+      transform: scale(1.2) rotate(-12deg);
+    }
+    16% {
+      transform: scale(1.2) rotate(10deg);
+    }
+    24% {
+      transform: scale(1.12) rotate(-7deg);
+    }
+    32% {
+      transform: scale(1.05) rotate(4deg);
+      box-shadow: 0 0 0 7px rgba(239, 68, 68, 0);
+    }
+    40% {
+      transform: scale(1) rotate(0deg);
+    }
+  }
+
+  /* Мягкий пульсирующий индикатор-точка для непрочитанного */
+  .animate-unread-dot {
+    animation: unreadDotPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes unreadDotPulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45);
+    }
+    50% {
+      box-shadow: 0 0 0 5px rgba(239, 68, 68, 0);
     }
   }
 }

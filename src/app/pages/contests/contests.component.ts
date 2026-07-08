@@ -58,21 +58,7 @@ export class ContestsComponent implements OnInit {
   }
 
   get campColorBg(): string {
-    return this.hexToRgba(this.campColor, 0.1);
-  }
-
-  get completedCount(): number {
-    return this.contests.filter((c) => c.status === 'completed').length;
-  }
-
-  get activeCount(): number {
-    return this.contests.filter(
-      (c) => c.status === 'in-progress' || c.status === 'active',
-    ).length;
-  }
-
-  get upcomingCount(): number {
-    return this.contests.filter((c) => c.status === 'upcoming').length;
+    return this.hexToRgba(this.campColor, 0.12);
   }
 
   private hexToRgba(hex: string, alpha: number): string {
@@ -82,6 +68,36 @@ export class ContestsComponent implements OnInit {
     const b = num & 255;
     return `rgba(${r},${g},${b},${alpha})`;
   }
+
+  // ── Image / video helpers ─────────────────────────────────────────────────
+
+  imageFiles(c: any): any[] {
+    return (c.files || []).filter((f: any) => f.file_type === 'image');
+  }
+
+  videoFiles(c: any): any[] {
+    return (c.files || []).filter((f: any) => f.file_type === 'video');
+  }
+
+  /** Returns a CSS class suffix that drives the mosaic grid layout */
+  mosaicLayout(c: any): string {
+    const count = Math.min(this.imageFiles(c).length, 4);
+    return String(count) as '1' | '2' | '3' | '4';
+  }
+
+  // ── Read status ───────────────────────────────────────────────────────────
+
+  markRead(c: any): void {
+    if (c.is_read) return;
+    this.api.post<any>(`/contests/${c.id}/read`, {}).subscribe({
+      next: () => {
+        c.is_read = true;
+      },
+      error: () => {},
+    });
+  }
+
+  // ── Event handlers ────────────────────────────────────────────────────────
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {

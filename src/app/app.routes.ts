@@ -54,6 +54,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'participants/:id',
+        loadComponent: () =>
+          import('./pages/profile/profile.component').then(
+            (m) => m.UserProfileComponent,
+          ),
+      },
+      {
         path: 'houses',
         loadComponent: () =>
           import('./pages/houses/houses.component').then(

@@ -1,9 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { SettingsService } from '../../services/settings.service';
+import { RollcallSocketService } from '../../services/rollcall-socket.service';
 import { IconComponent } from '../../shared/icon.component';
 import { MediaUrlPipe } from '../../pipes/media-url.pipe';
 
@@ -83,32 +85,19 @@ export class RollcallsComponent implements OnInit, OnDestroy {
   // GET /rollcalls/:id/houses/:houseId/status. Ключ — houseId.
   houseStatuses: Record<number, any> = {};
 
-  private selectedTimer: any = null;
+  // Список вкладок (rollcalls) обновляется лёгким поллингом — это редкое
+  // и недорогое изменение (новая перекличка создаётся пару раз в день),
+  // в отличие от деталей самой переклички, которые теперь идут через
+  // WebSocket (см. RollcallSocketService) без какого-либо поллинга.
+  private listTimer: any = null;
+  private socketSubs: Subscription[] = [];
 
   constructor(
     public auth: AuthService,
     private api: ApiService,
     private settings: SettingsService,
+    private rollcallSocket: RollcallSocketService,
   ) {}
-
-  private startSelectedPolling() {
-    this.stopSelectedPolling();
-
-    if (this.selected?.status !== 'активна') {
-      return;
-    }
-
-    this.selectedTimer = setInterval(() => {
-      this.refreshSelected();
-    }, 10000);
-  }
-
-  private stopSelectedPolling() {
-    if (this.selectedTimer) {
-      clearInterval(this.selectedTimer);
-      this.selectedTimer = null;
-    }
-  }
 
   ngOnInit() {
     this.settings.get().subscribe({
@@ -138,10 +127,70 @@ export class RollcallsComponent implements OnInit, OnDestroy {
       },
       error: () => {},
     });
+
+    this.listTimer = setInterval(() => this.refreshList(), 15000);
+    this.subscribeToSocketEvents();
   }
 
   ngOnDestroy() {
-    this.stopSelectedPolling();
+    if (this.listTimer) clearInterval(this.listTimer);
+    this.socketSubs.forEach((s) => s.unsubscribe());
+    this.rollcallSocket.disconnect();
+  }
+
+  // ─── Realtime: подписки на события Socket.IO ───────────────────────────
+
+  private subscribeToSocketEvents() {
+    this.socketSubs.push(
+      this.rollcallSocket.entryUpdated$.subscribe((evt) => {
+        if (evt.rollcallId !== this.selectedId || !this.selected?.entries)
+          return;
+        const idx = this.selected.entries.findIndex(
+          (e) => e.participant_id === evt.entry.participant_id,
+        );
+        if (idx !== -1) {
+          // Заменяем запись авторитетной версией с сервера — перекрывает
+          // как собственный optimistic update, так и изменения других
+          // пользователей, отмечающих ту же перекличку параллельно.
+          this.selected.entries[idx] = evt.entry;
+        }
+      }),
+    );
+
+    this.socketSubs.push(
+      this.rollcallSocket.houseConfirmed$.subscribe((evt) => {
+        if (evt.rollcallId !== this.selectedId) return;
+        this.houseStatuses[evt.houseId] = {
+          ...this.houseStatuses[evt.houseId],
+          attendanceConfirmation: { confirmed: true, entry: evt },
+        };
+      }),
+    );
+
+    this.socketSubs.push(
+      this.rollcallSocket.housePenalized$.subscribe((evt) => {
+        if (evt.rollcallId !== this.selectedId) return;
+        this.houseStatuses[evt.houseId] = {
+          ...this.houseStatuses[evt.houseId],
+          latePenalty: {
+            ...this.houseStatuses[evt.houseId]?.latePenalty,
+            alreadyApplied: true,
+            eligible: false,
+            entry: evt,
+          },
+        };
+      }),
+    );
+
+    this.socketSubs.push(
+      this.rollcallSocket.rollcallCompleted$.subscribe((evt) => {
+        if (evt.rollcallId !== this.selectedId || !this.selected) return;
+        this.selected = { ...this.selected, status: 'завершена' };
+        this.msg = 'Перекличка завершена';
+        // Список вкладок тоже мог измениться (статус "активна" → "завершена") —
+        // подхватится на следующем тике лёгкого поллинга listTimer.
+      }),
+    );
   }
 
   todayStr(): string {
@@ -234,7 +283,7 @@ export class RollcallsComponent implements OnInit, OnDestroy {
   }
 
   selectTab(r: Rollcall) {
-    this.stopSelectedPolling();
+    this.rollcallSocket.leaveCurrent();
 
     this.selectedId = r.id;
     this.error = '';
@@ -249,42 +298,20 @@ export class RollcallsComponent implements OnInit, OnDestroy {
         this.houseStatuses = {};
         this.loadHouseStatuses();
 
-        this.startSelectedPolling();
+        // Подключаемся к realtime-обновлениям этой переклички. Если она уже
+        // завершена, события всё равно безопасно подписаны — completed
+        // перекличка просто не присылает новых событий.
+        this.rollcallSocket.connectAndJoin(r.id);
       },
       error: (e) => (this.error = e.error?.error || 'Ошибка'),
-    });
-  }
-
-  refreshSelected() {
-    if (!this.selectedId) return;
-
-    this.api.get(`/rollcalls/${this.selectedId}`).subscribe({
-      next: (d: any) => {
-        this.selected = {
-          ...d,
-          date: this.toDateStr(d.date),
-        };
-
-        this.loadHouseStatuses();
-
-        if (this.selected?.status !== 'активна') {
-          this.stopSelectedPolling();
-        }
-      },
-      error: (e: any) => {
-        if (e.status === 404) {
-          this.stopSelectedPolling();
-          this.selectedId = null;
-          this.selected = null;
-          this.load();
-        }
-      },
     });
   }
 
   // Подгружает статус (подтверждение / штраф) для каждого домика,
   // встречающегося среди записей переклички — чтобы дизейблить кнопки
   // "Подтвердить домик" / "Штраф" после того, как действие уже выполнено.
+  // Вызывается один раз при выборе переклички; дальнейшие изменения этого
+  // статуса приходят через события house:confirmed / house:penalized.
   loadHouseStatuses() {
     if (!this.selected?.entries) return;
     const houseIds = Array.from(
@@ -340,6 +367,27 @@ export class RollcallsComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * trackBy для *ngFor групп домиков. groupedEntries() пересчитывается на
+   * каждый Change Detection цикл и каждый раз строит новые объекты — без
+   * trackBy Angular считал бы это "новыми" элементами и пересоздавал DOM
+   * целиком (отсюда CSS-анимация animate-fade-in-up переигрывалась на
+   * каждое realtime-обновление, даже если поменялся всего один статус).
+   * houseId — стабильный идентификатор группы, не меняется между пересчётами.
+   */
+  trackByHouseId(_index: number, group: { houseId: number }): number {
+    return group.houseId;
+  }
+
+  /**
+   * trackBy для *ngFor записей участников внутри группы домика.
+   * participant_id стабилен даже когда сама запись (status, marked_at и т.п.)
+   * заменяется новым объектом по событию entry:updated с сокета.
+   */
+  trackByParticipantId(_index: number, entry: Entry): number {
+    return entry.participant_id;
+  }
+
   isLocked(): boolean {
     return !this.selected || this.selected.status !== 'активна';
   }
@@ -390,11 +438,11 @@ export class RollcallsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.msg = 'Домик подтвержден, баллы начислены';
-          this.refreshSelected();
+          // Состояние применится через событие house:confirmed, пришедшее
+          // по сокету — отдельный рефетч не нужен.
         },
         error: (e) => {
           this.error = e.error?.error || 'Ошибка';
-          this.refreshSelected();
         },
       });
   }
@@ -442,17 +490,36 @@ export class RollcallsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (d: any) => {
           this.msg = d.already ? 'Штраф уже был выдан ранее' : 'Штраф выдан';
-          this.refreshSelected();
+          // Состояние применится через событие house:penalized по сокету.
         },
         error: (e) => {
           this.error = e.error?.error || 'Ошибка';
-          this.refreshSelected();
         },
       });
   }
 
+  /**
+   * Отмечает статус участника. Optimistic UI: применяем статус локально
+   * мгновенно (без ожидания ответа сервера), отправляем запрос в фоне.
+   * Если сервер подтвердит — событие entry:updated по сокету придёт и
+   * перезапишет запись финальными данными (marked_by_name, marked_at и т.п.)
+   * Если сервер откажет (например, перекличка успела завершиться) —
+   * откатываем локальное изменение обратно.
+   */
   mark(participantId: number, status: string) {
-    if (!this.selected || this.isLocked()) return;
+    if (!this.selected?.entries || this.isLocked()) return;
+
+    const idx = this.selected.entries.findIndex(
+      (e) => e.participant_id === participantId,
+    );
+    if (idx === -1) return;
+
+    const previous = this.selected.entries[idx];
+    if (previous.status === status) return; // уже в этом статусе — ничего не делаем
+
+    // Применяем мгновенно — пользователь видит результат клика без задержки.
+    this.selected.entries[idx] = { ...previous, status };
+
     this.api
       .put(`/rollcalls/${this.selected.id}/entries/${participantId}`, {
         status,
@@ -460,11 +527,30 @@ export class RollcallsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.msg = 'Отмечено';
-          this.refreshSelected();
+          // Финальную версию записи (с marked_by_name/marked_at) применит
+          // событие entry:updated, пришедшее по сокету.
         },
         error: (e) => {
           this.error = e.error?.error || 'Ошибка';
-          this.refreshSelected(); // подхватить блокировку, если перекличка успела завершиться
+          // Откатываем optimistic-изменение, если запись всё ещё там же
+          // (могла уже обновиться от другого события — тогда трогать не надо).
+          if (this.selected?.entries) {
+            const stillIdx = this.selected.entries.findIndex(
+              (en) => en.participant_id === participantId,
+            );
+            if (
+              stillIdx !== -1 &&
+              this.selected.entries[stillIdx].status === status
+            ) {
+              this.selected.entries[stillIdx] = previous;
+            }
+          }
+          // Перекличка могла успеть завершиться — подхватим блокировку.
+          if (e.status === 409) {
+            this.selected = this.selected
+              ? { ...this.selected, status: 'завершена' }
+              : this.selected;
+          }
         },
       });
   }
@@ -485,6 +571,7 @@ export class RollcallsComponent implements OnInit, OnDestroy {
     this.api.delete(`/rollcalls/${id}`).subscribe({
       next: () => {
         this.msg = 'Удалена';
+        this.rollcallSocket.leaveCurrent();
         this.selected = null;
         this.selectedId = null;
         this.load();

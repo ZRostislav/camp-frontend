@@ -340,7 +340,7 @@
     <!-- House groups -->
     <div class="space-y-4">
       <div
-        *ngFor="let group of groupedEntries()"
+        *ngFor="let group of groupedEntries(); trackBy: trackByHouseId"
         class="bg-white rounded-2xl border border-camp-border shadow-sm overflow-hidden animate-fade-in-up"
       >
         <!-- House header -->
@@ -449,7 +449,7 @@
         <!-- Entries -->
         <div class="divide-y divide-camp-border/60">
           <div
-            *ngFor="let e of group.entries"
+            *ngFor="let e of group.entries; trackBy: trackByParticipantId"
             class="flex items-center gap-3 px-4 sm:px-5 py-3 hover:bg-camp-muted transition-colors flex-wrap sm:flex-nowrap"
           >
             <!-- Avatar -->

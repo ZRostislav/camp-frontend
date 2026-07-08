@@ -280,9 +280,17 @@
       >
         <div class="flex items-center justify-between mb-4">
           <h2
-            class="font-display text-[1rem] sm:text-[1.15rem] font-bold text-camp-stone"
+            class="font-display text-[1rem] sm:text-[1.15rem] font-bold text-camp-stone flex items-center gap-2"
           >
             ⚡ События
+            <a
+              *ngIf="hasNewEvents"
+              [routerLink]="['/contests']"
+              [title]="newEventsCount + ' новых событий — жми, чтобы посмотреть'"
+              class="w-5 h-5 rounded-full bg-red-500 text-white text-[0.7rem] font-extrabold flex items-center justify-center shrink-0 animate-alert-bounce no-underline cursor-pointer"
+            >
+              !
+            </a>
           </h2>
           <a
             [routerLink]="['/contests']"
@@ -311,10 +319,17 @@
               {{ c.emoji || "⚡" }}
             </div>
             <div class="min-w-0 flex-1">
-              <div
-                class="text-xs sm:text-sm font-semibold text-camp-stone truncate"
-              >
-                {{ c.title }}
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span
+                  class="text-xs sm:text-sm font-semibold text-camp-stone truncate"
+                >
+                  {{ c.title }}
+                </span>
+                <span
+                  *ngIf="isNewItem(c)"
+                  class="inline-flex items-center text-[0.6rem] px-1.5 py-0.5 rounded-full font-bold bg-amber-100 text-amber-700 shrink-0"
+                  >🆕 новое</span
+                >
               </div>
               <div
                 *ngIf="c.description"
@@ -333,9 +348,17 @@
       >
         <div class="flex items-center justify-between mb-4">
           <h2
-            class="font-display text-[1rem] sm:text-[1.15rem] font-bold text-camp-stone"
+            class="font-display text-[1rem] sm:text-[1.15rem] font-bold text-camp-stone flex items-center gap-2"
           >
             📰 Новости
+            <a
+              *ngIf="unreadNewsCount > 0"
+              [routerLink]="['/news']"
+              [title]="unreadNewsCount + ' непрочитанных новостей — жми, чтобы посмотреть'"
+              class="min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[0.7rem] font-extrabold flex items-center justify-center shrink-0 animate-alert-bounce no-underline cursor-pointer"
+            >
+              {{ unreadNewsCount > 9 ? "9+" : unreadNewsCount }}
+            </a>
           </h2>
           <a
             [routerLink]="['/news']"
@@ -352,13 +375,22 @@
           Новостей пока нет
         </div>
 
-        <div class="space-y-3">
-          <div *ngFor="let n of news" class="flex gap-3 py-0.5">
+        <div class="space-y-1">
+          <a
+            *ngFor="let n of news"
+            [routerLink]="['/news']"
+            class="flex items-center gap-3 py-1.5 px-2 -mx-2 rounded-xl no-underline transition-colors duration-150 hover:bg-camp-muted active:scale-[0.99] cursor-pointer"
+          >
             <div
-              class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 text-lg"
+              class="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 text-lg"
               [style.backgroundColor]="campColorBg"
             >
               {{ n.pinned ? "📌" : "📄" }}
+              <span
+                *ngIf="isUnreadNews(n)"
+                class="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-red-500 border-2 border-white animate-unread-dot"
+                title="Непрочитано"
+              ></span>
             </div>
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
@@ -369,7 +401,13 @@
                   >закреплено</span
                 >
                 <span
+                  *ngIf="isUnreadNews(n)"
+                  class="inline-block text-[0.6rem] px-1.5 py-0.5 rounded-full font-bold bg-red-100 text-red-600"
+                  >непрочитано</span
+                >
+                <span
                   class="text-xs sm:text-sm font-semibold text-camp-stone leading-snug"
+                  [class.font-bold]="isUnreadNews(n)"
                   >{{ n.title }}</span
                 >
               </div>
@@ -383,7 +421,12 @@
                 {{ n.created_at | date: "dd.MM.yyyy HH:mm" }}
               </div>
             </div>
-          </div>
+            <app-icon
+              name="chevron-right"
+              [size]="16"
+              class="text-camp-subtle shrink-0 self-center"
+            ></app-icon>
+          </a>
         </div>
       </div>
     </div>
