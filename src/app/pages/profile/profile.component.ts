@@ -68,6 +68,15 @@ export class UserProfileComponent implements OnInit {
   saving = false;
   saveError = '';
 
+  // ─── Модалка смены пароля (self staff) ───
+  changePasswordOpen = false;
+  currentPassword = '';
+  newStaffPassword = '';
+  newStaffPasswordConfirm = '';
+  changingPassword = false;
+  changePasswordError = '';
+  changePasswordSuccess = '';
+
   // ─── Модалка редактирования (participant) ───
   editParticipant: any = null;
   savingParticipant = false;
@@ -289,6 +298,60 @@ export class UserProfileComponent implements OnInit {
     this.saveError = '';
   }
 
+  openChangePassword() {
+    if (!this.canChangeOwnPassword) return;
+    this.changePasswordOpen = true;
+    this.currentPassword = '';
+    this.newStaffPassword = '';
+    this.newStaffPasswordConfirm = '';
+    this.changePasswordError = '';
+    this.changePasswordSuccess = '';
+  }
+
+  closeChangePassword() {
+    this.changePasswordOpen = false;
+    this.currentPassword = '';
+    this.newStaffPassword = '';
+    this.newStaffPasswordConfirm = '';
+    this.changePasswordError = '';
+  }
+
+  saveChangePassword() {
+    if (!this.canChangeOwnPassword) return;
+    if (!this.currentPassword || !this.newStaffPassword || !this.newStaffPasswordConfirm) {
+      this.changePasswordError = 'Заполните все поля';
+      return;
+    }
+    if (this.newStaffPassword !== this.newStaffPasswordConfirm) {
+      this.changePasswordError = 'Новые пароли не совпадают';
+      return;
+    }
+
+    this.changingPassword = true;
+    this.changePasswordError = '';
+    this.changePasswordSuccess = '';
+    this.auth
+      .changeOwnPassword(
+        this.currentPassword,
+        this.newStaffPassword,
+        this.newStaffPasswordConfirm,
+      )
+      .subscribe({
+        next: () => {
+          this.changingPassword = false;
+          this.changePasswordSuccess = 'Пароль изменен';
+          setTimeout(() => {
+            this.changePasswordSuccess = '';
+            this.closeChangePassword();
+          }, 1200);
+        },
+        error: (e) => {
+          this.changePasswordError = e.error?.error || 'Ошибка смены пароля';
+          this.changingPassword = false;
+        },
+      });
+  }
+
   closeEdit() {
     this.editUser = null;
     this.newPassword = '';
@@ -428,5 +491,9 @@ export class UserProfileComponent implements OnInit {
 
   get isSuperAdmin(): boolean {
     return this.auth.currentUser()?.role === 'superadmin';
+  }
+
+  get canChangeOwnPassword(): boolean {
+    return this.isSelf && this.auth.isStaff();
   }
 }

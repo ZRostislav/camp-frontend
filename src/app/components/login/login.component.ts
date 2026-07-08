@@ -153,7 +153,7 @@ export class LoginComponent implements OnInit {
         },
       });
     } else {
-      const { firstName, lastName } = this.splitFullName(this.fullName);
+      const { lastName, firstName } = this.splitFullName(this.fullName);
       this.auth
         .participantLogin(lastName, firstName, this.accessCode)
         .subscribe({
@@ -171,8 +171,8 @@ export class LoginComponent implements OnInit {
     lastName: string;
   } {
     const trimmed = value.trim().replace(/\s+/g, ' ');
-    const [firstName = '', ...rest] = trimmed.split(' ');
-    return { firstName, lastName: rest.join(' ') };
+    const [lastName = '', ...rest] = trimmed.split(' ');
+    return { lastName, firstName: rest.join(' ') };
   }
 
   goToRegister() {

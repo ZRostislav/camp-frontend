@@ -638,9 +638,132 @@
         </button>
       </div>
 
-      <p class="mt-4 text-xs text-center text-camp-subtle">
-        Тема применяется мгновенно и сохраняется на сервере
-      </p>
+      <div
+        *ngIf="canChangeOwnPassword"
+        class="mt-5 pt-5 border-t border-camp-border"
+      >
+        <button
+          (click)="openChangePassword()"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 shadow-camp-btn"
+          [style.backgroundColor]="campColor"
+        >
+          <app-icon name="key" [size]="14" />
+          Изменить пароль
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div
+  *ngIf="changePasswordOpen"
+  class="fixed inset-0 flex items-end sm:items-center justify-center z-[10000] p-0 sm:p-4"
+  style="background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(2px)"
+  (click)="closeChangePassword()"
+>
+  <div
+    class="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-camp overflow-hidden"
+    style="background-color: var(--bg-card)"
+    (click)="$event.stopPropagation()"
+  >
+    <div
+      class="flex items-center justify-between px-5 py-4 border-b border-camp-border bg-camp-muted"
+    >
+      <div class="flex items-center gap-2">
+        <app-icon name="key" [size]="16" [style.color]="campColor" />
+        <span class="font-display text-sm font-bold text-camp-stone">
+          Смена пароля
+        </span>
+      </div>
+      <button
+        (click)="closeChangePassword()"
+        class="w-7 h-7 flex items-center justify-center rounded-xl transition-colors bg-[var(--bg-card)] text-camp-gray hover:bg-camp-muted"
+      >
+        <app-icon name="x" [size]="14" />
+      </button>
+    </div>
+
+    <div
+      *ngIf="changePasswordError"
+      class="mx-5 mt-4 flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold bg-camp-errorBg text-camp-error"
+    >
+      <app-icon name="circle-alert" [size]="14" class="shrink-0" />
+      {{ changePasswordError }}
+    </div>
+
+    <div
+      *ngIf="changePasswordSuccess"
+      class="mx-5 mt-4 flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold bg-camp-successBg text-camp-success"
+    >
+      <app-icon name="circle-check" [size]="14" class="shrink-0" />
+      {{ changePasswordSuccess }}
+    </div>
+
+    <div class="p-5 space-y-3">
+      <div>
+        <label
+          class="block text-[0.7rem] font-bold uppercase tracking-wide mb-1 text-camp-gray"
+        >
+          Текущий пароль
+        </label>
+        <input
+          type="password"
+          [(ngModel)]="currentPassword"
+          autocomplete="current-password"
+          class="w-full px-3 py-2 border-2 border-transparent rounded-xl text-sm font-medium outline-none transition-colors bg-camp-muted text-camp-stone"
+          (focus)="$any($event.target).style.borderColor = campColor"
+          (blur)="$any($event.target).style.borderColor = 'transparent'"
+        />
+      </div>
+      <div>
+        <label
+          class="block text-[0.7rem] font-bold uppercase tracking-wide mb-1 text-camp-gray"
+        >
+          Новый пароль
+        </label>
+        <input
+          type="password"
+          [(ngModel)]="newStaffPassword"
+          autocomplete="new-password"
+          class="w-full px-3 py-2 border-2 border-transparent rounded-xl text-sm font-medium outline-none transition-colors bg-camp-muted text-camp-stone"
+          (focus)="$any($event.target).style.borderColor = campColor"
+          (blur)="$any($event.target).style.borderColor = 'transparent'"
+        />
+      </div>
+      <div>
+        <label
+          class="block text-[0.7rem] font-bold uppercase tracking-wide mb-1 text-camp-gray"
+        >
+          Новый пароль еще раз
+        </label>
+        <input
+          type="password"
+          [(ngModel)]="newStaffPasswordConfirm"
+          autocomplete="new-password"
+          class="w-full px-3 py-2 border-2 border-transparent rounded-xl text-sm font-medium outline-none transition-colors bg-camp-muted text-camp-stone"
+          (focus)="$any($event.target).style.borderColor = campColor"
+          (blur)="$any($event.target).style.borderColor = 'transparent'"
+        />
+      </div>
+    </div>
+
+    <div class="flex gap-2 px-5 pb-5">
+      <button
+        (click)="saveChangePassword()"
+        [disabled]="changingPassword"
+        class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px disabled:opacity-60 shadow-camp-btn"
+        [style.backgroundColor]="campColor"
+      >
+        <app-icon name="save" [size]="15" />
+        {{ changingPassword ? "Сохранение..." : "Сменить пароль" }}
+      </button>
+      <button
+        (click)="closeChangePassword()"
+        class="px-4 py-2.5 rounded-xl text-sm font-bold transition-colors bg-camp-muted text-camp-gray hover:bg-camp-border"
+      >
+        Отмена
+      </button>
     </div>
   </div>
 </div>

@@ -93,6 +93,17 @@ export class AuthService {
     );
   }
 
+  changeOwnPassword(
+    currentPassword: string,
+    newPassword: string,
+    newPasswordConfirm: string,
+  ) {
+    return this.http.put<{ message: string }>(
+      `${this.api}/auth/me/password`,
+      { currentPassword, newPassword, newPasswordConfirm },
+    );
+  }
+
   private saveSession(token: string, user: User) {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
