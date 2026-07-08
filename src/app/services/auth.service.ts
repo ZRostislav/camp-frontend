@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
@@ -98,11 +98,11 @@ export class AuthService {
     newPassword: string,
     newPasswordConfirm: string,
   ) {
-    return this.http.put<{ message: string }>(`${this.api}/auth/me/password`, {
-      currentPassword,
-      newPassword,
-      newPasswordConfirm,
-    });
+    return this.http.put<{ message: string }>(
+      `${this.api}/auth/me/password`,
+      { currentPassword, newPassword, newPasswordConfirm },
+      { headers: new HttpHeaders({ Authorization: `Bearer ${this.token}` }) },
+    );
   }
 
   private saveSession(token: string, user: User) {
