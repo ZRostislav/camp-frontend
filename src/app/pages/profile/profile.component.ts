@@ -119,6 +119,13 @@ export class UserProfileComponent implements OnInit {
       error: () => {},
     });
 
+    // Домики нужны на любом профиле: и участнику (свой домик), и персоналу
+    // (закреплённые домики), чтобы корректно показать аватар/эмодзи/иконку.
+    this.api.get('/houses').subscribe({
+      next: (d: any) => (this.houses = d),
+      error: () => {},
+    });
+
     const routeId = this.route.snapshot.paramMap.get('id');
     const myId = this.auth.currentUser()?.id;
     const routePath = this.route.snapshot.routeConfig?.path;
@@ -135,10 +142,6 @@ export class UserProfileComponent implements OnInit {
           this.error = 'Не удалось загрузить данные участника';
           this.loading = false;
         },
-      });
-      this.api.get('/houses').subscribe({
-        next: (d: any) => (this.houses = d),
-        error: () => {},
       });
       return;
     }
@@ -191,20 +194,20 @@ export class UserProfileComponent implements OnInit {
     return `rgba(${r},${g},${b},0.08)`;
   }
 
-  get participantHouse(): any {
-    return this.houses.find((h) => h.id == this.user?.house_id) ?? null;
+  getHouse(houseId: any): any {
+    return this.houses.find((h) => h.id == houseId) ?? null;
   }
 
-  get participantHouseColor(): string {
-    return this.participantHouse?.color || this.campColor;
+  getHouseColor(houseId: any): string {
+    return this.getHouse(houseId)?.color || this.campColor;
   }
 
-  get participantHouseEmoji(): string {
-    return this.participantHouse?.emoji || '';
+  getHouseEmoji(houseId: any): string {
+    return this.getHouse(houseId)?.emoji || '';
   }
 
-  get participantHouseAvatar(): string | null {
-    return this.participantHouse?.avatar_path ?? null;
+  getHouseAvatar(houseId: any): string | null {
+    return this.getHouse(houseId)?.avatar_path ?? null;
   }
 
   async setTheme(theme: Theme) {
@@ -318,7 +321,11 @@ export class UserProfileComponent implements OnInit {
 
   saveChangePassword() {
     if (!this.canChangeOwnPassword) return;
-    if (!this.currentPassword || !this.newStaffPassword || !this.newStaffPasswordConfirm) {
+    if (
+      !this.currentPassword ||
+      !this.newStaffPassword ||
+      !this.newStaffPasswordConfirm
+    ) {
       this.changePasswordError = 'Заполните все поля';
       return;
     }

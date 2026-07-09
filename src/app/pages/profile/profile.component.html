@@ -78,36 +78,37 @@
             <span
               *ngIf="user.house_name"
               class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
-              [style.backgroundColor]="
-                isParticipant
-                  ? participantHouseColor + '20'
-                  : 'rgb(254 249 195)'
-              "
-              [style.color]="isParticipant ? participantHouseColor : '#854d0e'"
+              [style.backgroundColor]="getHouseColor(user.house_id) + '20'"
+              [style.color]="getHouseColor(user.house_id)"
             >
+              <!-- иконка домика: фото → эмодзи → home icon -->
               <span
-                *ngIf="isParticipant"
                 class="w-4 h-4 rounded-sm overflow-hidden flex items-center justify-center shrink-0"
-                [style.backgroundColor]="participantHouseColor + '30'"
+                [style.backgroundColor]="getHouseColor(user.house_id) + '30'"
               >
                 <img
-                  *ngIf="participantHouseAvatar"
-                  [src]="participantHouseAvatar | mediaUrl"
+                  *ngIf="getHouseAvatar(user.house_id)"
+                  [src]="getHouseAvatar(user.house_id) | mediaUrl"
                   class="w-full h-full object-cover"
                 />
                 <span
-                  *ngIf="!participantHouseAvatar && participantHouseEmoji"
+                  *ngIf="
+                    !getHouseAvatar(user.house_id) &&
+                    getHouseEmoji(user.house_id)
+                  "
                   class="text-[10px] leading-none"
-                  >{{ participantHouseEmoji }}</span
+                  >{{ getHouseEmoji(user.house_id) }}</span
                 >
                 <app-icon
-                  *ngIf="!participantHouseAvatar && !participantHouseEmoji"
+                  *ngIf="
+                    !getHouseAvatar(user.house_id) &&
+                    !getHouseEmoji(user.house_id)
+                  "
                   name="home"
                   [size]="9"
-                  [style.color]="participantHouseColor"
+                  [style.color]="getHouseColor(user.house_id)"
                 ></app-icon>
               </span>
-              <app-icon *ngIf="!isParticipant" name="home" [size]="11" />
               {{ user.house_name }}
             </span>
             <span
@@ -295,9 +296,34 @@
             <div class="flex flex-wrap gap-1.5">
               <span
                 *ngFor="let h of user.responsible_houses"
-                class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-camp-successBg text-camp-success"
-                >{{ h.name }}</span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+                [style.backgroundColor]="getHouseColor(h.id) + '20'"
+                [style.color]="getHouseColor(h.id)"
               >
+                <!-- иконка домика: фото → эмодзи → home icon -->
+                <span
+                  class="w-4 h-4 rounded-sm overflow-hidden flex items-center justify-center shrink-0"
+                  [style.backgroundColor]="getHouseColor(h.id) + '30'"
+                >
+                  <img
+                    *ngIf="getHouseAvatar(h.id)"
+                    [src]="getHouseAvatar(h.id) | mediaUrl"
+                    class="w-full h-full object-cover"
+                  />
+                  <span
+                    *ngIf="!getHouseAvatar(h.id) && getHouseEmoji(h.id)"
+                    class="text-[10px] leading-none"
+                    >{{ getHouseEmoji(h.id) }}</span
+                  >
+                  <app-icon
+                    *ngIf="!getHouseAvatar(h.id) && !getHouseEmoji(h.id)"
+                    name="home"
+                    [size]="9"
+                    [style.color]="getHouseColor(h.id)"
+                  ></app-icon>
+                </span>
+                {{ h.name }}
+              </span>
             </div>
           </div>
         </div>

@@ -69,6 +69,15 @@ export class MyHouseComponent implements OnInit {
     return this.colorBg(this.campColor);
   }
 
+  /** Цвет самого домика (если задан на бэкенде) — иначе общий campColor. */
+  get houseColor(): string {
+    return this.house?.color || this.campColor;
+  }
+
+  get houseColorBg(): string {
+    return this.colorBg(this.houseColor);
+  }
+
   private colorBg(hex: string, alpha = 0.1): string {
     const num = parseInt(hex.replace('#', ''), 16);
     const r = (num >> 16) & 255;

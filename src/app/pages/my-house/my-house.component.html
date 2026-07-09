@@ -1,5 +1,5 @@
 <div
-  class="p-4 sm:p-6 max-w-3xl mx-auto space-y-5 font-nunito animate-fade-in-up"
+  class="p-4 sm:p-6 max-w-4xl mx-auto space-y-5 font-nunito animate-fade-in-up"
 >
   <!-- Header -->
   <div>
@@ -57,20 +57,24 @@
 
   <!-- ═══════════════ HOUSE CONTENT ═══════════════ -->
   <div *ngIf="!loading && house" class="space-y-5">
-    <!-- Hero card -->
+    <!-- Hero card — яркая шапка домика, как в примере MyHouse -->
     <div
-      class="rounded-2xl border border-camp-border shadow-sm overflow-hidden"
+      class="rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-lg"
       [style.background]="
-        'linear-gradient(135deg, ' + campColorBg + ', white 65%)'
+        'linear-gradient(135deg, ' + houseColor + ', ' + houseColor + 'CC)'
       "
     >
-      <div class="p-5 sm:p-6 flex items-center gap-4 flex-wrap">
+      <!-- Эмодзи-водяной знак -->
+      <div
+        *ngIf="house.emoji"
+        class="absolute top-0 right-0 text-9xl opacity-10 select-none pointer-events-none translate-x-4 -translate-y-2"
+      >
+        {{ house.emoji }}
+      </div>
+
+      <div class="relative flex items-center gap-4 sm:gap-5 flex-wrap">
         <div
-          class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 shadow-sm"
-          [style.background]="
-            'linear-gradient(135deg,' + campColor + '30,' + campColor + '10)'
-          "
-          [style.border]="'1.5px solid ' + campColor + '40'"
+          class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 shadow-sm bg-white/15 border-2 border-white/30"
         >
           <img
             *ngIf="house.avatar_path"
@@ -86,174 +90,167 @@
             *ngIf="!house.avatar_path && !house.emoji"
             name="home"
             [size]="30"
-            [style.color]="campColor"
+            class="text-white"
           ></app-icon>
         </div>
 
         <div class="flex-1 min-w-0">
-          <h2 class="font-display text-xl font-bold text-camp-stone truncate">
+          <h2
+            class="font-display font-bold text-2xl sm:text-3xl truncate"
+            style="
+              font-family: var(--font-display, &quot;Neucha&quot;, sans-serif);
+            "
+          >
             {{ house.name }}
           </h2>
           <div
             *ngIf="house.description"
-            class="text-xs sm:text-sm text-camp-gray italic mt-0.5 truncate"
+            class="text-sm sm:text-base text-white/80 italic mt-0.5 truncate"
           >
             «{{ house.description }}»
           </div>
         </div>
+      </div>
 
+      <!-- Статистика прямо в шапке (полупрозрачные плашки) -->
+      <div class="relative flex gap-3 sm:gap-4 mt-5 flex-wrap">
         <div
-          class="flex items-center gap-1.5 px-4 py-2 rounded-xl shrink-0"
-          [style.backgroundColor]="campColorBg"
+          class="bg-white/20 rounded-2xl px-4 sm:px-5 py-2.5 sm:py-3 text-center"
+        >
+          <div class="font-display font-bold text-xl sm:text-2xl tabular-nums">
+            {{ house.house_points }}
+          </div>
+          <div class="text-[0.7rem] sm:text-xs text-white/80 mt-0.5">
+            Баллов домика
+          </div>
+        </div>
+        <div
+          class="bg-white/20 rounded-2xl px-4 sm:px-5 py-2.5 sm:py-3 text-center"
+        >
+          <div class="font-display font-bold text-xl sm:text-2xl tabular-nums">
+            {{ house.participants_count ?? 0 }}
+          </div>
+          <div class="text-[0.7rem] sm:text-xs text-white/80 mt-0.5">
+            Участников
+          </div>
+        </div>
+        <div
+          class="bg-white/20 rounded-2xl px-4 sm:px-5 py-2.5 sm:py-3 text-center"
+        >
+          <div class="font-display font-bold text-xl sm:text-2xl tabular-nums">
+            {{ house.responsible?.length ?? 0 }}
+          </div>
+          <div class="text-[0.7rem] sm:text-xs text-white/80 mt-0.5">
+            Ответственных
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ответственные + Участники — в 2 колонки, как Roster/Achievements в примере -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <!-- Ответственные -->
+      <div class="bg-white rounded-2xl border border-camp-border shadow-sm p-5">
+        <h3
+          class="font-display text-sm font-bold text-camp-stone mb-3 flex items-center gap-2"
         >
           <app-icon
-            name="star"
-            [size]="16"
+            name="shield"
+            [size]="15"
             [style.color]="campColor"
           ></app-icon>
-          <span
-            class="font-bold text-lg tabular-nums"
-            [style.color]="campColor"
-            >{{ house.house_points }}</span
-          >
-        </div>
-      </div>
-    </div>
+          Ответственные
+        </h3>
 
-    <!-- Stats row -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-      <div
-        class="rounded-xl px-3 py-3 text-center"
-        [style.background]="
-          'linear-gradient(135deg,' + campColor + '25,' + campColor + '08)'
-        "
-      >
-        <div class="font-bold text-xl tabular-nums" [style.color]="campColor">
-          {{ house.house_points }}
-        </div>
-        <div class="text-[0.65rem] text-camp-gray mt-0.5">Баллов домика</div>
-      </div>
-      <div
-        class="rounded-xl px-3 py-3 text-center"
-        [style.background]="
-          'linear-gradient(135deg,' + campColor + '12,' + campColor + '04)'
-        "
-      >
-        <div class="font-bold text-xl tabular-nums text-camp-stone">
-          {{ house.participants_count ?? 0 }}
-        </div>
-        <div class="text-[0.65rem] text-camp-gray mt-0.5">Участников</div>
-      </div>
-      <div
-        class="rounded-xl px-3 py-3 text-center col-span-2 sm:col-span-1"
-        [style.background]="
-          'linear-gradient(135deg,' + campColor + '08,' + campColor + '02)'
-        "
-      >
-        <div class="font-bold text-xl tabular-nums text-camp-stone">
-          {{ house.responsible?.length ?? 0 }}
-        </div>
-        <div class="text-[0.65rem] text-camp-gray mt-0.5">Ответственных</div>
-      </div>
-    </div>
-
-    <!-- Ответственные -->
-    <div class="bg-white rounded-2xl border border-camp-border shadow-sm p-5">
-      <h3
-        class="font-display text-sm font-bold text-camp-stone mb-3 flex items-center gap-2"
-      >
-        <app-icon
-          name="shield"
-          [size]="15"
-          [style.color]="campColor"
-        ></app-icon>
-        Ответственные
-      </h3>
-
-      <div
-        *ngIf="!house.responsible?.length"
-        class="text-xs text-camp-subtle bg-camp-muted rounded-xl px-3 py-2.5"
-      >
-        Пока никто не назначен
-      </div>
-
-      <div class="space-y-1.5">
         <div
-          *ngFor="let r of house.responsible"
-          class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-camp-muted"
+          *ngIf="!house.responsible?.length"
+          class="text-xs text-camp-subtle bg-camp-muted rounded-xl px-3 py-2.5"
         >
+          Пока никто не назначен
+        </div>
+
+        <div class="space-y-1.5">
           <div
-            class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold text-white"
-            [style.backgroundColor]="campColor"
+            *ngFor="let r of house.responsible"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-camp-muted"
           >
-            {{ initials(r) || "?" }}
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="font-semibold text-sm text-camp-stone truncate">
-              {{ r.full_name }}
+            <div
+              class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold text-white"
+              [style.backgroundColor]="campColor"
+            >
+              {{ initials(r) || "?" }}
             </div>
-            <div class="text-xs text-camp-gray">
-              {{ roleLabel(r.role) }} · уровень {{ r.rank_level }}
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-sm text-camp-stone truncate">
+                {{ r.full_name }}
+              </div>
+              <div class="text-xs text-camp-gray">
+                {{ roleLabel(r.role) }} · уровень {{ r.rank_level }}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Участники -->
-    <div class="bg-white rounded-2xl border border-camp-border shadow-sm p-5">
-      <h3
-        class="font-display text-sm font-bold text-camp-stone mb-3 flex items-center gap-2"
-      >
-        <app-icon name="users" [size]="15" [style.color]="campColor"></app-icon>
-        Участники
-        <span class="text-camp-subtle font-medium"
-          >({{ house.participants_count ?? 0 }})</span
+      <!-- Участники -->
+      <div class="bg-white rounded-2xl border border-camp-border shadow-sm p-5">
+        <h3
+          class="font-display text-sm font-bold text-camp-stone mb-3 flex items-center gap-2"
         >
-      </h3>
+          <app-icon
+            name="users"
+            [size]="15"
+            [style.color]="campColor"
+          ></app-icon>
+          Участники
+          <span class="text-camp-subtle font-medium"
+            >({{ house.participants_count ?? 0 }})</span
+          >
+        </h3>
 
-      <div
-        *ngIf="!house.participants?.length"
-        class="text-xs text-camp-subtle bg-camp-muted rounded-xl px-3 py-2.5"
-      >
-        В этом домике пока нет участников
-      </div>
-
-      <div class="space-y-1">
         <div
-          *ngFor="let p of house.participants"
-          class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-camp-muted transition-colors"
+          *ngIf="!house.participants?.length"
+          class="text-xs text-camp-subtle bg-camp-muted rounded-xl px-3 py-2.5"
         >
+          В этом домике пока нет участников
+        </div>
+
+        <div class="space-y-1 max-h-[420px] overflow-y-auto pr-0.5">
           <div
-            class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-[0.65rem] font-bold text-white"
-            [style.backgroundColor]="campColor"
+            *ngFor="let p of house.participants"
+            class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-camp-muted transition-colors"
           >
-            {{ initials(p) || "?" }}
+            <div
+              class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-[0.65rem] font-bold text-white"
+              [style.backgroundColor]="campColor"
+            >
+              {{ initials(p) || "?" }}
+            </div>
+
+            <span class="font-semibold text-sm text-camp-stone flex-1 truncate">
+              {{ p.last_name }} {{ p.first_name }}
+            </span>
+
+            <span class="text-xs text-camp-gray shrink-0">
+              {{ genderIcon(p.gender)
+              }}<ng-container *ngIf="p.age"> · {{ p.age }} л.</ng-container>
+            </span>
+
+            <span
+              *ngIf="auth.isCounselorOrHelper()"
+              class="font-mono text-[0.7rem] font-bold shrink-0 px-2 py-0.5 rounded-lg tracking-wider"
+              [style.backgroundColor]="campColorBg"
+              [style.color]="campColor"
+              >{{ p.access_code }}</span
+            >
+
+            <span
+              class="font-bold text-xs shrink-0 flex items-center gap-0.5"
+              [style.color]="campColor"
+            >
+              <app-icon name="star" [size]="11"></app-icon>{{ p.total_points }}
+            </span>
           </div>
-
-          <span class="font-semibold text-sm text-camp-stone flex-1 truncate">
-            {{ p.last_name }} {{ p.first_name }}
-          </span>
-
-          <span class="text-xs text-camp-gray shrink-0">
-            {{ genderIcon(p.gender)
-            }}<ng-container *ngIf="p.age"> · {{ p.age }} л.</ng-container>
-          </span>
-
-          <span
-            *ngIf="auth.isCounselorOrHelper()"
-            class="font-mono text-[0.7rem] font-bold shrink-0 px-2 py-0.5 rounded-lg tracking-wider"
-            [style.backgroundColor]="campColorBg"
-            [style.color]="campColor"
-            >{{ p.access_code }}</span
-          >
-
-          <span
-            class="font-bold text-xs shrink-0 flex items-center gap-0.5"
-            [style.color]="campColor"
-          >
-            <app-icon name="star" [size]="11"></app-icon>{{ p.total_points }}
-          </span>
         </div>
       </div>
     </div>
