@@ -14,7 +14,7 @@
           class="font-display text-[1.4rem] sm:text-[1.75rem] font-bold text-camp-stone flex items-center gap-2 leading-tight"
         >
           <app-icon name="sun" [size]="26" [style.color]="campColor"></app-icon>
-          Главная
+          {{ greeting }}
           <app-icon name="sun" [size]="26" [style.color]="campColor"></app-icon>
         </h1>
         <p
@@ -28,7 +28,7 @@
         class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold text-white shadow-camp-btn flex items-center gap-1.5 shrink-0"
         [style.backgroundColor]="campColor"
       >
-        🏕️ {{ campName || "Лагерь" }}
+        🏕️ {{ campDayLabel }}
       </div>
     </div>
 
@@ -286,7 +286,9 @@
             <a
               *ngIf="hasNewEvents"
               [routerLink]="['/contests']"
-              [title]="newEventsCount + ' новых событий — жми, чтобы посмотреть'"
+              [title]="
+                newEventsCount + ' новых событий — жми, чтобы посмотреть'
+              "
               class="w-5 h-5 rounded-full bg-red-500 text-white text-[0.7rem] font-extrabold flex items-center justify-center shrink-0 animate-alert-bounce no-underline cursor-pointer"
             >
               !
@@ -354,7 +356,10 @@
             <a
               *ngIf="unreadNewsCount > 0"
               [routerLink]="['/news']"
-              [title]="unreadNewsCount + ' непрочитанных новостей — жми, чтобы посмотреть'"
+              [title]="
+                unreadNewsCount +
+                ' непрочитанных новостей — жми, чтобы посмотреть'
+              "
               class="min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[0.7rem] font-extrabold flex items-center justify-center shrink-0 animate-alert-bounce no-underline cursor-pointer"
             >
               {{ unreadNewsCount > 9 ? "9+" : unreadNewsCount }}

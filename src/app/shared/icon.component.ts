@@ -140,6 +140,8 @@ const ICON_PATHS: Record<string, string> = {
   'check-check': 'M18 6L7 17l-5-5 M22 10l-7.5 7.5L13 16',
   trash:
     'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6 M3 6h18 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2',
+  'file-plus':
+    'M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z M14 2v5a1 1 0 0 0 1 1h5 M9 15h6 M12 18v-6',
 };
 
 @Component({

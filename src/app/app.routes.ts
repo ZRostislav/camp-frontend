@@ -75,6 +75,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'my-houses',
+        loadComponent: () =>
+          import('./pages/my-house/my-house.component').then(
+            (m) => m.MyHouseComponent,
+          ),
+      },
+      {
         path: 'points',
         loadComponent: () =>
           import('./pages/points/points.component').then(

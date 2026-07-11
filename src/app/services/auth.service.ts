@@ -19,13 +19,17 @@ export interface User {
 export class AuthService {
   private api = environment.apiUrl;
   currentUser = signal<User | null>(null);
+  private myHouseAvailable = signal(false);
 
   constructor(
     private http: HttpClient,
     private router: Router,
   ) {
     const stored = localStorage.getItem('user');
-    if (stored) this.currentUser.set(JSON.parse(stored));
+    if (stored) {
+      this.currentUser.set(JSON.parse(stored));
+      this.refreshMyHouseAccess();
+    }
   }
 
   get token() {
@@ -52,9 +56,26 @@ export class AuthService {
     return ['counselor', 'helper'].includes(this.role || '');
   }
   // Доступ к странице "Мой домик": участник видит свой домик,
-  // вожатый/помощник — закреплённый за ним (см. GET /houses/mine на бэкенде).
+  // вожатый/помощник — закреплённый за ним, а админ/суперадмин получают
+  // быстрый доступ к разделу, если у них есть связанный домик.
   canViewMyHouse() {
-    return ['participant', 'counselor', 'helper'].includes(this.role || '');
+    return this.isAdmin() || this.myHouseAvailable();
+  }
+
+  refreshMyHouseAccess() {
+    if (!this.token || !this.role) {
+      this.myHouseAvailable.set(false);
+      return;
+    }
+
+    this.http
+      .get(`${this.api}/houses/mine`, {
+        headers: new HttpHeaders({ Authorization: `Bearer ${this.token}` }),
+      })
+      .subscribe({
+        next: () => this.myHouseAvailable.set(true),
+        error: () => this.myHouseAvailable.set(false),
+      });
   }
 
   staffLogin(username: string, password: string) {
@@ -109,12 +130,14 @@ export class AuthService {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
     this.currentUser.set(user);
+    this.refreshMyHouseAccess();
   }
 
   logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.currentUser.set(null);
+    this.myHouseAvailable.set(false);
     this.router.navigate(['/login']);
   }
 }

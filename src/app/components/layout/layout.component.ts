@@ -93,6 +93,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
         event instanceof NavigationError
       ) {
         this.routeLoading = false;
+        this.auth.refreshMyHouseAccess();
       }
     });
   }

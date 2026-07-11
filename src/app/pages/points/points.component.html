@@ -44,8 +44,10 @@
     <button
       type="button"
       class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all"
-      [style.backgroundColor]="mode === 'participant' ? 'white' : 'transparent'"
-      [style.color]="mode === 'participant' ? campColor : '#78716C'"
+      [style.backgroundColor]="
+        mode === 'participant' ? 'var(--bg-card)' : 'transparent'
+      "
+      [style.color]="mode === 'participant' ? campColor : 'var(--text-gray)'"
       [style.boxShadow]="
         mode === 'participant' ? '0 1px 4px rgba(0,0,0,0.10)' : 'none'
       "
@@ -57,15 +59,17 @@
     <button
       type="button"
       class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all"
-      [style.backgroundColor]="mode === 'house' ? 'white' : 'transparent'"
-      [style.color]="mode === 'house' ? campColor : '#78716C'"
+      [style.backgroundColor]="
+        mode === 'house' ? 'var(--bg-card)' : 'transparent'
+      "
+      [style.color]="mode === 'house' ? campColor : 'var(--text-gray)'"
       [style.boxShadow]="
         mode === 'house' ? '0 1px 4px rgba(0,0,0,0.10)' : 'none'
       "
       (click)="setMode('house')"
     >
       <app-icon name="house" [size]="15"></app-icon>
-      Домик · Отряд
+      Домик
     </button>
   </div>
 
@@ -75,7 +79,7 @@
       <!-- Поле: показывает выбранный элемент (с аватаром) или строку поиска -->
       <div
         class="relative flex items-center w-full pl-2 pr-4 py-1.5 bg-camp-input border-2 border-transparent rounded-xl transition-colors"
-        [class.!bg-white]="selectorOpen"
+        [style.backgroundColor]="selectorOpen ? 'var(--bg-card)' : null"
         [style.borderColor]="selectorOpen ? campColor : 'transparent'"
       >
         <!-- Аватар выбранного элемента -->
@@ -120,7 +124,7 @@
         <input
           type="text"
           [placeholder]="
-            mode === 'participant' ? 'Поиск участника…' : 'Поиск домика/отряда…'
+            mode === 'participant' ? 'Поиск участника…' : 'Поиск домика…'
           "
           [ngModel]="
             selectorOpen
@@ -284,8 +288,12 @@
               [style.borderColor]="
                 addForm.points === q ? campColor : 'transparent'
               "
-              [style.backgroundColor]="q < 0 ? '#FEE2E2' : '#DCFCE7'"
-              [style.color]="q < 0 ? '#DC2626' : '#16A34A'"
+              [style.backgroundColor]="
+                q < 0 ? 'var(--bg-error-soft)' : 'var(--color-success-bg)'
+              "
+              [style.color]="
+                q < 0 ? 'var(--color-error)' : 'var(--color-success)'
+              "
               (click)="addForm.points = q"
             >
               {{ q > 0 ? "+" : "" }}{{ q }}
@@ -342,11 +350,15 @@
               *ngFor="let r of quickReasons"
               type="button"
               class="px-2.5 py-1 rounded-lg text-xs font-medium transition-all hover:-translate-y-px border"
-              [style.borderColor]="addForm.reason === r ? campColor : '#E7E5E4'"
-              [style.backgroundColor]="
-                addForm.reason === r ? campColorBg : '#F9F7EE'
+              [style.borderColor]="
+                addForm.reason === r ? campColor : 'var(--border-color)'
               "
-              [style.color]="addForm.reason === r ? campColor : '#78716C'"
+              [style.backgroundColor]="
+                addForm.reason === r ? campColorBg : 'var(--bg-input)'
+              "
+              [style.color]="
+                addForm.reason === r ? campColor : 'var(--text-gray)'
+              "
               (click)="addForm.reason = r"
             >
               {{ r }}
@@ -391,9 +403,9 @@
           type="button"
           class="px-3 py-1.5 rounded-full text-xs font-bold transition-all"
           [style.backgroundColor]="
-            pointsFilter === f.key ? campColor : '#F5F5F0'
+            pointsFilter === f.key ? campColor : 'var(--bg-muted)'
           "
-          [style.color]="pointsFilter === f.key ? 'white' : '#78716C'"
+          [style.color]="pointsFilter === f.key ? 'white' : 'var(--text-gray)'"
           (click)="pointsFilter = $any(f.key)"
         >
           {{ f.label }}
@@ -417,13 +429,17 @@
         *ngFor="let e of filteredHistory; let i = index; let last = last"
         class="flex items-center gap-4 px-4 sm:px-5 py-3.5 hover:bg-camp-muted transition-colors"
         [class.border-b]="!last"
-        [style.borderColor]="'rgba(0,0,0,0.05)'"
+        [style.borderColor]="'var(--border-color)'"
       >
         <!-- Points badge -->
         <div
           class="w-12 h-10 rounded-xl flex items-center justify-center font-bold tabular-nums text-sm shrink-0"
-          [style.backgroundColor]="e.points >= 0 ? '#DCFCE7' : '#FEE2E2'"
-          [style.color]="e.points >= 0 ? '#16A34A' : '#DC2626'"
+          [style.backgroundColor]="
+            e.points >= 0 ? 'var(--color-success-bg)' : 'var(--bg-error-soft)'
+          "
+          [style.color]="
+            e.points >= 0 ? 'var(--color-success)' : 'var(--color-error)'
+          "
         >
           <div class="flex flex-col items-center leading-none gap-0.5">
             <app-icon
@@ -458,7 +474,7 @@
             <app-icon name="pencil" [size]="12"></app-icon>
           </button>
           <button
-            class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#FEE2E2] text-camp-error hover:bg-[#FECACA] transition-colors"
+            class="w-7 h-7 flex items-center justify-center rounded-lg bg-camp-errorSoft text-camp-error hover:bg-camp-errorSoft transition-colors"
             (click)="deleteEntry(e.id)"
             title="Удалить"
           >
@@ -469,16 +485,83 @@
     </div>
   </div>
 
-  <!-- Empty state (no selection) -->
+  <!-- Empty state (no selection) — лента последних начислений -->
   <div
     *ngIf="!history && selectedId === ''"
-    class="py-16 text-center text-camp-subtle bg-white rounded-2xl border border-camp-border"
+    class="space-y-3 animate-fade-in-up"
   >
-    <div class="text-4xl mb-3">⭐</div>
-    <div class="text-sm font-medium">
-      Выберите
-      {{ mode === "participant" ? "участника" : "домик/отряд" }} чтобы увидеть
-      историю баллов
+    <div class="flex items-center gap-2">
+      <app-icon name="history" [size]="16" [style.color]="campColor"></app-icon>
+      <span class="font-display text-sm font-bold text-camp-stone">
+        Последние
+        {{
+          mode === "participant"
+            ? "начисления участникам"
+            : "начисления домикам"
+        }}
+      </span>
+    </div>
+
+    <div
+      class="bg-white rounded-2xl border border-camp-border shadow-sm overflow-hidden"
+    >
+      <div
+        *ngIf="loadingRecent"
+        class="py-10 text-center text-camp-subtle text-sm font-medium"
+      >
+        Загрузка…
+      </div>
+
+      <div
+        *ngIf="!loadingRecent && recentHistory.length === 0"
+        class="py-16 text-center text-camp-subtle"
+      >
+        <div class="text-4xl mb-3">⭐</div>
+        <div class="text-sm font-medium">
+          Пока нет начислений
+          {{ mode === "participant" ? "участникам" : "домикам" }}
+        </div>
+        <div class="text-xs mt-1">
+          Выберите {{ mode === "participant" ? "участника" : "домик" }} выше,
+          чтобы начислить баллы
+        </div>
+      </div>
+
+      <button
+        *ngFor="let e of recentHistory; let last = last"
+        type="button"
+        class="w-full flex items-center gap-3 px-4 sm:px-5 py-3 text-left hover:bg-camp-muted transition-colors"
+        [class.border-b]="!last"
+        [style.borderColor]="'var(--border-color)'"
+        (click)="selectFromRecent(e)"
+      >
+        <!-- Points badge -->
+        <div
+          class="w-11 h-9 rounded-xl flex items-center justify-center font-bold tabular-nums text-xs shrink-0"
+          [style.backgroundColor]="
+            e.points >= 0 ? 'var(--color-success-bg)' : 'var(--bg-error-soft)'
+          "
+          [style.color]="
+            e.points >= 0 ? 'var(--color-success)' : 'var(--color-error)'
+          "
+        >
+          {{ e.points > 0 ? "+" : "" }}{{ e.points }}
+        </div>
+
+        <!-- Who + reason -->
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm text-camp-stone truncate">
+            {{ recentItemName(e) }}
+          </div>
+          <div class="text-xs text-camp-gray truncate">
+            {{ e.reason || "—" }}
+          </div>
+        </div>
+
+        <div class="text-xs text-camp-subtle shrink-0">
+          {{ e.created_at | date: "dd.MM HH:mm" }}
+        </div>
+      </button>
     </div>
   </div>
 </div>

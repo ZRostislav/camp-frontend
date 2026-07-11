@@ -22,6 +22,8 @@ export class PointsComponent implements OnInit {
   selectorQuery = '';
   selectorOpen = false;
   history: any = null;
+  recentHistory: any[] = [];
+  loadingRecent = false;
   addForm: any = { points: 0, reason: '' };
   editEntry: any = null;
   error = '';
@@ -113,6 +115,7 @@ export class PointsComponent implements OnInit {
       next: (d: any) => (this.participants = d),
       error: () => {},
     });
+    this.loadRecentActivity();
   }
 
   /** Переключение режима участник/домик со сбросом выбора и поиска. */
@@ -124,6 +127,7 @@ export class PointsComponent implements OnInit {
     this.history = null;
     this.error = '';
     this.msg = '';
+    this.loadRecentActivity();
   }
 
   openSelector() {
@@ -177,6 +181,46 @@ export class PointsComponent implements OnInit {
     });
   }
 
+  /**
+   * Лента последних начислений/списаний — показывается вместо истории,
+   * пока не выбран конкретный участник/домик (mode переключает, по кому
+   * именно). ПРЕДПОЛАГАЕМЫЙ эндпоинт бэкенда:
+   *   GET /points/recent?mode=participant|house&limit=15
+   * возвращает записи в формате .../history (points, reason, created_at,
+   * created_by_name) + participant_id или house_id.
+   * Если на бэкенде путь/параметры другие — правьте только этот метод.
+   */
+  loadRecentActivity() {
+    this.loadingRecent = true;
+    this.api.get('/points/recent', { mode: this.mode, limit: 15 }).subscribe({
+      next: (d: any) => {
+        this.recentHistory = d ?? [];
+        this.loadingRecent = false;
+      },
+      error: () => {
+        this.recentHistory = [];
+        this.loadingRecent = false;
+      },
+    });
+  }
+
+  /** Имя участника/домика для строки в ленте последних начислений. */
+  recentItemName(e: any): string {
+    if (this.mode === 'participant') {
+      const p = this.participants.find((x) => x.id == e.participant_id);
+      return p ? `${p.last_name} ${p.first_name}` : '—';
+    }
+    const h = this.houses.find((x) => x.id == e.house_id);
+    return h ? h.name : '—';
+  }
+
+  /** Клик по строке ленты — сразу открывает историю этого участника/домика. */
+  selectFromRecent(e: any) {
+    const id = this.mode === 'participant' ? e.participant_id : e.house_id;
+    if (!id) return;
+    this.selectItem({ id });
+  }
+
   addPoints() {
     const path =
       this.mode === 'participant'
@@ -192,6 +236,7 @@ export class PointsComponent implements OnInit {
           this.msg = 'Баллы начислены';
           this.addForm = { points: 0, reason: '' };
           this.loadHistory();
+          this.loadRecentActivity();
         },
         error: (e: any) => (this.error = e.error?.error || 'Ошибка'),
       });
@@ -212,6 +257,7 @@ export class PointsComponent implements OnInit {
           this.editEntry = null;
           this.msg = 'Обновлено';
           this.loadHistory();
+          this.loadRecentActivity();
         },
         error: (e: any) => (this.error = e.error?.error || 'Ошибка'),
       });
@@ -223,6 +269,7 @@ export class PointsComponent implements OnInit {
       next: () => {
         this.msg = 'Удалено';
         this.loadHistory();
+        this.loadRecentActivity();
       },
       error: (e: any) => (this.error = e.error?.error || 'Ошибка'),
     });

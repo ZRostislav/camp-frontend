@@ -60,10 +60,26 @@ export class RollcallsComponent implements OnInit, OnDestroy {
 
   /** Визуальный конфиг статуса отметки: иконка, цвет, фон (как на бейджах баллов). */
   statusConfig: Record<string, { icon: string; color: string; bg: string }> = {
-    был: { icon: 'circle-check', color: '#16A34A', bg: '#DCFCE7' },
-    опоздал: { icon: 'clock', color: '#D97706', bg: '#FEF3C7' },
-    'не был': { icon: 'circle-x', color: '#DC2626', bg: '#FEE2E2' },
-    'не учитывать': { icon: 'circle-minus', color: '#A8A29E', bg: '#F5F5F0' },
+    был: {
+      icon: 'circle-check',
+      color: 'var(--color-success)',
+      bg: 'var(--color-success-bg)',
+    },
+    опоздал: {
+      icon: 'clock',
+      color: 'var(--color-warning)',
+      bg: 'var(--color-warning-bg)',
+    },
+    'не был': {
+      icon: 'circle-x',
+      color: 'var(--color-error)',
+      bg: 'var(--bg-error-soft)',
+    },
+    'не учитывать': {
+      icon: 'circle-minus',
+      color: 'var(--text-subtle)',
+      bg: 'var(--bg-muted)',
+    },
   };
 
   error = '';
@@ -248,14 +264,26 @@ export class RollcallsComponent implements OnInit, OnDestroy {
           ...r,
           date: this.toDateStr(r.date),
         }));
-        // Если ранее выбранная перекличка осталась в списке — обновим её данные,
-        // иначе по умолчанию выбираем первую активную (или первую вообще).
-        if (
-          this.selectedId &&
-          this.rollcalls.some((r) => r.id === this.selectedId)
-        ) {
-          return;
-        } else if (this.rollcalls.length) {
+        // Если ранее выбранная перекличка осталась в списке — подтягиваем
+        // её свежие поля (например status: 'активна' → 'завершена') в
+        // this.selected, не теряя уже загруженные entries (список
+        // /rollcalls их не возвращает). Раньше здесь был голый `return`,
+        // из-за чего заголовок/кнопки детальной карточки не обновлялись
+        // после complete() и оставались в устаревшем состоянии.
+        if (this.selectedId) {
+          const fresh = this.rollcalls.find((r) => r.id === this.selectedId);
+          if (fresh) {
+            if (this.selected) {
+              this.selected = {
+                ...this.selected,
+                ...fresh,
+                entries: this.selected.entries,
+              };
+            }
+            return;
+          }
+        }
+        if (this.rollcalls.length) {
           const active = this.rollcalls.find((r) => r.status === 'активна');
           this.selectTab(active || this.rollcalls[0]);
         } else {
@@ -433,16 +461,35 @@ export class RollcallsComponent implements OnInit, OnDestroy {
   confirmHouse(houseId: number) {
     if (!this.selected || this.isLocked() || this.isHouseConfirmed(houseId))
       return;
+
+    // Применяем сразу — чтобы кнопка скрылась/заблокировалась мгновенно,
+    // не дожидаясь socket-события house:confirmed (которое может не дойти
+    // обратно тому же клиенту, если бэкенд рассылает только остальным
+    // участникам комнаты).
+    const previous = this.houseStatuses[houseId];
+    this.houseStatuses[houseId] = {
+      ...previous,
+      attendanceConfirmation: { confirmed: true },
+    };
+
     this.api
       .post(`/rollcalls/${this.selected.id}/confirm-house/${houseId}`, {})
       .subscribe({
         next: () => {
           this.msg = 'Домик подтвержден, баллы начислены';
-          // Состояние применится через событие house:confirmed, пришедшее
-          // по сокету — отдельный рефетч не нужен.
+          // Авторитетную версию (при необходимости) перезапишет
+          // house:confirmed по сокету — optimistic-значение уже применено.
         },
         error: (e) => {
           this.error = e.error?.error || 'Ошибка';
+          // Откатываем optimistic-изменение, если статус ещё не успел
+          // перезаписаться более свежими данными.
+          if (
+            this.houseStatuses[houseId]?.attendanceConfirmation?.confirmed &&
+            !this.houseStatuses[houseId]?.attendanceConfirmation?.entry
+          ) {
+            this.houseStatuses[houseId] = previous;
+          }
         },
       });
   }
@@ -485,15 +532,33 @@ export class RollcallsComponent implements OnInit, OnDestroy {
       )
     )
       return;
+
+    const previous = this.houseStatuses[houseId];
+    this.houseStatuses[houseId] = {
+      ...previous,
+      latePenalty: {
+        ...previous?.latePenalty,
+        alreadyApplied: true,
+        eligible: false,
+      },
+    };
+
     this.api
       .post(`/rollcalls/${this.selected.id}/penalize-house/${houseId}`, {})
       .subscribe({
         next: (d: any) => {
           this.msg = d.already ? 'Штраф уже был выдан ранее' : 'Штраф выдан';
-          // Состояние применится через событие house:penalized по сокету.
+          // Авторитетную версию (при необходимости) перезапишет
+          // house:penalized по сокету — optimistic-значение уже применено.
         },
         error: (e) => {
           this.error = e.error?.error || 'Ошибка';
+          if (
+            this.houseStatuses[houseId]?.latePenalty?.alreadyApplied &&
+            !this.houseStatuses[houseId]?.latePenalty?.entry
+          ) {
+            this.houseStatuses[houseId] = previous;
+          }
         },
       });
   }
@@ -560,7 +625,16 @@ export class RollcallsComponent implements OnInit, OnDestroy {
     this.api.post(`/rollcalls/${id}/complete`, {}).subscribe({
       next: () => {
         this.msg = 'Перекличка завершена';
-        this.load();
+        // Применяем сразу, не дожидаясь socket-события rollcall:completed
+        // (оно может не долететь обратно тому же клиенту, который вызвал
+        // действие, если бэкенд исключает инициатора из рассылки) и не
+        // полагаясь только на load(), который просто подтягивает список.
+        if (this.selected && this.selected.id === id) {
+          this.selected = { ...this.selected, status: 'завершена' };
+        }
+        this.rollcalls = this.rollcalls.map((r) =>
+          r.id === id ? { ...r, status: 'завершена' } : r,
+        );
       },
       error: (e) => (this.error = e.error?.error || 'Ошибка'),
     });

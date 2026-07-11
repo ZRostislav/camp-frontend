@@ -76,7 +76,7 @@
           placeholder="Утро / Вечер"
           (focus)="
             $any($event.target).style.borderColor = campColor;
-            $any($event.target).style.backgroundColor = 'white'
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
           "
           (blur)="
             $any($event.target).style.borderColor = 'transparent';
@@ -95,7 +95,7 @@
           [(ngModel)]="createForm.date"
           (focus)="
             $any($event.target).style.borderColor = campColor;
-            $any($event.target).style.backgroundColor = 'white'
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
           "
           (blur)="
             $any($event.target).style.borderColor = 'transparent';
@@ -185,8 +185,12 @@
       (click)="selectTab(r)"
       class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all hover:-translate-y-px"
       [style.borderColor]="r.id === selectedId ? campColor : 'transparent'"
-      [style.backgroundColor]="r.id === selectedId ? campColorBg : '#fff'"
-      [style.color]="r.id === selectedId ? campColor : '#57534E'"
+      [style.backgroundColor]="
+        r.id === selectedId ? campColorBg : 'var(--bg-card)'
+      "
+      [style.color]="
+        r.id === selectedId ? campColor : 'var(--timeline-dot-past)'
+      "
     >
       {{ r.title }}
       <span
@@ -219,12 +223,16 @@
   <div
     *ngIf="attendanceEnabled || lateEnabled"
     class="flex items-start gap-2.5 px-4 py-3 rounded-xl text-sm"
-    style="background: #eff6ff; border: 1px solid #c3d9f5"
+    style="
+      background-color: var(--color-info-bg);
+      border: 1px solid var(--border-info);
+    "
   >
     <app-icon
       name="zap"
       [size]="16"
-      class="text-[#3B82F6] shrink-0 mt-0.5"
+      class="shrink-0 mt-0.5"
+      [style.color]="'var(--color-info)'"
     ></app-icon>
     <div class="text-camp-stone leading-relaxed">
       <span class="font-bold">Автоначисление баллов:</span>
@@ -250,7 +258,10 @@
   <div
     *ngIf="housePenaltyEnabled"
     class="flex items-start gap-2.5 px-4 py-3 rounded-xl text-sm"
-    style="background: #fef2f2; border: 1px solid #f3c3c3"
+    style="
+      background-color: var(--color-error-bg);
+      border: 1px solid var(--border-error-soft);
+    "
   >
     <app-icon
       name="shield-alert"
@@ -301,7 +312,7 @@
         </button>
         <button
           *ngIf="auth.isAdmin()"
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#FEE2E2] text-camp-error hover:bg-[#FECACA] transition-colors"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-camp-errorSoft text-camp-error hover:bg-camp-errorSoft transition-colors"
           (click)="remove(selected.id)"
         >
           <app-icon name="trash-2" [size]="13"></app-icon>
@@ -384,7 +395,8 @@
 
           <div class="flex items-center gap-2 flex-wrap">
             <span
-              class="text-xs font-bold px-2.5 py-1 rounded-full bg-white"
+              class="text-xs font-bold px-2.5 py-1 rounded-full"
+              [style.backgroundColor]="'var(--bg-card)'"
               [style.color]="getHouseColor(group.houseId)"
             >
               {{ markedCount(group) }}/{{ group.entries.length }} отмечено
@@ -412,7 +424,11 @@
               (click)="penalizeHouse(group.houseId)"
               [disabled]="!canPenalize(group.houseId)"
               class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              style="border-color: #dc2626; color: #dc2626; background: white"
+              style="
+                border-color: var(--color-error);
+                color: var(--color-error);
+                background-color: var(--bg-card);
+              "
               title="Списать домику штраф за опоздавших"
             >
               <app-icon name="shield-alert" [size]="12"></app-icon>
@@ -450,7 +466,7 @@
         <div class="divide-y divide-camp-border/60">
           <div
             *ngFor="let e of group.entries; trackBy: trackByParticipantId"
-            class="flex items-center gap-3 px-4 sm:px-5 py-3 hover:bg-camp-muted transition-colors flex-wrap sm:flex-nowrap"
+            class="flex items-center gap-3 px-4 sm:px-5 py-3 hover:bg-amber-50/30 transition-colors flex-wrap sm:flex-nowrap"
           >
             <!-- Avatar -->
             <div
@@ -480,13 +496,17 @@
                 [disabled]="isLocked()"
                 class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold border-2 transition-all disabled:cursor-not-allowed disabled:opacity-60"
                 [style.backgroundColor]="
-                  e.status === s ? statusConfig[s].bg : '#F5F5F0'
+                  e.status === s ? statusConfig[s].bg : 'var(--bg-muted)'
                 "
                 [style.color]="
-                  e.status === s ? statusConfig[s].color : '#A8A29E'
+                  e.status === s ? statusConfig[s].color : 'var(--text-subtle)'
                 "
                 [style.borderColor]="
-                  e.status === s ? statusConfig[s].color + '40' : 'transparent'
+                  e.status === s
+                    ? 'color-mix(in srgb, ' +
+                      statusConfig[s].color +
+                      ' 40%, transparent)'
+                    : 'transparent'
                 "
               >
                 <app-icon [name]="statusConfig[s].icon" [size]="13"></app-icon>

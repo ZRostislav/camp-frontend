@@ -89,7 +89,7 @@
         style="color: rgba(255, 255, 255, 0.8)"
       >
         <app-icon name="home" [size]="18" class="shrink-0" />
-        Мой домик · отряд
+        Мой Домик
       </a>
 
       <a
@@ -111,7 +111,7 @@
         style="color: rgba(255, 255, 255, 0.8)"
       >
         <app-icon name="house" [size]="18" class="shrink-0" />
-        Домики · Отряды
+        Домики
       </a>
 
       <a
@@ -365,7 +365,9 @@
       >
         <div
           class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-200"
-          [style.backgroundColor]="houseTab.isActive ? campColor : 'transparent'"
+          [style.backgroundColor]="
+            houseTab.isActive ? campColor : 'transparent'
+          "
         >
           <app-icon
             name="house"
@@ -376,7 +378,7 @@
         <span
           class="text-[10px] font-extrabold"
           [style.color]="houseTab.isActive ? campColor : 'var(--text-subtle)'"
-          >Мой домик</span
+          >Мой Домик</span
         >
       </a>
 
@@ -389,7 +391,9 @@
       >
         <div
           class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-200"
-          [style.backgroundColor]="scheduleTab.isActive ? campColor : 'transparent'"
+          [style.backgroundColor]="
+            scheduleTab.isActive ? campColor : 'transparent'
+          "
         >
           <app-icon
             name="calendar-days"
@@ -399,7 +403,9 @@
         </div>
         <span
           class="text-[10px] font-extrabold"
-          [style.color]="scheduleTab.isActive ? campColor : 'var(--text-subtle)'"
+          [style.color]="
+            scheduleTab.isActive ? campColor : 'var(--text-subtle)'
+          "
           >Расписание</span
         >
       </a>
@@ -443,7 +449,9 @@
       >
         <div
           class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-200"
-          [style.backgroundColor]="contestsTab.isActive ? campColor : 'transparent'"
+          [style.backgroundColor]="
+            contestsTab.isActive ? campColor : 'transparent'
+          "
         >
           <app-icon
             name="trophy"
@@ -453,7 +461,9 @@
         </div>
         <span
           class="text-[10px] font-extrabold"
-          [style.color]="contestsTab.isActive ? campColor : 'var(--text-subtle)'"
+          [style.color]="
+            contestsTab.isActive ? campColor : 'var(--text-subtle)'
+          "
           >События</span
         >
       </a>
@@ -467,7 +477,9 @@
       >
         <div
           class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-200"
-          [style.backgroundColor]="profileTab.isActive ? campColor : 'transparent'"
+          [style.backgroundColor]="
+            profileTab.isActive ? campColor : 'transparent'
+          "
         >
           <app-icon
             name="user"
@@ -485,7 +497,10 @@
   </nav>
 
   <!-- ===== MOBILE DRAWER (персонал) ===== -->
-  <div *ngIf="mobileMenuOpen && !isParticipant" class="lg:hidden fixed inset-0 z-50 flex">
+  <div
+    *ngIf="mobileMenuOpen && !isParticipant"
+    class="lg:hidden fixed inset-0 z-50 flex"
+  >
     <!-- Backdrop -->
     <div
       class="absolute inset-0 bg-black/40"
@@ -587,7 +602,7 @@
           class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150"
           style="color: rgba(255, 255, 255, 0.8)"
         >
-          <app-icon name="home" [size]="18" class="shrink-0" />Мой домик · отряд
+          <app-icon name="home" [size]="18" class="shrink-0" />Мой Домик
         </a>
         <a
           *ngIf="auth.isStaff()"
@@ -607,7 +622,7 @@
           class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150"
           style="color: rgba(255, 255, 255, 0.8)"
         >
-          <app-icon name="shield" [size]="18" class="shrink-0" />Домики · Отряды
+          <app-icon name="shield" [size]="18" class="shrink-0" />Домики
         </a>
         <a
           *ngIf="auth.isStaff()"

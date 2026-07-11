@@ -30,8 +30,14 @@
   /* Semantic */
   --color-error: #dc2626;
   --color-error-bg: #fef2f2;
+  --border-error-soft: #f3c3c3;
   --color-success: #16a34a;
   --color-success-bg: #dcfce7;
+  --color-info: #3b82f6;
+  --color-info-bg: #eff6ff;
+  --border-info: #c3d9f5;
+  --color-warning: #d97706;
+  --color-warning-bg: #fef3c7;
 
   /* Shadows */
   --shadow-btn: 0 2px 8px rgba(0, 0, 0, 0.12);
@@ -64,8 +70,14 @@ html.dark {
 
   --color-error: #f87171;
   --color-error-bg: #3b1515;
+  --border-error-soft: #5a2323;
   --color-success: #4ade80;
   --color-success-bg: #14332a;
+  --color-info: #60a5fa;
+  --color-info-bg: #16283d;
+  --border-info: #2c4a6e;
+  --color-warning: #fbbf24;
+  --color-warning-bg: #422f0c;
 
   --shadow-btn: 0 2px 8px rgba(0, 0, 0, 0.4);
 
@@ -125,6 +137,17 @@ html.dark {
 }
 .bg-camp-mid {
   background-color: var(--bg-muted) !important;
+}
+
+/* Ховеры для приглушённых/нейтральных кнопок (Отмена, день-свитчер,
+   "Завершить досрочно", "Подтвердить домик" и т.п.) — без этого
+   в тёмной теме при наведении подставлялся исходный светлый цвет
+   из tailwind.config.js вместо переменной темы */
+.hover\:bg-camp-muted:hover {
+  background-color: var(--bg-muted) !important;
+}
+.hover\:bg-camp-border:hover {
+  background-color: var(--border-color) !important;
 }
 
 /* Кнопки удаления / отклонения (красный мягкий фон) */

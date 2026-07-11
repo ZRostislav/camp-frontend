@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { SettingsService } from '../../services/settings.service';
 import { MediaUrlPipe } from '../../pipes/media-url.pipe';
+import { ObjectUrlPipe } from '../../pipes/object-url.pipe';
 import { IconComponent } from '../../shared/icon.component';
 
 // "Мой домик" — страница для участника (его собственный домик) и
@@ -14,7 +16,7 @@ import { IconComponent } from '../../shared/icon.component';
 @Component({
   selector: 'app-my-house',
   standalone: true,
-  imports: [CommonModule, MediaUrlPipe, IconComponent],
+  imports: [CommonModule, FormsModule, MediaUrlPipe, ObjectUrlPipe, IconComponent],
   templateUrl: './my-house.component.html',
   styleUrl: './my-house.component.css',
 })
@@ -22,6 +24,11 @@ export class MyHouseComponent implements OnInit {
   house: any = null;
   loading = true;
   error = '';
+  msg = '';
+  editing = false;
+  editForm: any = { name: '', description: '', emoji: '' };
+  editFiles: File[] = [];
+  saving = false;
 
   campColor = '#F59E0B';
 
@@ -52,9 +59,11 @@ export class MyHouseComponent implements OnInit {
   load() {
     this.loading = true;
     this.error = '';
+    this.msg = '';
     this.api.get('/houses/mine').subscribe({
       next: (d: any) => {
         this.house = d;
+        this.resetEditForm();
         this.loading = false;
       },
       error: (e) => {
@@ -63,6 +72,106 @@ export class MyHouseComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  get canManageMyHouse(): boolean {
+    return this.auth.role !== 'participant';
+  }
+
+  startEdit() {
+    this.resetEditForm();
+    this.editing = true;
+  }
+
+  cancelEdit() {
+    this.editing = false;
+    this.editFiles = [];
+    this.resetEditForm();
+  }
+
+  private resetEditForm() {
+    this.editForm = {
+      name: this.house?.name || '',
+      description: this.house?.description || '',
+      emoji: this.house?.emoji || '',
+    };
+    this.editFiles = [];
+  }
+
+  onEditAvatarChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    this.editFiles = [input.files[0]];
+    this.editForm.emoji = '';
+    input.value = '';
+  }
+
+  removeEditAvatar() {
+    this.editFiles = [];
+  }
+
+  deleteAvatar() {
+    if (!this.house?.id) return;
+    this.saving = true;
+    this.error = '';
+    this.api.delete(`/houses/${this.house.id}/avatar`).subscribe({
+      next: () => {
+        this.msg = 'Аватар удален';
+        this.saving = false;
+        this.load();
+      },
+      error: (e: any) => {
+        this.error = e.error?.error || 'Ошибка';
+        this.saving = false;
+      },
+    });
+  }
+
+  saveEdit() {
+    if (!this.house?.id || !this.editForm.name.trim()) {
+      this.error = 'Укажите название домика';
+      return;
+    }
+
+    this.saving = true;
+    this.error = '';
+    this.msg = '';
+
+    this.api
+      .put(`/houses/${this.house.id}`, {
+        name: this.editForm.name.trim(),
+        description: this.editForm.description || null,
+        emoji: this.editForm.emoji || null,
+      })
+      .subscribe({
+        next: () => {
+          if (!this.editFiles.length) {
+            this.finishSave();
+            return;
+          }
+
+          const fd = new FormData();
+          fd.append('avatar', this.editFiles[0]);
+          this.api.postFormData(`/houses/${this.house.id}/avatar`, fd).subscribe({
+            next: () => this.finishSave(),
+            error: (e: any) => {
+              this.error = e.error?.error || 'Ошибка загрузки аватара';
+              this.saving = false;
+            },
+          });
+        },
+        error: (e: any) => {
+          this.error = e.error?.error || 'Ошибка';
+          this.saving = false;
+        },
+      });
+  }
+
+  private finishSave() {
+    this.msg = 'Домик сохранен';
+    this.editing = false;
+    this.saving = false;
+    this.load();
   }
 
   get campColorBg(): string {
@@ -113,5 +222,10 @@ export class MyHouseComponent implements OnInit {
       .filter(Boolean)
       .map((w: string) => w[0]?.toUpperCase())
       .join('');
+  }
+
+  fileSize(f: File) {
+    const mb = f.size / 1024 / 1024;
+    return mb < 1 ? `${(f.size / 1024).toFixed(0)} KB` : `${mb.toFixed(1)} MB`;
   }
 }
