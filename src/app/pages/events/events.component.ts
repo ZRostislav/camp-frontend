@@ -26,7 +26,6 @@ interface EventItem {
   finished_at: string | null;
   status: EventStatus;
   created_at: string;
-  youtube_links: { id: number; url: string; label: string | null }[];
   winners: EventWinner[];
   is_read: boolean;
   // UI-only, добавляется на клиенте при открытии выбора победителей
@@ -63,12 +62,10 @@ export class EventsComponent implements OnInit {
     event_time: '',
     points: 0,
   };
-  formLinks: { url: string; label: string }[] = [];
   showFormEmojiPicker = false;
   showCreateForm = false;
 
   editItem: any = null;
-  editNewLinks: { url: string; label: string }[] = [];
   showEditEmojiPicker = false;
 
   // id событий, для которых сейчас открыт выбор победителей
@@ -101,6 +98,18 @@ export class EventsComponent implements OnInit {
 
   get campColorBg(): string {
     return this.hexToRgba(this.campColor, 0.12);
+  }
+
+  get completedCount(): number {
+    return this.events.filter((e) => e.status === 'завершено').length;
+  }
+
+  get inProgressCount(): number {
+    return this.events.filter((e) => e.status === 'идёт').length;
+  }
+
+  get upcomingCount(): number {
+    return this.events.filter((e) => e.status === 'будет').length;
   }
 
   private hexToRgba(hex: string, alpha: number): string {
@@ -211,21 +220,6 @@ export class EventsComponent implements OnInit {
     this.showEditEmojiPicker = false;
   }
 
-  // ── YouTube-ссылки ───────────────────────────────────────────────────────
-
-  addFormLink() {
-    this.formLinks.push({ url: '', label: '' });
-  }
-  removeFormLink(i: number) {
-    this.formLinks = this.formLinks.filter((_, idx) => idx !== i);
-  }
-  addEditLink() {
-    this.editNewLinks.push({ url: '', label: '' });
-  }
-  removeEditNewLink(i: number) {
-    this.editNewLinks = this.editNewLinks.filter((_, idx) => idx !== i);
-  }
-
   // ── Создание события ─────────────────────────────────────────────────────
 
   create() {
@@ -245,30 +239,11 @@ export class EventsComponent implements OnInit {
         points: this.form.points || 0,
       })
       .subscribe({
-        next: (created: any) => {
-          const id = created.id;
-          const tasks: Promise<void>[] = [];
-
-          this.formLinks
-            .filter((l) => l.url.trim())
-            .forEach((l) => {
-              tasks.push(
-                this.api
-                  .post(`/events/${id}/youtube`, {
-                    url: l.url.trim(),
-                    label: l.label.trim() || null,
-                  })
-                  .toPromise()
-                  .then(() => {}),
-              );
-            });
-
-          Promise.allSettled(tasks).then(() => {
-            this.msg = 'Событие создано';
-            this.showCreateForm = false;
-            this.resetForm();
-            this.load();
-          });
+        next: () => {
+          this.msg = 'Событие создано';
+          this.showCreateForm = false;
+          this.resetForm();
+          this.load();
         },
         error: (e: any) => (this.error = e.error?.error || 'Ошибка создания'),
       });
@@ -282,7 +257,6 @@ export class EventsComponent implements OnInit {
       event_time: '',
       points: 0,
     };
-    this.formLinks = [];
     this.showFormEmojiPicker = false;
   }
 
@@ -292,9 +266,7 @@ export class EventsComponent implements OnInit {
     this.editItem = {
       ...c,
       event_time: this.toDatetimeLocal(c.event_time),
-      youtube_links: [...(c.youtube_links || [])],
     };
-    this.editNewLinks = [];
     this.showEditEmojiPicker = false;
   }
 
@@ -316,48 +288,12 @@ export class EventsComponent implements OnInit {
       })
       .subscribe({
         next: () => {
-          const id = this.editItem.id;
-          const tasks: Promise<void>[] = [];
-
-          this.editNewLinks
-            .filter((l) => l.url.trim())
-            .forEach((l) => {
-              tasks.push(
-                this.api
-                  .post(`/events/${id}/youtube`, {
-                    url: l.url.trim(),
-                    label: l.label.trim() || null,
-                  })
-                  .toPromise()
-                  .then(() => {}),
-              );
-            });
-
-          Promise.allSettled(tasks).then(() => {
-            this.msg = 'Сохранено';
-            this.editItem = null;
-            this.editNewLinks = [];
-            this.load();
-          });
+          this.msg = 'Сохранено';
+          this.editItem = null;
+          this.load();
         },
         error: (e: any) => (this.error = e.error?.error || 'Ошибка сохранения'),
       });
-  }
-
-  deleteYoutubeLink(eventId: number, linkId: number) {
-    if (!confirm('Удалить ссылку?')) return;
-    this.api.delete(`/events/${eventId}/youtube/${linkId}`).subscribe({
-      next: () => {
-        this.msg = 'Ссылка удалена';
-        if (this.editItem)
-          this.editItem.youtube_links = this.editItem.youtube_links.filter(
-            (l: any) => l.id !== linkId,
-          );
-        this.load();
-      },
-      error: (e: any) =>
-        (this.error = e.error?.error || 'Ошибка удаления ссылки'),
-    });
   }
 
   remove(id: number) {

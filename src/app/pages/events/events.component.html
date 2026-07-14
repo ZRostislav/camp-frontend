@@ -48,6 +48,52 @@
     </button>
   </div>
 
+  <!-- ── STATS SUMMARY ── -->
+  <div
+    *ngIf="events.length"
+    class="grid grid-cols-3 gap-3 sm:gap-4 animate-fade-in-up"
+  >
+    <div
+      class="bg-white rounded-2xl border border-camp-border shadow-sm p-4 flex flex-col items-center gap-1 text-center"
+    >
+      <span
+        class="w-9 h-9 rounded-full bg-green-50 border border-green-200 flex items-center justify-center text-green-600"
+      >
+        <app-icon name="check" [size]="18"></app-icon>
+      </span>
+      <span class="font-display text-2xl font-extrabold text-camp-stone">{{
+        completedCount
+      }}</span>
+      <span class="text-xs font-semibold text-camp-gray">Завершено</span>
+    </div>
+    <div
+      class="bg-white rounded-2xl border border-camp-border shadow-sm p-4 flex flex-col items-center gap-1 text-center"
+    >
+      <span
+        class="w-9 h-9 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600"
+      >
+        <app-icon name="zap" [size]="18"></app-icon>
+      </span>
+      <span class="font-display text-2xl font-extrabold text-camp-stone">{{
+        inProgressCount
+      }}</span>
+      <span class="text-xs font-semibold text-camp-gray">В процессе</span>
+    </div>
+    <div
+      class="bg-white rounded-2xl border border-camp-border shadow-sm p-4 flex flex-col items-center gap-1 text-center"
+    >
+      <span
+        class="w-9 h-9 rounded-full bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600"
+      >
+        <app-icon name="calendar-clock" [size]="18"></app-icon>
+      </span>
+      <span class="font-display text-2xl font-extrabold text-camp-stone">{{
+        upcomingCount
+      }}</span>
+      <span class="text-xs font-semibold text-camp-gray">Предстоит</span>
+    </div>
+  </div>
+
   <!-- ── CREATE FORM ── -->
   <div
     *ngIf="auth.isAdmin() && showCreateForm"
@@ -186,59 +232,6 @@
       </label>
     </div>
 
-    <!-- YouTube Links -->
-    <div class="flex flex-col gap-2">
-      <div class="flex items-center justify-between">
-        <span
-          class="text-[0.7rem] font-bold uppercase tracking-widest text-camp-gray"
-          >YouTube ссылки</span
-        >
-        <button
-          (click)="addFormLink()"
-          class="inline-flex items-center gap-1 px-3 py-1 rounded-xl text-[0.7rem] font-bold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
-        >
-          <app-icon name="plus" [size]="12"></app-icon> Добавить
-        </button>
-      </div>
-      <div
-        *ngFor="let l of formLinks; let i = index"
-        class="flex items-center gap-2"
-      >
-        <input
-          [(ngModel)]="l.url"
-          placeholder="https://youtu.be/..."
-          class="flex-1 px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm text-camp-stone placeholder-camp-subtle outline-none transition-colors"
-          (focus)="
-            $any($event.target).style.borderColor = campColor;
-            $any($event.target).style.backgroundColor = 'var(--bg-card)'
-          "
-          (blur)="
-            $any($event.target).style.borderColor = 'transparent';
-            $any($event.target).style.backgroundColor = ''
-          "
-        />
-        <input
-          [(ngModel)]="l.label"
-          placeholder="Подпись"
-          class="w-32 px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm text-camp-stone placeholder-camp-subtle outline-none transition-colors"
-          (focus)="
-            $any($event.target).style.borderColor = campColor;
-            $any($event.target).style.backgroundColor = 'var(--bg-card)'
-          "
-          (blur)="
-            $any($event.target).style.borderColor = 'transparent';
-            $any($event.target).style.backgroundColor = ''
-          "
-        />
-        <button
-          (click)="removeFormLink(i)"
-          class="w-7 h-7 flex items-center justify-center rounded-lg bg-camp-errorSoft hover:bg-camp-errorSoft text-camp-error transition-colors shrink-0"
-        >
-          <app-icon name="x" [size]="12"></app-icon>
-        </button>
-      </div>
-    </div>
-
     <div class="flex gap-2 mt-1">
       <button
         (click)="create()"
@@ -269,7 +262,9 @@
   </div>
 
   <!-- ── EVENTS LIST ── -->
-  <div class="flex flex-col gap-5 animate-fade-in-up">
+  <div
+    class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 animate-fade-in-up"
+  >
     <div
       *ngFor="let c of events"
       class="bg-white rounded-[22px] border-[1.5px] overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
@@ -356,31 +351,6 @@
               <app-icon name="trash-2" [size]="15"></app-icon>
             </button>
           </div>
-        </div>
-
-        <!-- YouTube links -->
-        <div
-          *ngIf="c.youtube_links?.length"
-          class="flex flex-wrap gap-2"
-          (click)="$event.stopPropagation()"
-        >
-          <a
-            *ngFor="let l of c.youtube_links"
-            [href]="l.url"
-            target="_blank"
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 border border-red-200 text-red-600 text-xs font-semibold hover:bg-red-100 transition-colors no-underline"
-          >
-            <svg
-              class="w-3.5 h-3.5 flex-shrink-0"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path
-                d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4L15.8 12l-6.2 3.6z"
-              />
-            </svg>
-            {{ l.label || "Видео" }}
-          </a>
         </div>
 
         <!-- Winners strip -->
@@ -499,37 +469,9 @@
             Создано {{ c.created_at | date: "d MMMM yyyy" : "" : "ru" }}
           </span>
           <div class="flex items-center gap-1.5">
-            <span
-              *ngIf="c.youtube_links?.length"
-              class="inline-flex items-center gap-1 text-[0.7rem] font-semibold text-red-600 bg-red-50 border border-red-200 rounded-full px-2 py-0.5"
-            >
-              <app-icon name="youtube" [size]="11"></app-icon
-              >{{ c.youtube_links.length }}
-            </span>
             <span *ngIf="c.is_read" class="text-green-500 flex items-center">
               <app-icon name="check-check" [size]="15"></app-icon>
             </span>
-          </div>
-        </div>
-
-        <!-- Admin: youtube links management -->
-        <div
-          *ngIf="auth.isAdmin() && c.youtube_links?.length"
-          class="pt-2 border-t border-camp-border flex flex-col gap-2"
-          (click)="$event.stopPropagation()"
-        >
-          <span
-            class="text-[0.7rem] font-bold uppercase tracking-widest text-camp-gray"
-            >Удалить ссылки</span
-          >
-          <div class="flex flex-wrap gap-1.5">
-            <button
-              *ngFor="let l of c.youtube_links"
-              (click)="deleteYoutubeLink(c.id, l.id)"
-              class="flex items-center gap-1 px-2 py-1 bg-red-50 border border-red-200 rounded-lg text-xs text-red-500 hover:bg-red-100 hover:text-red-700 transition-colors"
-            >
-              ✕ {{ l.label || "ссылка" }}
-            </button>
           </div>
         </div>
       </div>
@@ -541,7 +483,7 @@
 <div
   *ngIf="editItem"
   class="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4 animate-fade-in-up"
-  (click)="editItem = null; editNewLinks = []"
+  (click)="editItem = null"
 >
   <div
     class="bg-white rounded-[22px] shadow-2xl w-full max-w-[540px] max-h-[90vh] overflow-y-auto p-5 sm:p-6 flex flex-col gap-4"
@@ -559,7 +501,7 @@
         Редактирование события
       </h2>
       <button
-        (click)="editItem = null; editNewLinks = []"
+        (click)="editItem = null"
         class="p-1.5 rounded-lg text-camp-gray hover:text-camp-stone hover:bg-camp-muted transition-all"
       >
         <app-icon name="x" [size]="20"></app-icon>
@@ -637,70 +579,6 @@
       </label>
     </div>
 
-    <!-- Existing YouTube -->
-    <div *ngIf="editItem.youtube_links?.length" class="flex flex-col gap-2">
-      <span
-        class="text-[0.7rem] font-bold uppercase tracking-widest text-camp-gray"
-        >Ссылки</span
-      >
-      <div
-        *ngFor="let l of editItem.youtube_links"
-        class="flex items-center gap-2 px-3 py-2 bg-camp-muted rounded-xl"
-      >
-        <span>🔗</span>
-        <a
-          [href]="l.url"
-          target="_blank"
-          class="flex-1 text-xs text-camp-gray truncate underline underline-offset-2"
-        >
-          {{ l.label || l.url }}
-        </a>
-        <button
-          (click)="deleteYoutubeLink(editItem.id, l.id)"
-          class="text-red-400 hover:text-red-600 transition-colors"
-        >
-          <app-icon name="x" [size]="14"></app-icon>
-        </button>
-      </div>
-    </div>
-
-    <!-- New YouTube links -->
-    <div class="flex flex-col gap-2">
-      <div class="flex items-center justify-between">
-        <span
-          class="text-[0.7rem] font-bold uppercase tracking-widest text-camp-gray"
-          >Добавить ссылки</span
-        >
-        <button
-          (click)="addEditLink()"
-          class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[0.7rem] font-semibold bg-camp-muted text-camp-gray border border-camp-border hover:bg-camp-border transition-colors"
-        >
-          <app-icon name="plus" [size]="12"></app-icon> Добавить
-        </button>
-      </div>
-      <div
-        *ngFor="let l of editNewLinks; let i = index"
-        class="flex items-center gap-2"
-      >
-        <input
-          [(ngModel)]="l.url"
-          placeholder="https://youtu.be/..."
-          class="flex-1 px-3 py-2 rounded-xl border border-camp-border bg-camp-muted text-sm focus:outline-none focus:border-camp-orange transition-colors"
-        />
-        <input
-          [(ngModel)]="l.label"
-          placeholder="Подпись"
-          class="w-28 px-3 py-2 rounded-xl border border-camp-border bg-camp-muted text-sm focus:outline-none focus:border-camp-orange transition-colors"
-        />
-        <button
-          (click)="removeEditNewLink(i)"
-          class="text-red-400 hover:text-red-600 transition-colors flex-shrink-0"
-        >
-          <app-icon name="x" [size]="16"></app-icon>
-        </button>
-      </div>
-    </div>
-
     <div class="flex gap-2 flex-wrap pt-1">
       <button
         (click)="saveEdit()"
@@ -710,7 +588,7 @@
         <app-icon name="check" [size]="16"></app-icon> Сохранить
       </button>
       <button
-        (click)="editItem = null; editNewLinks = []"
+        (click)="editItem = null"
         class="px-5 py-2.5 rounded-full text-sm font-semibold bg-camp-muted text-camp-gray border border-camp-border hover:bg-camp-border transition-colors"
       >
         Отмена
