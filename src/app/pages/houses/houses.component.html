@@ -66,7 +66,7 @@
           placeholder="Соколы"
           (focus)="
             $any($event.target).style.borderColor = campColor;
-            $any($event.target).style.backgroundColor = 'white'
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
           "
           (blur)="
             $any($event.target).style.borderColor = 'transparent';
@@ -85,7 +85,7 @@
           placeholder="Девиз или короткое описание"
           (focus)="
             $any($event.target).style.borderColor = campColor;
-            $any($event.target).style.backgroundColor = 'white'
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
           "
           (blur)="
             $any($event.target).style.borderColor = 'transparent';
@@ -110,7 +110,7 @@
             type="button"
             class="w-16 h-16 rounded-2xl border-2 overflow-hidden flex items-center justify-center shrink-0 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             [style.borderColor]="
-              formFiles.length || form.emoji ? campColor : '#E7E5E4'
+              formFiles.length || form.emoji ? campColor : 'var(--border-color)'
             "
             [style.backgroundColor]="campColorBg"
             (click)="toggleFormEmojiPicker($event)"
@@ -145,7 +145,7 @@
           <button
             *ngIf="form.emoji && !formFiles.length"
             type="button"
-            class="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-[#FEE2E2] text-camp-error hover:bg-[#FECACA] transition-colors shadow-sm z-10"
+            class="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-camp-errorSoft text-camp-error hover:bg-camp-errorSoft transition-colors shadow-sm z-10"
             (click)="form.emoji = ''; $event.stopPropagation()"
           >
             <app-icon name="x" [size]="10"></app-icon>
@@ -160,8 +160,10 @@
           </div>
           <label
             class="cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors w-fit"
-            [style.backgroundColor]="formFiles.length ? campColorBg : '#F5F5F0'"
-            [style.color]="formFiles.length ? campColor : '#78716C'"
+            [style.backgroundColor]="
+              formFiles.length ? campColorBg : 'var(--bg-muted)'
+            "
+            [style.color]="formFiles.length ? campColor : 'var(--text-gray)'"
           >
             <app-icon name="image-plus" [size]="14"></app-icon>
             {{ formFiles.length ? "Сменить картинку" : "Загрузить картинку" }}
@@ -179,7 +181,7 @@
             {{ formFiles[0].name }} ({{ fileSize(formFiles[0]) }})
             <button
               type="button"
-              class="w-5 h-5 flex items-center justify-center rounded-full bg-[#FEE2E2] text-camp-error hover:bg-[#FECACA] transition-colors"
+              class="w-5 h-5 flex items-center justify-center rounded-full bg-camp-errorSoft text-camp-error hover:bg-camp-errorSoft transition-colors"
               (click)="removeFormAvatar()"
             >
               <app-icon name="x" [size]="11"></app-icon>
@@ -325,7 +327,7 @@
       <div class="space-y-2.5">
         <div
           *ngFor="let h of sortedHouses; let i = index"
-          class="flex items-center gap-3 cursor-pointer group rounded-xl px-2 py-1 hover:bg-white/70 transition-colors"
+          class="flex items-center gap-3 cursor-pointer group rounded-xl px-2 py-1 hover:bg-camp-muted transition-colors"
           (click)="select(h)"
         >
           <span
@@ -358,10 +360,7 @@
             class="w-20 sm:w-28 text-sm font-bold text-camp-stone truncate group-hover:underline"
             >{{ h.name }}</span
           >
-          <div
-            class="flex-1 h-2.5 rounded-full overflow-hidden"
-            style="background: rgba(0, 0, 0, 0.06)"
-          >
+          <div class="flex-1 h-2.5 rounded-full overflow-hidden bg-camp-muted">
             <div
               class="h-2.5 rounded-full transition-all duration-700"
               [style.width.%]="((h.house_points ?? 0) / maxHousePoints) * 100"
@@ -406,8 +405,10 @@
         "
         type="button"
         class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-        [style.backgroundColor]="viewMode === mode[0] ? 'white' : 'transparent'"
-        [style.color]="viewMode === mode[0] ? campColor : '#78716C'"
+        [style.backgroundColor]="
+          viewMode === mode[0] ? 'var(--bg-card)' : 'transparent'
+        "
+        [style.color]="viewMode === mode[0] ? campColor : 'var(--text-gray)'"
         [style.boxShadow]="
           viewMode === mode[0] ? '0 1px 4px rgba(0,0,0,0.10)' : 'none'
         "
@@ -559,7 +560,7 @@
             <app-icon name="pencil" [size]="14"></app-icon>
           </button>
           <button
-            class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#FEE2E2] hover:bg-[#FECACA] text-camp-error transition-colors"
+            class="w-8 h-8 flex items-center justify-center rounded-lg bg-camp-errorSoft hover:bg-camp-errorSoft text-camp-error transition-colors"
             (click)="remove(h.id)"
             title="Удалить"
           >
@@ -652,7 +653,7 @@
           <app-icon name="pencil" [size]="13"></app-icon>
         </button>
         <button
-          class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#FEE2E2] hover:bg-[#FECACA] text-camp-error transition-colors"
+          class="w-7 h-7 flex items-center justify-center rounded-lg bg-camp-errorSoft hover:bg-camp-errorSoft text-camp-error transition-colors"
           (click)="remove(h.id)"
           title="Удалить"
         >
@@ -676,7 +677,7 @@
     <div
       *ngFor="let h of sortedHouses; let i = index"
       class="flex items-center gap-3 px-3 py-2.5 rounded-xl border cursor-pointer hover:shadow-sm transition-all group"
-      [style.borderColor]="houseColor(i) + '40'"
+      [style.borderColor]="houseBorderColor(i)"
       [style.backgroundColor]="houseColorBg(i)"
       (click)="select(h)"
     >
@@ -687,7 +688,7 @@
       >
       <div
         class="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden shrink-0"
-        [style.backgroundColor]="'white'"
+        [style.backgroundColor]="'var(--bg-card)'"
       >
         <img
           *ngIf="h.avatar_path"
@@ -720,13 +721,13 @@
         (click)="$event.stopPropagation()"
       >
         <button
-          class="w-6 h-6 flex items-center justify-center rounded-md bg-white/80 text-camp-gray hover:bg-camp-border transition-colors"
+          class="w-6 h-6 flex items-center justify-center rounded-md bg-white/70 text-camp-gray hover:bg-camp-border transition-colors"
           (click)="startEdit(h)"
         >
           <app-icon name="pencil" [size]="11"></app-icon>
         </button>
         <button
-          class="w-6 h-6 flex items-center justify-center rounded-md bg-[#FEE2E2] text-camp-error hover:bg-[#FECACA] transition-colors"
+          class="w-6 h-6 flex items-center justify-center rounded-md bg-camp-errorSoft text-camp-error hover:bg-camp-errorSoft transition-colors"
           (click)="remove(h.id)"
         >
           <app-icon name="trash-2" [size]="11"></app-icon>
@@ -761,7 +762,7 @@
       </div>
       <button
         type="button"
-        class="w-7 h-7 flex items-center justify-center rounded-xl bg-white/70 text-camp-gray hover:bg-white transition-colors"
+        class="w-7 h-7 flex items-center justify-center rounded-xl bg-white/70 text-camp-gray hover:bg-camp-border transition-colors"
         (click)="showFormEmojiPicker = false; showEditEmojiPicker = false"
       >
         <app-icon name="x" [size]="14"></app-icon>
@@ -840,7 +841,7 @@
             [(ngModel)]="editItem.name"
             (focus)="
               $any($event.target).style.borderColor = campColor;
-              $any($event.target).style.backgroundColor = 'white'
+              $any($event.target).style.backgroundColor = 'var(--bg-card)'
             "
             (blur)="
               $any($event.target).style.borderColor = 'transparent';
@@ -858,7 +859,7 @@
             [(ngModel)]="editItem.description"
             (focus)="
               $any($event.target).style.borderColor = campColor;
-              $any($event.target).style.backgroundColor = 'white'
+              $any($event.target).style.backgroundColor = 'var(--bg-card)'
             "
             (blur)="
               $any($event.target).style.borderColor = 'transparent';
@@ -883,7 +884,7 @@
                 [style.borderColor]="
                   editFiles.length || editItem.avatar_path || editItem.emoji
                     ? campColor
-                    : '#E7E5E4'
+                    : 'var(--border-color)'
                 "
                 [style.backgroundColor]="campColorBg"
                 (click)="toggleEditEmojiPicker($event)"
@@ -931,7 +932,7 @@
                   editItem.emoji && !editFiles.length && !editItem.avatar_path
                 "
                 type="button"
-                class="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-[#FEE2E2] text-camp-error hover:bg-[#FECACA] transition-colors shadow-sm z-10"
+                class="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-camp-errorSoft text-camp-error hover:bg-camp-errorSoft transition-colors shadow-sm z-10"
                 (click)="editItem.emoji = ''; $event.stopPropagation()"
               >
                 <app-icon name="x" [size]="10"></app-icon>
@@ -947,9 +948,11 @@
               <label
                 class="cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors w-fit"
                 [style.backgroundColor]="
-                  editFiles.length ? campColorBg : '#F5F5F0'
+                  editFiles.length ? campColorBg : 'var(--bg-muted)'
                 "
-                [style.color]="editFiles.length ? campColor : '#78716C'"
+                [style.color]="
+                  editFiles.length ? campColor : 'var(--text-gray)'
+                "
               >
                 <app-icon name="image-plus" [size]="14"></app-icon>
                 {{
@@ -973,7 +976,7 @@
                 {{ editFiles[0].name }}
                 <button
                   type="button"
-                  class="w-5 h-5 flex items-center justify-center rounded-full bg-[#FEE2E2] text-camp-error hover:bg-[#FECACA] transition-colors"
+                  class="w-5 h-5 flex items-center justify-center rounded-full bg-camp-errorSoft text-camp-error hover:bg-camp-errorSoft transition-colors"
                   (click)="removeEditAvatar()"
                 >
                   <app-icon name="x" [size]="11"></app-icon>
@@ -1124,7 +1127,7 @@
             </div>
             <button
               *ngIf="auth.isAdmin()"
-              class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#FEE2E2] hover:bg-[#FECACA] text-camp-error transition-colors shrink-0"
+              class="w-7 h-7 flex items-center justify-center rounded-lg bg-camp-errorSoft hover:bg-camp-errorSoft text-camp-error transition-colors shrink-0"
               (click)="removeResponsible(r.id)"
               title="Удалить"
             >
@@ -1226,9 +1229,9 @@
         <div
           class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
           [style.backgroundColor]="
-            confirmState.danger ? '#FEE2E2' : campColorBg
+            confirmState.danger ? 'var(--bg-error-soft)' : campColorBg
           "
-          [style.color]="confirmState.danger ? '#DC2626' : campColor"
+          [style.color]="confirmState.danger ? 'var(--color-error)' : campColor"
         >
           <app-icon name="trash-2" [size]="18"></app-icon>
         </div>
@@ -1245,7 +1248,9 @@
       <div class="flex gap-2 mt-5">
         <button
           class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px"
-          [style.backgroundColor]="confirmState.danger ? '#DC2626' : campColor"
+          [style.backgroundColor]="
+            confirmState.danger ? 'var(--color-error)' : campColor
+          "
           (click)="confirmYes()"
         >
           {{ confirmState.confirmLabel }}

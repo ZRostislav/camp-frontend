@@ -38,6 +38,12 @@
   --border-info: #c3d9f5;
   --color-warning: #d97706;
   --color-warning-bg: #fef3c7;
+  --color-sky: #38bdf8;
+  --color-sky-bg: #e0f7ff;
+  --color-orange: #f97316;
+  --color-orange-bg: #fff0e6;
+  --color-violet: #8b5cf6;
+  --color-violet-bg: #f5f3ff;
 
   /* Shadows */
   --shadow-btn: 0 2px 8px rgba(0, 0, 0, 0.12);
@@ -78,6 +84,12 @@ html.dark {
   --border-info: #2c4a6e;
   --color-warning: #fbbf24;
   --color-warning-bg: #422f0c;
+  --color-sky: #7dd3fc;
+  --color-sky-bg: #123a47;
+  --color-orange: #fb923c;
+  --color-orange-bg: #3a2210;
+  --color-violet: #a78bfa;
+  --color-violet-bg: #2e2250;
 
   --shadow-btn: 0 2px 8px rgba(0, 0, 0, 0.4);
 
@@ -161,6 +173,39 @@ html.dark {
 /* Статус-бейджи */
 .bg-camp-successSoft {
   background-color: var(--bg-success-soft) !important;
+}
+
+/* "Новое" / warning-бейджи (раньше bg-amber-100 text-amber-700 — не
+   реагировали на тёмную тему, т.к. это статичные Tailwind-классы) */
+.bg-camp-warningSoft {
+  background-color: var(--color-warning-bg) !important;
+}
+.text-camp-warning {
+  color: var(--color-warning) !important;
+}
+
+/* Акцентные иконки карточек статистики на дашборде (участники/домики/
+   события) — раньше bg-[#E0F7FF] text-[#38BDF8] и т.п., хардкод хексов
+   через Tailwind arbitrary-classes, поэтому не подхватывались тёмной
+   темой (в отличие от inline style="...", эти классы не ловятся
+   селектором [style*="..."]). */
+.bg-camp-skySoft {
+  background-color: var(--color-sky-bg) !important;
+}
+.text-camp-sky {
+  color: var(--color-sky) !important;
+}
+.bg-camp-orangeSoft {
+  background-color: var(--color-orange-bg) !important;
+}
+.text-camp-orange {
+  color: var(--color-orange) !important;
+}
+.bg-camp-violetSoft {
+  background-color: var(--color-violet-bg) !important;
+}
+.text-camp-violet {
+  color: var(--color-violet) !important;
 }
 
 /* border-camp-* */

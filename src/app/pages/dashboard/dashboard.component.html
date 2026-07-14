@@ -40,7 +40,7 @@
         class="bg-white rounded-2xl p-3 sm:p-5 shadow-sm border border-camp-border flex items-center gap-2 sm:gap-4"
       >
         <div
-          class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 bg-[#E0F7FF] text-[#38BDF8]"
+          class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 bg-camp-skySoft text-camp-sky"
         >
           <app-icon name="users" [size]="18"></app-icon>
         </div>
@@ -60,7 +60,7 @@
         class="bg-white rounded-2xl p-3 sm:p-5 shadow-sm border border-camp-border flex items-center gap-2 sm:gap-4"
       >
         <div
-          class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 bg-[#FFF0E6] text-[#F97316]"
+          class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 bg-camp-orangeSoft text-camp-orange"
         >
           <app-icon name="house" [size]="18"></app-icon>
         </div>
@@ -80,7 +80,7 @@
         class="bg-white rounded-2xl p-3 sm:p-5 shadow-sm border border-camp-border flex items-center gap-2 sm:gap-4"
       >
         <div
-          class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 bg-[#F5F3FF] text-[#8B5CF6]"
+          class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 bg-camp-violetSoft text-camp-violet"
         >
           <app-icon name="zap" [size]="18"></app-icon>
         </div>
@@ -88,7 +88,7 @@
           <div
             class="text-lg sm:text-2xl font-bold font-display text-camp-stone truncate"
           >
-            {{ contests.length }}
+            {{ events.length }}
           </div>
           <div class="text-[0.65rem] sm:text-xs text-camp-gray font-medium">
             Событий
@@ -229,7 +229,7 @@
               isActiveScheduleItem(i) ? campColor : 'transparent'
             "
             [style.backgroundColor]="
-              isActiveScheduleItem(i) ? campColorLight : '#F5F5F0'
+              isActiveScheduleItem(i) ? campColorLight : 'var(--bg-muted)'
             "
           >
             <span
@@ -272,9 +272,9 @@
       </div>
     </div>
 
-    <!-- Contests + News row -->
+    <!-- events + News row -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-      <!-- Contests / Events -->
+      <!-- events / Events -->
       <div
         class="bg-white rounded-2xl shadow-sm border border-camp-border p-4 sm:p-5"
       >
@@ -285,7 +285,7 @@
             ⚡ События
             <a
               *ngIf="hasNewEvents"
-              [routerLink]="['/contests']"
+              [routerLink]="['/events']"
               [title]="
                 newEventsCount + ' новых событий — жми, чтобы посмотреть'
               "
@@ -295,7 +295,7 @@
             </a>
           </h2>
           <a
-            [routerLink]="['/contests']"
+            [routerLink]="['/events']"
             class="text-xs px-3 py-1 rounded-full font-semibold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors no-underline"
           >
             Все →
@@ -303,7 +303,7 @@
         </div>
 
         <div
-          *ngIf="contests.length === 0"
+          *ngIf="events.length === 0"
           class="text-sm text-camp-subtle text-center py-6"
         >
           Событий пока нет
@@ -311,7 +311,7 @@
 
         <div class="space-y-2">
           <div
-            *ngFor="let c of contests | slice: 0 : 4"
+            *ngFor="let c of events | slice: 0 : 4"
             class="flex items-center gap-3 py-1"
           >
             <div
@@ -329,7 +329,7 @@
                 </span>
                 <span
                   *ngIf="isNewItem(c)"
-                  class="inline-flex items-center text-[0.6rem] px-1.5 py-0.5 rounded-full font-bold bg-amber-100 text-amber-700 shrink-0"
+                  class="inline-flex items-center text-[0.6rem] px-1.5 py-0.5 rounded-full font-bold bg-camp-warningSoft text-camp-warning shrink-0"
                   >🆕 новое</span
                 >
               </div>
@@ -393,7 +393,8 @@
               {{ n.pinned ? "📌" : "📄" }}
               <span
                 *ngIf="isUnreadNews(n)"
-                class="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-red-500 border-2 border-white animate-unread-dot"
+                class="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-red-500 border-2 animate-unread-dot"
+                [style.borderColor]="'var(--bg-card)'"
                 title="Непрочитано"
               ></span>
             </div>
@@ -407,7 +408,7 @@
                 >
                 <span
                   *ngIf="isUnreadNews(n)"
-                  class="inline-block text-[0.6rem] px-1.5 py-0.5 rounded-full font-bold bg-red-100 text-red-600"
+                  class="inline-block text-[0.6rem] px-1.5 py-0.5 rounded-full font-bold bg-camp-errorSoft text-camp-error"
                   >непрочитано</span
                 >
                 <span

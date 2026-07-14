@@ -163,7 +163,7 @@
       </a>
 
       <a
-        routerLink="/contests"
+        routerLink="/events"
         routerLinkActive="sidebar-active"
         class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150"
         style="color: rgba(255, 255, 255, 0.8)"
@@ -441,29 +441,27 @@
       </a>
 
       <a
-        routerLink="/contests"
+        routerLink="/events"
         routerLinkActive="participant-tab-active"
-        #contestsTab="routerLinkActive"
+        #eventsTab="routerLinkActive"
         class="flex flex-col items-center gap-0.5 rounded-2xl select-none"
         style="min-width: 52px; min-height: 52px"
       >
         <div
           class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-200"
           [style.backgroundColor]="
-            contestsTab.isActive ? campColor : 'transparent'
+            eventsTab.isActive ? campColor : 'transparent'
           "
         >
           <app-icon
             name="trophy"
             [size]="20"
-            [color]="contestsTab.isActive ? '#ffffff' : 'var(--text-subtle)'"
+            [color]="eventsTab.isActive ? '#ffffff' : 'var(--text-subtle)'"
           />
         </div>
         <span
           class="text-[10px] font-extrabold"
-          [style.color]="
-            contestsTab.isActive ? campColor : 'var(--text-subtle)'
-          "
+          [style.color]="eventsTab.isActive ? campColor : 'var(--text-subtle)'"
           >События</span
         >
       </a>
@@ -677,7 +675,7 @@
           />Расписание
         </a>
         <a
-          routerLink="/contests"
+          routerLink="/events"
           routerLinkActive="sidebar-active"
           (click)="mobileMenuOpen = false"
           class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150"

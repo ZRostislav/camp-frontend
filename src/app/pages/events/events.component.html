@@ -1,0 +1,720 @@
+<div
+  class="p-4 sm:p-6 max-w-7xl mx-auto flex flex-col gap-5 font-nunito animate-fade-in-up"
+>
+  <!-- Messages -->
+  <div
+    *ngIf="error"
+    class="flex items-center gap-2 bg-camp-errorBg text-camp-error rounded-xl px-4 py-3 text-sm font-bold animate-shake"
+  >
+    <app-icon name="circle-alert" [size]="15"></app-icon>
+    {{ error }}
+  </div>
+  <div
+    *ngIf="msg"
+    class="flex items-center gap-2 bg-camp-successBg text-camp-success rounded-xl px-4 py-3 text-sm font-bold animate-fade-in-up"
+  >
+    <app-icon name="circle-check" [size]="15"></app-icon>
+    {{ msg }}
+  </div>
+
+  <!-- ── HEADER ── -->
+  <div
+    class="flex items-start justify-between flex-wrap gap-3 animate-fade-in-down"
+  >
+    <div>
+      <h1
+        style="font-family: var(--font-display, &quot;Neucha&quot;, sans-serif)"
+        class="font-display text-[1.4rem] sm:text-[1.75rem] font-bold text-camp-stone flex items-center gap-2 leading-tight"
+      >
+        <app-icon
+          name="trophy"
+          [size]="30"
+          [style.color]="campColor"
+        ></app-icon>
+        События
+      </h1>
+      <p class="text-sm mt-1 text-camp-gray font-medium">
+        Мероприятия лагеря — расписание, статус и победители
+      </p>
+    </div>
+    <button
+      *ngIf="auth.isAdmin() && !showCreateForm"
+      (click)="showCreateForm = true"
+      class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white shadow-camp-btn transition-all hover:-translate-y-px active:translate-y-0 whitespace-nowrap"
+      [style.backgroundColor]="campColor"
+    >
+      <app-icon name="plus" [size]="16"></app-icon>
+      Добавить событие
+    </button>
+  </div>
+
+  <!-- ── CREATE FORM ── -->
+  <div
+    *ngIf="auth.isAdmin() && showCreateForm"
+    class="bg-white rounded-2xl border border-camp-border shadow-md p-5 flex flex-col gap-4 animate-fade-in-up"
+  >
+    <div class="flex items-center justify-between">
+      <h2
+        class="font-display text-[1.05rem] font-bold flex items-center gap-2 text-camp-stone"
+      >
+        <app-icon
+          name="circle-plus"
+          [size]="20"
+          [style.color]="campColor"
+        ></app-icon>
+        Новое событие
+      </h2>
+      <button
+        (click)="showCreateForm = false; resetForm()"
+        class="w-8 h-8 flex items-center justify-center rounded-xl bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+      >
+        <app-icon name="x" [size]="14"></app-icon>
+      </button>
+    </div>
+
+    <!-- Emoji + Title -->
+    <div class="flex items-center gap-3">
+      <div class="relative emoji-field shrink-0">
+        <button
+          type="button"
+          class="w-16 h-16 rounded-2xl border-2 overflow-hidden flex items-center justify-center shrink-0 transition-all hover:scale-105 active:scale-95"
+          [style.borderColor]="form.emoji ? campColor : 'var(--border-color)'"
+          [style.backgroundColor]="campColorBg"
+          (click)="toggleFormEmojiPicker($event)"
+          title="Нажмите для выбора эмодзи"
+        >
+          <span *ngIf="form.emoji" class="text-3xl leading-none">{{
+            form.emoji
+          }}</span>
+          <div *ngIf="!form.emoji" class="flex flex-col items-center gap-0.5">
+            <app-icon
+              name="smile"
+              [size]="20"
+              class="text-camp-subtle"
+            ></app-icon>
+            <span
+              class="text-[0.55rem] font-bold text-camp-subtle uppercase tracking-wide"
+              >эмодзи</span
+            >
+          </div>
+        </button>
+        <button
+          *ngIf="form.emoji"
+          type="button"
+          class="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-camp-errorSoft text-camp-error hover:bg-camp-errorSoft transition-colors shadow-sm z-10"
+          (click)="form.emoji = ''; $event.stopPropagation()"
+        >
+          <app-icon name="x" [size]="10"></app-icon>
+        </button>
+      </div>
+      <input
+        [(ngModel)]="form.title"
+        placeholder="Название события"
+        class="flex-1 px-4 py-3 bg-camp-input border-2 border-transparent rounded-xl text-camp-stone text-base font-bold placeholder-camp-subtle outline-none transition-colors"
+        (focus)="
+          $any($event.target).style.borderColor = campColor;
+          $any($event.target).style.backgroundColor = 'var(--bg-card)'
+        "
+        (blur)="
+          $any($event.target).style.borderColor = 'transparent';
+          $any($event.target).style.backgroundColor = ''
+        "
+      />
+    </div>
+
+    <textarea
+      [(ngModel)]="form.description"
+      placeholder="Описание (необязательно)"
+      rows="3"
+      class="w-full px-4 py-3 bg-camp-input border-2 border-transparent rounded-xl text-camp-stone text-sm placeholder-camp-subtle outline-none transition-colors resize-none leading-relaxed"
+      (focus)="
+        $any($event.target).style.borderColor = campColor;
+        $any($event.target).style.backgroundColor = 'var(--bg-card)'
+      "
+      (blur)="
+        $any($event.target).style.borderColor = 'transparent';
+        $any($event.target).style.backgroundColor = ''
+      "
+    >
+    </textarea>
+
+    <!-- Время проведения + баллы -->
+    <div class="flex flex-wrap gap-3">
+      <label class="flex-1 min-w-[220px] flex flex-col gap-1.5">
+        <span
+          class="text-[0.7rem] font-bold uppercase tracking-widest text-camp-gray flex items-center gap-1.5"
+        >
+          <app-icon name="calendar-clock" [size]="13"></app-icon>
+          Когда проводится
+        </span>
+        <input
+          type="datetime-local"
+          [(ngModel)]="form.event_time"
+          class="px-4 py-2.5 bg-camp-input border-2 border-transparent rounded-xl text-camp-stone text-sm outline-none transition-colors"
+          (focus)="
+            $any($event.target).style.borderColor = campColor;
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
+          "
+          (blur)="
+            $any($event.target).style.borderColor = 'transparent';
+            $any($event.target).style.backgroundColor = ''
+          "
+        />
+      </label>
+      <label class="w-full sm:w-40 flex flex-col gap-1.5">
+        <span
+          class="text-[0.7rem] font-bold uppercase tracking-widest text-camp-gray flex items-center gap-1.5"
+        >
+          <app-icon name="trophy" [size]="13"></app-icon>
+          Баллы за победу
+        </span>
+        <input
+          type="number"
+          min="0"
+          [(ngModel)]="form.points"
+          placeholder="0"
+          class="px-4 py-2.5 bg-camp-input border-2 border-transparent rounded-xl text-camp-stone text-sm font-bold outline-none transition-colors"
+          (focus)="
+            $any($event.target).style.borderColor = campColor;
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
+          "
+          (blur)="
+            $any($event.target).style.borderColor = 'transparent';
+            $any($event.target).style.backgroundColor = ''
+          "
+        />
+      </label>
+    </div>
+
+    <!-- YouTube Links -->
+    <div class="flex flex-col gap-2">
+      <div class="flex items-center justify-between">
+        <span
+          class="text-[0.7rem] font-bold uppercase tracking-widest text-camp-gray"
+          >YouTube ссылки</span
+        >
+        <button
+          (click)="addFormLink()"
+          class="inline-flex items-center gap-1 px-3 py-1 rounded-xl text-[0.7rem] font-bold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+        >
+          <app-icon name="plus" [size]="12"></app-icon> Добавить
+        </button>
+      </div>
+      <div
+        *ngFor="let l of formLinks; let i = index"
+        class="flex items-center gap-2"
+      >
+        <input
+          [(ngModel)]="l.url"
+          placeholder="https://youtu.be/..."
+          class="flex-1 px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm text-camp-stone placeholder-camp-subtle outline-none transition-colors"
+          (focus)="
+            $any($event.target).style.borderColor = campColor;
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
+          "
+          (blur)="
+            $any($event.target).style.borderColor = 'transparent';
+            $any($event.target).style.backgroundColor = ''
+          "
+        />
+        <input
+          [(ngModel)]="l.label"
+          placeholder="Подпись"
+          class="w-32 px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm text-camp-stone placeholder-camp-subtle outline-none transition-colors"
+          (focus)="
+            $any($event.target).style.borderColor = campColor;
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
+          "
+          (blur)="
+            $any($event.target).style.borderColor = 'transparent';
+            $any($event.target).style.backgroundColor = ''
+          "
+        />
+        <button
+          (click)="removeFormLink(i)"
+          class="w-7 h-7 flex items-center justify-center rounded-lg bg-camp-errorSoft hover:bg-camp-errorSoft text-camp-error transition-colors shrink-0"
+        >
+          <app-icon name="x" [size]="12"></app-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex gap-2 mt-1">
+      <button
+        (click)="create()"
+        class="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px"
+        [style.backgroundColor]="campColor"
+      >
+        <app-icon name="check" [size]="15"></app-icon> Создать событие
+      </button>
+      <button
+        (click)="showCreateForm = false; resetForm()"
+        class="px-4 py-2 rounded-xl text-sm font-bold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+      >
+        Отмена
+      </button>
+    </div>
+  </div>
+
+  <!-- ── EMPTY STATE ── -->
+  <div
+    *ngIf="events.length === 0"
+    class="text-center py-16 flex flex-col items-center text-camp-subtle"
+  >
+    <span class="text-5xl">🎉</span>
+    <p class="font-medium mt-3">Событий пока нет</p>
+    <p class="text-xs mt-1">
+      Скоро здесь появится расписание мероприятий лагеря
+    </p>
+  </div>
+
+  <!-- ── EVENTS LIST ── -->
+  <div class="flex flex-col gap-5 animate-fade-in-up">
+    <div
+      *ngFor="let c of events"
+      class="bg-white rounded-[22px] border-[1.5px] overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+      [class.border-camp-border]="c.is_read"
+      [style.borderColor]="!c.is_read ? campColor : null"
+      [style.boxShadow]="!c.is_read ? '0 2px 12px ' + campColorBg : null"
+      (click)="markRead(c)"
+    >
+      <!-- BODY -->
+      <div class="p-4 sm:p-5 flex flex-col gap-3">
+        <!-- Top row -->
+        <div class="flex items-start gap-3.5">
+          <div
+            class="w-[52px] h-[52px] rounded-[14px] flex items-center justify-center text-[1.6rem] flex-shrink-0 leading-none"
+            [style.backgroundColor]="campColorBg"
+          >
+            {{ c.emoji || "🎉" }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3
+                class="font-display text-xl font-extrabold text-camp-stone leading-tight"
+              >
+                {{ c.title }}
+              </h3>
+              <span
+                *ngIf="!c.is_read"
+                class="text-[0.6rem] font-extrabold tracking-widest text-white px-2 py-0.5 rounded-full flex-shrink-0"
+                [style.backgroundColor]="campColor"
+                >НОВОЕ</span
+              >
+            </div>
+
+            <!-- Status + time + points -->
+            <div class="flex items-center gap-2 flex-wrap mt-1.5">
+              <span
+                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[0.7rem] font-bold border"
+                [class]="statusClasses(c)"
+              >
+                <app-icon [name]="statusIcon(c)" [size]="12"></app-icon>
+                {{ statusLabel(c) }}
+              </span>
+              <span
+                *ngIf="c.event_time"
+                class="inline-flex items-center gap-1 text-[0.72rem] font-semibold text-camp-gray"
+              >
+                <app-icon name="calendar" [size]="12"></app-icon>
+                {{ c.event_time | date: "d MMMM, HH:mm" : "" : "ru" }}
+              </span>
+              <span
+                *ngIf="c.points"
+                class="inline-flex items-center gap-1 text-[0.72rem] font-bold px-2 py-0.5 rounded-full"
+                [style.backgroundColor]="campColorBg"
+                [style.color]="campColor"
+              >
+                <app-icon name="star" [size]="12"></app-icon>
+                {{ c.points }} {{ pointsWord(c.points) }}
+              </span>
+            </div>
+
+            <p
+              *ngIf="c.description"
+              class="text-sm text-camp-gray mt-2 leading-relaxed line-clamp-3"
+            >
+              {{ c.description }}
+            </p>
+          </div>
+          <!-- Admin actions -->
+          <div
+            *ngIf="auth.isAdmin()"
+            class="flex gap-1.5 flex-shrink-0"
+            (click)="$event.stopPropagation()"
+          >
+            <button
+              (click)="startEdit(c)"
+              class="p-1.5 rounded-lg bg-camp-muted border border-camp-border text-camp-gray hover:bg-camp-border hover:text-camp-stone transition-all flex items-center justify-center"
+            >
+              <app-icon name="pencil" [size]="15"></app-icon>
+            </button>
+            <button
+              (click)="remove(c.id)"
+              class="p-1.5 rounded-lg bg-camp-muted border border-camp-border text-camp-gray hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all flex items-center justify-center"
+            >
+              <app-icon name="trash-2" [size]="15"></app-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- YouTube links -->
+        <div
+          *ngIf="c.youtube_links?.length"
+          class="flex flex-wrap gap-2"
+          (click)="$event.stopPropagation()"
+        >
+          <a
+            *ngFor="let l of c.youtube_links"
+            [href]="l.url"
+            target="_blank"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 border border-red-200 text-red-600 text-xs font-semibold hover:bg-red-100 transition-colors no-underline"
+          >
+            <svg
+              class="w-3.5 h-3.5 flex-shrink-0"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path
+                d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4L15.8 12l-6.2 3.6z"
+              />
+            </svg>
+            {{ l.label || "Видео" }}
+          </a>
+        </div>
+
+        <!-- Winners strip -->
+        <div
+          *ngIf="c.winners?.length"
+          class="flex flex-col gap-2 pt-2 border-t border-camp-border"
+        >
+          <span
+            class="text-[0.7rem] font-bold uppercase tracking-widest text-camp-gray flex items-center gap-1.5"
+          >
+            <app-icon name="trophy" [size]="12"></app-icon>
+            Победители
+          </span>
+          <div class="flex flex-wrap gap-2" (click)="$event.stopPropagation()">
+            <div
+              *ngFor="let w of c.winners"
+              class="inline-flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold"
+            >
+              <span>{{ w.house_emoji || "🏠" }}</span>
+              <span>{{ w.house_name }}</span>
+              <span class="text-amber-600 font-semibold">+{{ w.points }}</span>
+              <button
+                *ngIf="auth.isAdmin()"
+                (click)="removeWinner(c, w.house_id)"
+                class="p-0.5 rounded-full text-amber-500 hover:text-red-600 hover:bg-white transition-colors"
+              >
+                <app-icon name="x" [size]="12"></app-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin: winners management -->
+        <div
+          *ngIf="auth.isAdmin()"
+          class="pt-2 border-t border-camp-border flex flex-col gap-2"
+          (click)="$event.stopPropagation()"
+        >
+          <ng-container *ngIf="!isWinnerPickerOpen(c)">
+            <button
+              (click)="openWinnerPicker(c)"
+              class="self-start inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.72rem] font-bold bg-camp-muted text-camp-gray border border-camp-border hover:bg-camp-border transition-colors"
+            >
+              <app-icon name="trophy" [size]="13"></app-icon>
+              {{
+                c.winners?.length
+                  ? "Изменить победителей"
+                  : "Подтвердить победителей"
+              }}
+            </button>
+            <button
+              *ngIf="c.winners?.length"
+              (click)="clearAllWinners(c)"
+              class="self-start inline-flex items-center gap-1.5 text-[0.7rem] font-semibold text-red-500 hover:text-red-700 transition-colors"
+            >
+              <app-icon name="rotate-ccw" [size]="12"></app-icon>
+              Снять всех победителей
+            </button>
+          </ng-container>
+
+          <div
+            *ngIf="isWinnerPickerOpen(c)"
+            class="flex flex-col gap-2.5 p-3 rounded-xl bg-camp-muted border border-camp-border"
+          >
+            <span
+              class="text-[0.7rem] font-bold uppercase tracking-widest text-camp-gray"
+              >Выберите домики-победители</span
+            >
+            <div class="flex flex-wrap gap-1.5">
+              <button
+                *ngFor="let h of houses"
+                (click)="toggleHouseSelection(c, h.id)"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors"
+                [class.bg-white]="!isHouseSelected(c, h.id)"
+                [class.border-camp-border]="!isHouseSelected(c, h.id)"
+                [class.text-camp-gray]="!isHouseSelected(c, h.id)"
+                [style.backgroundColor]="
+                  isHouseSelected(c, h.id) ? campColor : null
+                "
+                [style.borderColor]="
+                  isHouseSelected(c, h.id) ? campColor : null
+                "
+                [style.color]="isHouseSelected(c, h.id) ? '#fff' : null"
+              >
+                <span>{{ h.emoji || "🏠" }}</span>
+                {{ h.name }}
+              </button>
+              <span *ngIf="!houses.length" class="text-xs text-camp-subtle"
+                >Домики не загружены</span
+              >
+            </div>
+            <div class="flex gap-2 pt-1">
+              <button
+                (click)="confirmWinners(c)"
+                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white shadow-camp-btn hover:opacity-90 active:scale-95 transition-all"
+                [style.backgroundColor]="campColor"
+              >
+                <app-icon name="check" [size]="14"></app-icon>
+                Начислить баллы и подтвердить
+              </button>
+              <button
+                (click)="closeWinnerPicker(c)"
+                class="px-4 py-2 rounded-full text-xs font-semibold bg-white text-camp-gray border border-camp-border hover:bg-camp-border transition-colors"
+              >
+                Отмена
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div
+          class="flex items-center justify-between pt-2 border-t border-camp-border"
+        >
+          <span class="text-[0.72rem] text-camp-subtle font-medium">
+            Создано {{ c.created_at | date: "d MMMM yyyy" : "" : "ru" }}
+          </span>
+          <div class="flex items-center gap-1.5">
+            <span
+              *ngIf="c.youtube_links?.length"
+              class="inline-flex items-center gap-1 text-[0.7rem] font-semibold text-red-600 bg-red-50 border border-red-200 rounded-full px-2 py-0.5"
+            >
+              <app-icon name="youtube" [size]="11"></app-icon
+              >{{ c.youtube_links.length }}
+            </span>
+            <span *ngIf="c.is_read" class="text-green-500 flex items-center">
+              <app-icon name="check-check" [size]="15"></app-icon>
+            </span>
+          </div>
+        </div>
+
+        <!-- Admin: youtube links management -->
+        <div
+          *ngIf="auth.isAdmin() && c.youtube_links?.length"
+          class="pt-2 border-t border-camp-border flex flex-col gap-2"
+          (click)="$event.stopPropagation()"
+        >
+          <span
+            class="text-[0.7rem] font-bold uppercase tracking-widest text-camp-gray"
+            >Удалить ссылки</span
+          >
+          <div class="flex flex-wrap gap-1.5">
+            <button
+              *ngFor="let l of c.youtube_links"
+              (click)="deleteYoutubeLink(c.id, l.id)"
+              class="flex items-center gap-1 px-2 py-1 bg-red-50 border border-red-200 rounded-lg text-xs text-red-500 hover:bg-red-100 hover:text-red-700 transition-colors"
+            >
+              ✕ {{ l.label || "ссылка" }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── EDIT MODAL (вне контейнера — перекрывает всё) ── -->
+<div
+  *ngIf="editItem"
+  class="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4 animate-fade-in-up"
+  (click)="editItem = null; editNewLinks = []"
+>
+  <div
+    class="bg-white rounded-[22px] shadow-2xl w-full max-w-[540px] max-h-[90vh] overflow-y-auto p-5 sm:p-6 flex flex-col gap-4"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="flex items-center justify-between">
+      <h2
+        class="font-display text-[1.05rem] font-bold flex items-center gap-2 text-camp-stone"
+      >
+        <app-icon
+          name="pencil"
+          [size]="18"
+          [style.color]="campColor"
+        ></app-icon>
+        Редактирование события
+      </h2>
+      <button
+        (click)="editItem = null; editNewLinks = []"
+        class="p-1.5 rounded-lg text-camp-gray hover:text-camp-stone hover:bg-camp-muted transition-all"
+      >
+        <app-icon name="x" [size]="20"></app-icon>
+      </button>
+    </div>
+
+    <!-- Emoji + Title -->
+    <div class="flex items-center gap-3">
+      <div class="relative shrink-0">
+        <button
+          (click)="toggleEditEmojiPicker($event)"
+          class="w-[52px] h-[52px] rounded-xl text-[1.6rem] flex items-center justify-center border-2 border-camp-border hover:border-camp-orange bg-camp-muted transition-colors"
+        >
+          {{ editItem.emoji || "🎉" }}
+        </button>
+        <div
+          *ngIf="showEditEmojiPicker"
+          class="emoji-picker-wrap absolute top-full left-0 z-50 mt-1.5 shadow-xl rounded-xl overflow-hidden"
+          (click)="$event.stopPropagation()"
+        >
+          <emoji-mart
+            (emojiSelect)="onEditEmojiSelect($event)"
+            [showPreview]="false"
+            [i18n]="{
+              search: 'Поиск',
+              categories: { search: 'Результаты', recent: 'Частые' },
+            }"
+          >
+          </emoji-mart>
+        </div>
+      </div>
+      <input
+        [(ngModel)]="editItem.title"
+        placeholder="Название"
+        class="flex-1 px-4 py-3 rounded-xl border border-camp-border bg-camp-muted text-camp-stone text-base font-bold placeholder-camp-subtle focus:outline-none focus:border-camp-orange transition-colors"
+      />
+    </div>
+
+    <textarea
+      [(ngModel)]="editItem.description"
+      placeholder="Описание"
+      rows="3"
+      class="w-full px-4 py-3 rounded-xl border border-camp-border bg-camp-muted text-camp-stone text-sm placeholder-camp-subtle focus:outline-none focus:border-camp-orange transition-colors resize-none leading-relaxed"
+    >
+    </textarea>
+
+    <!-- Время проведения + баллы -->
+    <div class="flex flex-wrap gap-3">
+      <label class="flex-1 min-w-[220px] flex flex-col gap-1.5">
+        <span
+          class="text-[0.7rem] font-bold uppercase tracking-widest text-camp-gray flex items-center gap-1.5"
+        >
+          <app-icon name="calendar-clock" [size]="13"></app-icon>
+          Когда проводится
+        </span>
+        <input
+          type="datetime-local"
+          [(ngModel)]="editItem.event_time"
+          class="px-4 py-2.5 rounded-xl border border-camp-border bg-camp-muted text-camp-stone text-sm focus:outline-none focus:border-camp-orange transition-colors"
+        />
+      </label>
+      <label class="w-full sm:w-40 flex flex-col gap-1.5">
+        <span
+          class="text-[0.7rem] font-bold uppercase tracking-widest text-camp-gray flex items-center gap-1.5"
+        >
+          <app-icon name="trophy" [size]="13"></app-icon>
+          Баллы за победу
+        </span>
+        <input
+          type="number"
+          min="0"
+          [(ngModel)]="editItem.points"
+          class="px-4 py-2.5 rounded-xl border border-camp-border bg-camp-muted text-camp-stone text-sm font-bold focus:outline-none focus:border-camp-orange transition-colors"
+        />
+      </label>
+    </div>
+
+    <!-- Existing YouTube -->
+    <div *ngIf="editItem.youtube_links?.length" class="flex flex-col gap-2">
+      <span
+        class="text-[0.7rem] font-bold uppercase tracking-widest text-camp-gray"
+        >Ссылки</span
+      >
+      <div
+        *ngFor="let l of editItem.youtube_links"
+        class="flex items-center gap-2 px-3 py-2 bg-camp-muted rounded-xl"
+      >
+        <span>🔗</span>
+        <a
+          [href]="l.url"
+          target="_blank"
+          class="flex-1 text-xs text-camp-gray truncate underline underline-offset-2"
+        >
+          {{ l.label || l.url }}
+        </a>
+        <button
+          (click)="deleteYoutubeLink(editItem.id, l.id)"
+          class="text-red-400 hover:text-red-600 transition-colors"
+        >
+          <app-icon name="x" [size]="14"></app-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- New YouTube links -->
+    <div class="flex flex-col gap-2">
+      <div class="flex items-center justify-between">
+        <span
+          class="text-[0.7rem] font-bold uppercase tracking-widest text-camp-gray"
+          >Добавить ссылки</span
+        >
+        <button
+          (click)="addEditLink()"
+          class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[0.7rem] font-semibold bg-camp-muted text-camp-gray border border-camp-border hover:bg-camp-border transition-colors"
+        >
+          <app-icon name="plus" [size]="12"></app-icon> Добавить
+        </button>
+      </div>
+      <div
+        *ngFor="let l of editNewLinks; let i = index"
+        class="flex items-center gap-2"
+      >
+        <input
+          [(ngModel)]="l.url"
+          placeholder="https://youtu.be/..."
+          class="flex-1 px-3 py-2 rounded-xl border border-camp-border bg-camp-muted text-sm focus:outline-none focus:border-camp-orange transition-colors"
+        />
+        <input
+          [(ngModel)]="l.label"
+          placeholder="Подпись"
+          class="w-28 px-3 py-2 rounded-xl border border-camp-border bg-camp-muted text-sm focus:outline-none focus:border-camp-orange transition-colors"
+        />
+        <button
+          (click)="removeEditNewLink(i)"
+          class="text-red-400 hover:text-red-600 transition-colors flex-shrink-0"
+        >
+          <app-icon name="x" [size]="16"></app-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex gap-2 flex-wrap pt-1">
+      <button
+        (click)="saveEdit()"
+        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold text-white shadow-camp-btn hover:opacity-90 active:scale-95 transition-all"
+        [style.backgroundColor]="campColor"
+      >
+        <app-icon name="check" [size]="16"></app-icon> Сохранить
+      </button>
+      <button
+        (click)="editItem = null; editNewLinks = []"
+        class="px-5 py-2.5 rounded-full text-sm font-semibold bg-camp-muted text-camp-gray border border-camp-border hover:bg-camp-border transition-colors"
+      >
+        Отмена
+      </button>
+    </div>
+  </div>
+</div>

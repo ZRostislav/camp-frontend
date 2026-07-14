@@ -108,10 +108,10 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'contests',
+        path: 'events',
         loadComponent: () =>
-          import('./pages/contests/contests.component').then(
-            (m) => m.ContestsComponent,
+          import('./pages/events/events.component').then(
+            (m) => m.EventsComponent,
           ),
       },
       {

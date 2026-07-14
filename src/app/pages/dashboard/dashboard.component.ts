@@ -31,7 +31,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   houses: any[] = [];
   news: any[] = [];
   schedule: any[] = [];
-  contests: any[] = [];
+  events: any[] = [];
   loading = true;
 
   campName = '';
@@ -92,8 +92,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       error: () => {},
     });
 
-    this.api.get('/contests').subscribe({
-      next: (d: any) => (this.contests = d),
+    this.api.get('/events').subscribe({
+      next: (d: any) => (this.events = d),
       error: () => {},
     });
 
@@ -123,7 +123,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   get newEventsCount(): number {
-    return this.contests.filter((c) => this.isNewItem(c)).length;
+    return this.events.filter((c) => this.isNewItem(c)).length;
   }
 
   get hasNewEvents(): boolean {
@@ -177,9 +177,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   get userFirstName(): string {
     const u = this.auth.currentUser();
     if (!u) return '';
-    if (u.firstName) return u.firstName;
+    if (u.lastName) return u.lastName;
     const full = u.fullName ?? u.full_name;
-    if (full) return full.trim().split(/\s+/)[0];
+    if (full) {
+      const parts = full.trim().split(/\s+/);
+      return parts.length > 1 ? parts[1] : parts[0];
+    }
     return u.username ?? '';
   }
 

@@ -16,7 +16,13 @@ import { IconComponent } from '../../shared/icon.component';
 @Component({
   selector: 'app-my-house',
   standalone: true,
-  imports: [CommonModule, FormsModule, MediaUrlPipe, ObjectUrlPipe, IconComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MediaUrlPipe,
+    ObjectUrlPipe,
+    IconComponent,
+  ],
   templateUrl: './my-house.component.html',
   styleUrl: './my-house.component.css',
 })
@@ -152,13 +158,15 @@ export class MyHouseComponent implements OnInit {
 
           const fd = new FormData();
           fd.append('avatar', this.editFiles[0]);
-          this.api.postFormData(`/houses/${this.house.id}/avatar`, fd).subscribe({
-            next: () => this.finishSave(),
-            error: (e: any) => {
-              this.error = e.error?.error || 'Ошибка загрузки аватара';
-              this.saving = false;
-            },
-          });
+          this.api
+            .postFormData(`/houses/${this.house.id}/avatar`, fd)
+            .subscribe({
+              next: () => this.finishSave(),
+              error: (e: any) => {
+                this.error = e.error?.error || 'Ошибка загрузки аватара';
+                this.saving = false;
+              },
+            });
         },
         error: (e: any) => {
           this.error = e.error?.error || 'Ошибка';
@@ -217,11 +225,29 @@ export class MyHouseComponent implements OnInit {
     return gender === 'м' ? '♂' : gender === 'ж' ? '♀' : '';
   }
 
+  /**
+   * Инициалы. Участники приходят как {last_name, first_name},
+   * а ответственные (house.responsible) — только как {full_name},
+   * поэтому раньше initials(r) для ответственных всегда возвращал ''
+   * и в кружочке был виден только "?" по фолбэку в шаблоне.
+   */
   initials(p: any): string {
-    return [p.last_name, p.first_name]
-      .filter(Boolean)
-      .map((w: string) => w[0]?.toUpperCase())
-      .join('');
+    if (p?.last_name || p?.first_name) {
+      return [p.last_name, p.first_name]
+        .filter(Boolean)
+        .map((w: string) => w[0]?.toUpperCase())
+        .join('');
+    }
+    if (p?.full_name) {
+      return p.full_name
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((w: string) => w[0]?.toUpperCase())
+        .join('');
+    }
+    return '';
   }
 
   fileSize(f: File) {

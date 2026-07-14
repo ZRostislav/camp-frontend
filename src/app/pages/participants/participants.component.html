@@ -69,7 +69,7 @@
           placeholder="Иванов"
           (focus)="
             $any($event.target).style.borderColor = campColor;
-            $any($event.target).style.backgroundColor = 'white'
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
           "
           (blur)="
             $any($event.target).style.borderColor = 'transparent';
@@ -88,7 +88,7 @@
           placeholder="Иван"
           (focus)="
             $any($event.target).style.borderColor = campColor;
-            $any($event.target).style.backgroundColor = 'white'
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
           "
           (blur)="
             $any($event.target).style.borderColor = 'transparent';
@@ -107,7 +107,7 @@
           [(ngModel)]="form.birthDate"
           (focus)="
             $any($event.target).style.borderColor = campColor;
-            $any($event.target).style.backgroundColor = 'white'
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
           "
           (blur)="
             $any($event.target).style.borderColor = 'transparent';
@@ -141,7 +141,7 @@
           placeholder="Москва"
           (focus)="
             $any($event.target).style.borderColor = campColor;
-            $any($event.target).style.backgroundColor = 'white'
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
           "
           (blur)="
             $any($event.target).style.borderColor = 'transparent';
@@ -233,9 +233,9 @@
         <button
           class="w-9 h-9 flex items-center justify-center rounded-[8px] transition-all"
           [style.backgroundColor]="
-            viewMode === 'list' ? 'white' : 'transparent'
+            viewMode === 'list' ? 'var(--bg-card)' : 'transparent'
           "
-          [style.color]="viewMode === 'list' ? campColor : '#A8A29E'"
+          [style.color]="viewMode === 'list' ? campColor : 'var(--text-gray)'"
           [style.boxShadow]="
             viewMode === 'list' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none'
           "
@@ -247,9 +247,11 @@
         <button
           class="w-9 h-9 flex items-center justify-center rounded-[8px] transition-all"
           [style.backgroundColor]="
-            viewMode === 'compact' ? 'white' : 'transparent'
+            viewMode === 'compact' ? 'var(--bg-card)' : 'transparent'
           "
-          [style.color]="viewMode === 'compact' ? campColor : '#A8A29E'"
+          [style.color]="
+            viewMode === 'compact' ? campColor : 'var(--text-gray)'
+          "
           [style.boxShadow]="
             viewMode === 'compact' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none'
           "
@@ -261,9 +263,9 @@
         <button
           class="w-9 h-9 flex items-center justify-center rounded-[8px] transition-all"
           [style.backgroundColor]="
-            viewMode === 'grid' ? 'white' : 'transparent'
+            viewMode === 'grid' ? 'var(--bg-card)' : 'transparent'
           "
-          [style.color]="viewMode === 'grid' ? campColor : '#A8A29E'"
+          [style.color]="viewMode === 'grid' ? campColor : 'var(--text-gray)'"
           [style.boxShadow]="
             viewMode === 'grid' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none'
           "
@@ -279,8 +281,8 @@
     <div class="flex gap-2 flex-wrap">
       <button
         class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors"
-        [style.backgroundColor]="!filterHouseId ? campColor : '#F5F5F0'"
-        [style.color]="!filterHouseId ? '#fff' : '#78716C'"
+        [style.backgroundColor]="!filterHouseId ? campColor : 'var(--bg-muted)'"
+        [style.color]="!filterHouseId ? '#fff' : 'var(--text-gray)'"
         (click)="setHouseFilter('')"
       >
         Все
@@ -289,9 +291,9 @@
         *ngFor="let h of houses"
         class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-colors"
         [style.backgroundColor]="
-          filterHouseId == h.id ? h.color || campColor : '#F5F5F0'
+          filterHouseId == h.id ? h.color || campColor : 'var(--bg-muted)'
         "
-        [style.color]="filterHouseId == h.id ? '#fff' : '#78716C'"
+        [style.color]="filterHouseId == h.id ? '#fff' : 'var(--text-gray)'"
         (click)="setHouseFilter(h.id)"
       >
         <!-- Миниатюра домика в фильтре -->
@@ -447,7 +449,7 @@
           <app-icon name="key" [size]="14"></app-icon>
         </button>
         <button
-          class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#FEE2E2] hover:bg-[#FECACA] text-camp-error transition-colors"
+          class="w-8 h-8 flex items-center justify-center rounded-lg bg-camp-errorSoft hover:bg-camp-errorSoft text-camp-error transition-colors"
           (click)="remove(p.id)"
           title="Удалить"
         >
@@ -559,7 +561,7 @@
           <app-icon name="key" [size]="12"></app-icon>
         </button>
         <button
-          class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#FEE2E2] hover:bg-[#FECACA] text-camp-error transition-colors"
+          class="w-7 h-7 flex items-center justify-center rounded-lg bg-camp-errorSoft hover:bg-camp-errorSoft text-camp-error transition-colors"
           (click)="remove(p.id)"
         >
           <app-icon name="x" [size]="12"></app-icon>
@@ -621,7 +623,7 @@
             <app-icon name="key" [size]="13"></app-icon>
           </button>
           <button
-            class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#FEE2E2] hover:bg-[#FECACA] text-camp-error transition-colors"
+            class="w-7 h-7 flex items-center justify-center rounded-lg bg-camp-errorSoft hover:bg-camp-errorSoft text-camp-error transition-colors"
             (click)="remove(p.id)"
           >
             <app-icon name="x" [size]="13"></app-icon>
@@ -735,7 +737,7 @@
               [(ngModel)]="editItem.last_name"
               (focus)="
                 $any($event.target).style.borderColor = campColor;
-                $any($event.target).style.backgroundColor = 'white'
+                $any($event.target).style.backgroundColor = 'var(--bg-card)'
               "
               (blur)="
                 $any($event.target).style.borderColor = 'transparent';
@@ -753,7 +755,7 @@
               [(ngModel)]="editItem.first_name"
               (focus)="
                 $any($event.target).style.borderColor = campColor;
-                $any($event.target).style.backgroundColor = 'white'
+                $any($event.target).style.backgroundColor = 'var(--bg-card)'
               "
               (blur)="
                 $any($event.target).style.borderColor = 'transparent';
@@ -774,7 +776,7 @@
               [(ngModel)]="editItem.birth_date"
               (focus)="
                 $any($event.target).style.borderColor = campColor;
-                $any($event.target).style.backgroundColor = 'white'
+                $any($event.target).style.backgroundColor = 'var(--bg-card)'
               "
               (blur)="
                 $any($event.target).style.borderColor = 'transparent';
@@ -808,7 +810,7 @@
             [(ngModel)]="editItem.city"
             (focus)="
               $any($event.target).style.borderColor = campColor;
-              $any($event.target).style.backgroundColor = 'white'
+              $any($event.target).style.backgroundColor = 'var(--bg-card)'
             "
             (blur)="
               $any($event.target).style.borderColor = 'transparent';
@@ -922,9 +924,9 @@
         <div
           class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
           [style.backgroundColor]="
-            confirmState.danger ? '#FEE2E2' : campColorBg
+            confirmState.danger ? 'var(--bg-error-soft)' : campColorBg
           "
-          [style.color]="confirmState.danger ? '#DC2626' : campColor"
+          [style.color]="confirmState.danger ? 'var(--color-error)' : campColor"
         >
           <app-icon
             [name]="confirmState.danger ? 'trash-2' : 'key'"
@@ -944,7 +946,9 @@
       <div class="flex gap-2 mt-5">
         <button
           class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px"
-          [style.backgroundColor]="confirmState.danger ? '#DC2626' : campColor"
+          [style.backgroundColor]="
+            confirmState.danger ? 'var(--color-error)' : campColor
+          "
           (click)="confirmYes()"
         >
           {{ confirmState.confirmLabel }}

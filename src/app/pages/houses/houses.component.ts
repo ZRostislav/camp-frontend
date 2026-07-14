@@ -44,20 +44,20 @@ export class HousesComponent implements OnInit {
   /**
    * 1-й домик — исходный цвет.
    * Далее каждый шаг значительно светлее.
-   * Максимум — почти белый цвет.
+   * Максимум — почти цвет фона карточки.
+   *
+   * Раньше цвет "высветлялся" подмешиванием чистого белого (255,255,255) —
+   * в тёмной теме это давало почти светящиеся белые пятна на тёмных
+   * карточках вместо мягкого градиента. Теперь подмешиваем через CSS
+   * color-mix() цвет самой карточки (var(--bg-card)) — браузер сам
+   * посчитает нужный оттенок под текущую тему (светлая карточка в светлой
+   * теме, тёмная — в тёмной), поэтому эффект "выцветания" по месту в
+   * рейтинге одинаково хорошо смотрится в обеих темах.
    */
   houseColor(rankIndex: number): string {
-    const num = parseInt(this.campColor.replace('#', ''), 16);
-    const r = (num >> 16) & 255;
-    const g = (num >> 8) & 255;
-    const b = num & 255;
-
-    // 20% на шаг, максимум 90%
-    const t = Math.min(rankIndex * 0.2, 0.9);
-
-    const mix = (c: number) => Math.round(c + (255 - c) * t);
-
-    return `rgb(${mix(r)},${mix(g)},${mix(b)})`;
+    // 18% на шаг, максимум 75% "выцветания"
+    const percent = Math.max(100 - rankIndex * 18, 25);
+    return `color-mix(in srgb, ${this.campColor} ${percent}%, var(--bg-card) ${100 - percent}%)`;
   }
 
   houseColorBg(rankIndex: number): string {
@@ -66,10 +66,17 @@ export class HousesComponent implements OnInit {
     const g = (num >> 8) & 255;
     const b = num & 255;
 
-    // Более контрастный фон
+    // Полупрозрачный фон — альфа-канал одинаково хорошо ложится и на
+    // светлую, и на тёмную карточку, т.к. смешивается с реальным фоном
+    // под ним в момент отрисовки, а не считается заранее в JS.
     const alpha = Math.max(0.03, 0.35 - rankIndex * 0.05);
 
     return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  houseBorderColor(rankIndex: number): string {
+    const alphaPercent = Math.max(40 - rankIndex * 3, 15); // 40% → минимум 15%
+    return `color-mix(in srgb, ${this.houseColor(rankIndex)} ${alphaPercent}%, transparent)`;
   }
 
   /** Режим отображения домиков: cards / list / compact */

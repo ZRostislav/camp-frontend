@@ -545,7 +545,13 @@
             e.points >= 0 ? 'var(--color-success)' : 'var(--color-error)'
           "
         >
-          {{ e.points > 0 ? "+" : "" }}{{ e.points }}
+          <div class="flex flex-col items-center leading-none gap-0.5">
+            <app-icon
+              [name]="e.points >= 0 ? 'trending-up' : 'trending-down'"
+              [size]="11"
+            ></app-icon>
+            <span>{{ e.points > 0 ? "+" : "" }}{{ e.points }}</span>
+          </div>
         </div>
 
         <!-- Who + reason -->
