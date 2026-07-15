@@ -147,6 +147,8 @@ const ICON_PATHS: Record<string, string> = {
   'calendar-clock':
     'M16 14v2.2l1.6 1 M16 2v4 M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5 M3 10h5 M8 2v4 M16 22a6 6 0 1 0 0-12 6 6 0 0 0 0 12z',
   'rotate-ccw': 'M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8 M3 3v5h5',
+  'sliders-horizontal':
+    'M10 5H3 M12 19H3 M14 3v4 M16 17v4 M21 12h-9 M21 19h-5 M21 5h-7 M8 10v4 M8 12H3',
 };
 
 @Component({

@@ -417,6 +417,13 @@
           class="flex flex-wrap items-center gap-3 px-4 sm:px-5 py-4 transition-colors"
           [class.border-b]="!last"
           [class.border-camp-border]="!last"
+          [ngClass]="{
+            'cursor-pointer hover:bg-amber-50/40':
+              registrationsStatus === 'pending',
+          }"
+          (click)="
+            registrationsStatus === 'pending' && openRegistrationModal(r)
+          "
         >
           <!-- Аватар + имя -->
           <div class="flex items-center gap-3 flex-1 min-w-0">
@@ -472,10 +479,11 @@
             {{ r.status === "approved" ? "Одобрена" : "Отклонена" }}
           </span>
 
-          <!-- Действия для pending -->
+          <!-- Действия для pending — ДЕСКТОП -->
           <div
             *ngIf="registrationsStatus === 'pending'"
-            class="flex items-center gap-2 flex-wrap"
+            class="hidden sm:flex items-center gap-2 flex-wrap"
+            (click)="$event.stopPropagation()"
           >
             <select
               [(ngModel)]="regOverrideRole[r.id]"
@@ -494,7 +502,11 @@
             <button
               (click)="approve(r)"
               title="Одобрить"
-              class="btn-success flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white transition-all hover:-translate-y-px"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:-translate-y-px"
+              style="
+                background-color: var(--color-success-bg);
+                color: var(--color-success);
+              "
             >
               <app-icon name="check" [size]="13"></app-icon>
               Одобрить
@@ -519,7 +531,113 @@
               <app-icon name="trash-2" [size]="13"></app-icon>
             </button>
           </div>
+
+          <!-- Действия для pending — МОБИЛЬНЫЕ (открывают модалку) -->
+          <div
+            *ngIf="registrationsStatus === 'pending'"
+            class="sm:hidden flex items-center shrink-0 text-camp-subtle"
+          >
+            <app-icon name="chevron-right" [size]="18"></app-icon>
+          </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ REGISTRATION ACTION MODAL — МОБИЛЬНЫЕ ═══════════════ -->
+<div
+  *ngIf="selectedRegistration"
+  class="fixed inset-0 flex items-end justify-center z-[9999] p-0 sm:hidden"
+  style="background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(2px)"
+  (click)="closeRegistrationModal()"
+>
+  <div
+    class="bg-white w-full rounded-t-2xl shadow-camp animate-pop-in overflow-hidden"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Шапка -->
+    <div
+      class="flex items-center justify-between px-5 py-4 border-b border-camp-border"
+      [style.backgroundColor]="campColorBg"
+    >
+      <div class="flex items-center gap-3 min-w-0">
+        <div
+          class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+          [style.backgroundColor]="
+            roleColor(selectedRegistration.requested_role)
+          "
+        >
+          {{ initials(selectedRegistration.full_name) }}
+        </div>
+        <div class="min-w-0">
+          <div class="font-display text-sm font-bold text-camp-stone truncate">
+            {{ selectedRegistration.full_name }}
+          </div>
+          <div class="flex items-center gap-1 text-xs text-camp-gray mt-0.5">
+            <app-icon name="at-sign" [size]="11"></app-icon>
+            {{ selectedRegistration.username }}
+          </div>
+        </div>
+      </div>
+      <button
+        (click)="closeRegistrationModal()"
+        class="w-7 h-7 flex items-center justify-center rounded-xl bg-white/70 text-camp-gray hover:bg-white transition-colors shrink-0"
+      >
+        <app-icon name="x" [size]="14"></app-icon>
+      </button>
+    </div>
+
+    <!-- Содержимое -->
+    <div class="p-5 space-y-4">
+      <div>
+        <label
+          class="block text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1"
+          >Роль</label
+        >
+        <select
+          [(ngModel)]="regOverrideRole[selectedRegistration.id]"
+          [ngModelOptions]="{ standalone: true }"
+          class="w-full px-3 py-2 bg-camp-input border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors"
+          (focus)="$any($event.target).style.borderColor = campColor"
+          (blur)="$any($event.target).style.borderColor = 'transparent'"
+        >
+          <option [value]="selectedRegistration.requested_role">
+            {{ roleLabel(selectedRegistration.requested_role) }} (запрошено)
+          </option>
+          <option *ngFor="let role of roles" [value]="role">
+            {{ roleLabel(role) }}
+          </option>
+        </select>
+      </div>
+
+      <div class="space-y-2">
+        <button
+          (click)="approve(selectedRegistration)"
+          class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px"
+          style="background-color: var(--color-success)"
+        >
+          <app-icon name="check" [size]="15"></app-icon>
+          Одобрить
+        </button>
+        <button
+          (click)="reject(selectedRegistration)"
+          class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all hover:-translate-y-px"
+          style="
+            background-color: var(--color-error-bg);
+            color: var(--color-error);
+          "
+        >
+          <app-icon name="x" [size]="15"></app-icon>
+          Отклонить
+        </button>
+        <button
+          (click)="deleteRegistration(selectedRegistration.id)"
+          class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+        >
+          <app-icon name="trash-2" [size]="15"></app-icon>
+          Удалить заявку
+        </button>
       </div>
     </div>
   </div>

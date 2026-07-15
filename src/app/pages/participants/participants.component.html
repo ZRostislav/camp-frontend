@@ -228,6 +228,30 @@
         />
       </div>
 
+      <!-- Filters toggle -->
+      <button
+        class="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold border transition-colors shrink-0"
+        [style.borderColor]="
+          showFilters || activeFilterCount ? campColor : 'var(--border-color)'
+        "
+        [style.color]="
+          showFilters || activeFilterCount ? campColor : 'var(--text-gray)'
+        "
+        [style.backgroundColor]="
+          showFilters || activeFilterCount ? campColorBg : 'var(--bg-card)'
+        "
+        (click)="showFilters = !showFilters"
+      >
+        <app-icon name="sliders-horizontal" [size]="16"></app-icon>
+        Фильтры
+        <span
+          *ngIf="activeFilterCount"
+          class="flex items-center justify-center w-4 h-4 rounded-full text-[0.65rem] font-bold text-white"
+          [style.backgroundColor]="campColor"
+          >{{ activeFilterCount }}</span
+        >
+      </button>
+
       <!-- View mode switcher -->
       <div class="flex bg-camp-muted rounded-xl p-1 gap-1 shrink-0">
         <button
@@ -327,6 +351,121 @@
         {{ h.name }}
       </button>
     </div>
+
+    <!-- Доп. фильтры: пол / возраст / город — комбинируются друг с другом,
+         с поиском и с фильтром по домику -->
+    <div
+      *ngIf="showFilters"
+      class="flex flex-col gap-3 bg-camp-muted/40 rounded-xl p-3 animate-fade-in-down"
+    >
+      <div class="flex flex-wrap items-end gap-4">
+        <!-- Пол -->
+        <div>
+          <div
+            class="text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1.5"
+          >
+            Пол
+          </div>
+          <div class="flex gap-1 p-1 bg-camp-muted rounded-xl">
+            <button
+              class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+              [style.backgroundColor]="
+                !filterGender ? campColor : 'transparent'
+              "
+              [style.color]="!filterGender ? '#fff' : 'var(--text-gray)'"
+              (click)="filterGender = ''"
+            >
+              Все
+            </button>
+            <button
+              class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+              [style.backgroundColor]="
+                filterGender === 'м' ? campColor : 'transparent'
+              "
+              [style.color]="filterGender === 'м' ? '#fff' : 'var(--text-gray)'"
+              (click)="filterGender = 'м'"
+            >
+              ♂ Муж.
+            </button>
+            <button
+              class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+              [style.backgroundColor]="
+                filterGender === 'ж' ? campColor : 'transparent'
+              "
+              [style.color]="filterGender === 'ж' ? '#fff' : 'var(--text-gray)'"
+              (click)="filterGender = 'ж'"
+            >
+              ♀ Жен.
+            </button>
+          </div>
+        </div>
+
+        <!-- Возраст -->
+        <div>
+          <div
+            class="text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1.5"
+          >
+            Возраст
+          </div>
+          <div class="flex items-center gap-2">
+            <input
+              type="number"
+              min="0"
+              placeholder="от"
+              [(ngModel)]="filterAgeMin"
+              class="w-16 px-2.5 py-1.5 bg-white border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors text-center"
+              (focus)="$any($event.target).style.borderColor = campColor"
+              (blur)="$any($event.target).style.borderColor = 'transparent'"
+            />
+            <span class="text-camp-subtle text-sm">—</span>
+            <input
+              type="number"
+              min="0"
+              placeholder="до"
+              [(ngModel)]="filterAgeMax"
+              class="w-16 px-2.5 py-1.5 bg-white border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors text-center"
+              (focus)="$any($event.target).style.borderColor = campColor"
+              (blur)="$any($event.target).style.borderColor = 'transparent'"
+            />
+          </div>
+        </div>
+
+        <!-- Город -->
+        <div>
+          <div
+            class="text-[0.7rem] font-bold text-camp-gray uppercase tracking-wide mb-1.5"
+          >
+            Город
+          </div>
+          <select
+            [(ngModel)]="filterCity"
+            class="px-3 py-2 bg-white border-2 border-transparent rounded-xl text-sm font-medium text-camp-stone outline-none transition-colors min-w-[140px]"
+            (focus)="$any($event.target).style.borderColor = campColor"
+            (blur)="$any($event.target).style.borderColor = 'transparent'"
+          >
+            <option value="">Все города</option>
+            <option *ngFor="let c of uniqueCities" [value]="c">
+              {{ c }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Сброс доп. фильтров -->
+        <button
+          *ngIf="activeFilterCount"
+          class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+          (click)="resetAdditionalFilters()"
+        >
+          <app-icon name="x" [size]="13"></app-icon>
+          Сбросить
+        </button>
+      </div>
+
+      <div *ngIf="activeFilterCount" class="text-xs text-camp-subtle">
+        Найдено: {{ filteredParticipants.length }} из
+        {{ participants.length }}
+      </div>
+    </div>
   </div>
 
   <!-- ═══════════════ VIEW: LIST (default) ═══════════════ -->
@@ -335,7 +474,7 @@
     class="bg-white rounded-2xl border border-camp-border shadow-sm overflow-hidden"
   >
     <div
-      *ngIf="participants.length === 0"
+      *ngIf="filteredParticipants.length === 0"
       class="py-16 text-center text-camp-subtle"
     >
       <div class="text-4xl mb-3">👀</div>
@@ -343,7 +482,7 @@
     </div>
 
     <div
-      *ngFor="let p of participants; let last = last"
+      *ngFor="let p of filteredParticipants; let last = last"
       class="flex items-center gap-3 px-4 py-3 group hover:bg-camp-muted transition-colors cursor-pointer"
       [class.border-b]="!last"
       [class.border-camp-border]="!last"
@@ -462,7 +601,7 @@
   <!-- ═══════════════ VIEW: COMPACT ═══════════════ -->
   <div *ngIf="viewMode === 'compact'" class="space-y-1.5">
     <div
-      *ngIf="participants.length === 0"
+      *ngIf="filteredParticipants.length === 0"
       class="py-16 text-center text-camp-subtle bg-white rounded-2xl border border-camp-border"
     >
       <div class="text-4xl mb-3">👀</div>
@@ -470,7 +609,7 @@
     </div>
 
     <div
-      *ngFor="let p of participants"
+      *ngFor="let p of filteredParticipants"
       class="flex items-center gap-3 bg-white rounded-xl border border-camp-border px-3 py-2 group hover:shadow-sm transition-shadow cursor-pointer"
       (click)="openProfile(p)"
     >
@@ -576,7 +715,7 @@
     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
   >
     <div
-      *ngIf="participants.length === 0"
+      *ngIf="filteredParticipants.length === 0"
       class="col-span-3 py-16 text-center text-camp-subtle bg-white rounded-2xl border border-camp-border"
     >
       <div class="text-4xl mb-3">👀</div>
@@ -584,7 +723,7 @@
     </div>
 
     <div
-      *ngFor="let p of participants"
+      *ngFor="let p of filteredParticipants"
       class="bg-white rounded-2xl border border-camp-border shadow-sm p-4 sm:p-5 hover:shadow-md transition-shadow group cursor-pointer"
       (click)="openProfile(p)"
     >

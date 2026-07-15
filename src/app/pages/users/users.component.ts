@@ -29,6 +29,7 @@ export class UsersComponent implements OnInit {
   registrations: any[] = [];
   registrationsStatus: 'pending' | 'approved' | 'rejected' | 'all' = 'pending';
   regOverrideRole: { [id: number]: string } = {};
+  selectedRegistration: any = null;
 
   readonly registrationStatuses = [
     { value: 'pending', label: 'Ожидают' },
@@ -171,6 +172,14 @@ export class UsersComponent implements OnInit {
     this.loadRegistrations();
   }
 
+  openRegistrationModal(reg: any) {
+    this.selectedRegistration = reg;
+  }
+
+  closeRegistrationModal() {
+    this.selectedRegistration = null;
+  }
+
   approve(reg: any) {
     const overrideRole = this.regOverrideRole[reg.id];
     const body =
@@ -182,6 +191,7 @@ export class UsersComponent implements OnInit {
         this.msg = 'Заявка одобрена';
         this.loadRegistrations();
         this.load();
+        this.closeRegistrationModal();
       },
       error: (e) => (this.error = e.error?.error || 'Ошибка одобрения заявки'),
     });
@@ -195,6 +205,7 @@ export class UsersComponent implements OnInit {
         next: () => {
           this.msg = 'Заявка отклонена';
           this.loadRegistrations();
+          this.closeRegistrationModal();
         },
         error: (e) =>
           (this.error = e.error?.error || 'Ошибка отклонения заявки'),
@@ -207,6 +218,7 @@ export class UsersComponent implements OnInit {
       next: () => {
         this.msg = 'Заявка удалена';
         this.loadRegistrations();
+        this.closeRegistrationModal();
       },
       error: (e) => (this.error = e.error?.error || 'Ошибка удаления заявки'),
     });

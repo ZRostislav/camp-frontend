@@ -38,6 +38,14 @@ export class ParticipantsComponent implements OnInit {
 
   campColor = '#F59E0B';
 
+  // ─── Доп. фильтры (пол / возраст / город) — комбинируются между собой,
+  // а также с поиском и фильтром по домику ───
+  showFilters = false;
+  filterGender: '' | 'м' | 'ж' = '';
+  filterCity = '';
+  filterAgeMin: number | null = null;
+  filterAgeMax: number | null = null;
+
   /** Глобальная настройка: включена ли система баллов участников. */
   participantPointsEnabled = true;
 
@@ -52,6 +60,49 @@ export class ParticipantsComponent implements OnInit {
   get campColorBg(): string {
     const num = parseInt(this.campColor.replace('#', ''), 16);
     return `rgba(${(num >> 16) & 255},${(num >> 8) & 255},${num & 255},0.1)`;
+  }
+
+  /** Список участников с учётом доп. фильтров (пол/возраст/город). */
+  get filteredParticipants(): any[] {
+    return this.participants.filter((p) => {
+      if (this.filterGender && p.gender !== this.filterGender) return false;
+      if (this.filterCity && p.city !== this.filterCity) return false;
+      if (this.filterAgeMin != null) {
+        if (p.age == null || p.age < this.filterAgeMin) return false;
+      }
+      if (this.filterAgeMax != null) {
+        if (p.age == null || p.age > this.filterAgeMax) return false;
+      }
+      return true;
+    });
+  }
+
+  /** Уникальные города среди загруженных участников — для выпадающего списка. */
+  get uniqueCities(): string[] {
+    const set = new Set<string>();
+    for (const p of this.participants) {
+      if (p.city) set.add(p.city);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'ru'));
+  }
+
+  get activeFilterCount(): number {
+    let n = 0;
+    if (this.filterGender) n++;
+    if (this.filterCity) n++;
+    if (this.filterAgeMin != null || this.filterAgeMax != null) n++;
+    return n;
+  }
+
+  setGenderFilter(gender: '' | 'м' | 'ж') {
+    this.filterGender = this.filterGender === gender ? '' : gender;
+  }
+
+  resetAdditionalFilters() {
+    this.filterGender = '';
+    this.filterCity = '';
+    this.filterAgeMin = null;
+    this.filterAgeMax = null;
   }
 
   constructor(
