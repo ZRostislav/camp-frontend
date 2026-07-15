@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, combineLatest } from 'rxjs';
@@ -65,16 +65,37 @@ export class HouseComponent implements OnInit, OnDestroy {
     private settings: SettingsService,
     private route: ActivatedRoute,
     private router: Router,
-    private location: Location,
   ) {}
 
   /**
-   * Возврат туда, откуда пришли (домашняя, рейтинг домиков и т.п.) —
-   * обычная навигация назад по истории браузера, без жёстко зашитого
-   * маршрута.
+   * Стрелка "назад" на странице чужого домика (/house/:id) всегда
+   * возвращает на "Мой домик", а не по истории браузера — иначе с чужого
+   * домика можно улететь на произвольную предыдущую страницу.
    */
   goBack() {
-    this.location.back();
+    this.router.navigate(['/house/my']);
+  }
+
+  /** Переход в профиль участника по клику на строку в списке "Участники". */
+  openParticipant(p: any) {
+    if (!p?.id) return;
+    this.router.navigate(['/participants', p.id], {
+      state: { returnUrl: this.router.url },
+    });
+  }
+
+  /**
+   * Переход в профиль ответственного (персонала) по клику на строку в
+   * списке "Ответственные". ВАЖНО: r.id — это id записи house_responsible
+   * (связи "домик-ответственный"), а не id самого пользователя; настоящий
+   * id пользователя лежит в r.user_id (см. buildHouseDetails в
+   * housesController.js).
+   */
+  openResponsible(r: any) {
+    if (!r?.user_id) return;
+    this.router.navigate(['/users', r.user_id], {
+      state: { returnUrl: this.router.url },
+    });
   }
 
   ngOnInit() {

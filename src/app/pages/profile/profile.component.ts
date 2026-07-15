@@ -53,6 +53,15 @@ export class UserProfileComponent implements OnInit {
   /** true когда открыт профиль участника лагеря (через /participants/:id) */
   isParticipant = false;
 
+  /**
+   * URL, откуда пришёл переход (например, страница домика) — если задан,
+   * стрелка "назад" возвращает именно туда, а не в общий список.
+   * Прокидывается через router state (см. house.component openParticipant/
+   * openResponsible), поэтому переживает обычную навигацию, но теряется
+   * при обновлении страницы (F5) — это ожидаемо.
+   */
+  private returnUrl: string | null = null;
+
   /** список домиков — нужен для формы редактирования участника */
   houses: any[] = [];
 
@@ -112,6 +121,8 @@ export class UserProfileComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.returnUrl = (history.state as any)?.returnUrl ?? null;
+
     this.settings.get().subscribe({
       next: (d) => {
         this.campColor = (d['camp_color'] as string) ?? '#1a5c38';
@@ -228,7 +239,18 @@ export class UserProfileComponent implements OnInit {
     }
   }
 
+  get backLabel(): string {
+    if (this.returnUrl) return 'Назад';
+    return this.isParticipant
+      ? 'К списку участников'
+      : 'К списку пользователей';
+  }
+
   goBack() {
+    if (this.returnUrl) {
+      this.router.navigateByUrl(this.returnUrl);
+      return;
+    }
     this.router.navigate([this.isParticipant ? '/participants' : '/users']);
   }
 

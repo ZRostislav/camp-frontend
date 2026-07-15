@@ -362,7 +362,10 @@
         <div class="space-y-1.5">
           <div
             *ngFor="let r of house.responsible"
-            class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-camp-muted"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-camp-muted transition-colors"
+            [class.cursor-pointer]="auth.isAdmin()"
+            [class.hover:bg-camp-border]="auth.isAdmin()"
+            (click)="auth.isAdmin() && openResponsible(r)"
           >
             <div
               class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold text-white"
@@ -408,7 +411,8 @@
         <div class="space-y-1 max-h-[420px] overflow-y-auto pr-0.5">
           <div
             *ngFor="let p of house.participants"
-            class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-camp-muted transition-colors"
+            class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-camp-muted transition-colors cursor-pointer"
+            (click)="openParticipant(p)"
           >
             <div
               class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-[0.65rem] font-bold text-white"
