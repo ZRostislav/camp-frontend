@@ -84,16 +84,25 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
     // Спиннер на время навигации между страницами (особенно полезно
     // для lazy-loaded chunks через loadComponent).
+    //
+    // Важно: NavigationStart для самой первой навигации приложения может
+    // сработать синхронно — ещё до того, как Angular закончил первую
+    // проверку изменений этого компонента. Если менять routeLoading прямо
+    // здесь, в dev-режиме это ловится как
+    // ExpressionChangedAfterItHasBeenCheckedError (NG0100). Откладываем
+    // изменение на следующий микротаск — оно попадёт уже в новый цикл CD.
     this.routerEventsSub = this.router.events.subscribe((event) => {
       if (event instanceof NavigationStart) {
-        this.routeLoading = true;
+        Promise.resolve().then(() => (this.routeLoading = true));
       } else if (
         event instanceof NavigationEnd ||
         event instanceof NavigationCancel ||
         event instanceof NavigationError
       ) {
-        this.routeLoading = false;
-        this.auth.refreshMyHouseAccess();
+        Promise.resolve().then(() => {
+          this.routeLoading = false;
+          this.auth.refreshMyHouseAccess();
+        });
       }
     });
   }
