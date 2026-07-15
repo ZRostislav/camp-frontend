@@ -146,11 +146,11 @@ export class EventsComponent implements OnInit {
   statusClasses(c: EventItem): string {
     switch (c.status) {
       case 'идёт':
-        return 'bg-camp-warningSoft text-camp-warning';
+        return 'bg-camp-warningSoft text-camp-warning border-camp-warningSoft';
       case 'завершено':
-        return 'bg-camp-successSoft text-camp-success';
+        return 'bg-camp-successSoft text-camp-success border-camp-successSoft';
       default:
-        return 'bg-camp-skySoft text-camp-sky';
+        return 'bg-camp-skySoft text-camp-sky border-camp-skySoft';
     }
   }
 

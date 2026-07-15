@@ -175,6 +175,20 @@ html.dark {
   background-color: var(--bg-success-soft) !important;
 }
 
+/* Обводка статус-бейджей: без этого голый класс "border" в шаблоне
+   брал дефолтный tailwind-цвет (светло-серый), который в тёмной
+   теме выглядел как белая рамка поверх цветного soft-фона. Задаём
+   обводку тем же цветом, что и текст бейджа. */
+.border-camp-successSoft {
+  border-color: var(--color-success) !important;
+}
+.border-camp-warningSoft {
+  border-color: var(--color-warning) !important;
+}
+.border-camp-skySoft {
+  border-color: var(--color-sky) !important;
+}
+
 /* "Новое" / warning-бейджи (раньше bg-amber-100 text-amber-700 — не
    реагировали на тёмную тему, т.к. это статичные Tailwind-классы) */
 .bg-camp-warningSoft {
