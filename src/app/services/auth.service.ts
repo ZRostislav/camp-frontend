@@ -20,6 +20,10 @@ export class AuthService {
   private api = environment.apiUrl;
   currentUser = signal<User | null>(null);
   private myHouseAvailable = signal(false);
+  /** id домика персонала (вожатый/помощник), закреплённого через
+   *  house_responsible. У участника id домика уже есть в самом
+   *  currentUser (houseId из токена) — см. getMyHouseId(). */
+  private myHouseId = signal<number | null>(null);
 
   constructor(
     private http: HttpClient,
@@ -62,19 +66,43 @@ export class AuthService {
     return this.isAdmin() || this.myHouseAvailable();
   }
 
+  /**
+   * id "своего" домика — синхронно, без похода в API.
+   * У участника id зашит прямо в токене (currentUser().houseId).
+   * У персонала (counselor/helper) берём из кэша, который обновляется
+   * в refreshMyHouseAccess() при каждой навигации (см. layout.component.ts)
+   * — то есть к моменту клика по ссылке на домик кэш почти всегда уже тёплый.
+   * Может вернуть null, если кэш ещё не успел прогреться (например, самая
+   * первая навигация сразу после логина) — в этом случае вызывающий код
+   * должен подстраховаться асинхронной проверкой.
+   */
+  getMyHouseId(): number | null {
+    if (this.role === 'participant') {
+      return this.currentUser()?.houseId ?? null;
+    }
+    return this.myHouseId();
+  }
+
   refreshMyHouseAccess() {
     if (!this.token || !this.role) {
       this.myHouseAvailable.set(false);
+      this.myHouseId.set(null);
       return;
     }
 
     this.http
-      .get(`${this.api}/houses/mine`, {
+      .get<{ id: number }>(`${this.api}/houses/mine`, {
         headers: new HttpHeaders({ Authorization: `Bearer ${this.token}` }),
       })
       .subscribe({
-        next: () => this.myHouseAvailable.set(true),
-        error: () => this.myHouseAvailable.set(false),
+        next: (d) => {
+          this.myHouseAvailable.set(true);
+          this.myHouseId.set(d?.id ?? null);
+        },
+        error: () => {
+          this.myHouseAvailable.set(false);
+          this.myHouseId.set(null);
+        },
       });
   }
 
@@ -138,6 +166,7 @@ export class AuthService {
     localStorage.removeItem('user');
     this.currentUser.set(null);
     this.myHouseAvailable.set(false);
+    this.myHouseId.set(null);
     this.router.navigate(['/login']);
   }
 }

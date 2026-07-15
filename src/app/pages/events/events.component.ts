@@ -76,6 +76,18 @@ export class EventsComponent implements OnInit {
 
   campColor = '#F59E0B';
 
+  /**
+   * Состояние модалки подтверждения для опасных действий
+   * (удаление события, снятие победителей и т.п.) — как в houses.
+   */
+  confirmState: {
+    title: string;
+    message: string;
+    confirmLabel: string;
+    danger: boolean;
+    action: () => void;
+  } | null = null;
+
   constructor(
     public auth: AuthService,
     private api: ApiService,
@@ -98,18 +110,6 @@ export class EventsComponent implements OnInit {
 
   get campColorBg(): string {
     return this.hexToRgba(this.campColor, 0.12);
-  }
-
-  get completedCount(): number {
-    return this.events.filter((e) => e.status === 'завершено').length;
-  }
-
-  get inProgressCount(): number {
-    return this.events.filter((e) => e.status === 'идёт').length;
-  }
-
-  get upcomingCount(): number {
-    return this.events.filter((e) => e.status === 'будет').length;
   }
 
   private hexToRgba(hex: string, alpha: number): string {
@@ -146,11 +146,11 @@ export class EventsComponent implements OnInit {
   statusClasses(c: EventItem): string {
     switch (c.status) {
       case 'идёт':
-        return 'bg-amber-50 border-amber-200 text-amber-700';
+        return 'bg-camp-warningSoft text-camp-warning';
       case 'завершено':
-        return 'bg-green-50 border-green-200 text-green-700';
+        return 'bg-camp-successSoft text-camp-success';
       default:
-        return 'bg-sky-50 border-sky-200 text-sky-700';
+        return 'bg-camp-skySoft text-camp-sky';
     }
   }
 
@@ -297,8 +297,16 @@ export class EventsComponent implements OnInit {
   }
 
   remove(id: number) {
-    if (!confirm('Удалить событие? Начисленные за него баллы будут отменены.'))
-      return;
+    this.confirmState = {
+      title: 'Удалить событие?',
+      message: 'Начисленные за него баллы будут отменены. Действие необратимо.',
+      confirmLabel: 'Удалить',
+      danger: true,
+      action: () => this.doRemove(id),
+    };
+  }
+
+  private doRemove(id: number) {
     this.api.delete(`/events/${id}`).subscribe({
       next: () => {
         this.msg = 'Событие удалено';
@@ -306,6 +314,16 @@ export class EventsComponent implements OnInit {
       },
       error: (e: any) => (this.error = e.error?.error || 'Ошибка удаления'),
     });
+  }
+
+  confirmYes() {
+    const action = this.confirmState?.action;
+    this.confirmState = null;
+    action?.();
+  }
+
+  confirmNo() {
+    this.confirmState = null;
   }
 
   // ── Победители ───────────────────────────────────────────────────────────
@@ -358,12 +376,16 @@ export class EventsComponent implements OnInit {
   }
 
   removeWinner(c: EventItem, houseId: number) {
-    if (
-      !confirm(
-        'Убрать этот домик из победителей? Начисленные баллы будут отменены.',
-      )
-    )
-      return;
+    this.confirmState = {
+      title: 'Убрать победителя?',
+      message: 'Начисленные этому домику баллы будут отменены.',
+      confirmLabel: 'Убрать',
+      danger: true,
+      action: () => this.doRemoveWinner(c, houseId),
+    };
+  }
+
+  private doRemoveWinner(c: EventItem, houseId: number) {
     this.api.delete(`/events/${c.id}/winners/${houseId}`).subscribe({
       next: () => {
         c.winners = c.winners.filter((w) => w.house_id !== houseId);
@@ -375,12 +397,16 @@ export class EventsComponent implements OnInit {
   }
 
   clearAllWinners(c: EventItem) {
-    if (
-      !confirm(
-        'Снять всех победителей события? Все начисленные баллы будут отменены.',
-      )
-    )
-      return;
+    this.confirmState = {
+      title: 'Снять всех победителей?',
+      message: 'Все начисленные за событие баллы будут отменены.',
+      confirmLabel: 'Снять всех',
+      danger: true,
+      action: () => this.doClearAllWinners(c),
+    };
+  }
+
+  private doClearAllWinners(c: EventItem) {
     this.api.delete(`/events/${c.id}/winners`).subscribe({
       next: () => {
         c.winners = [];

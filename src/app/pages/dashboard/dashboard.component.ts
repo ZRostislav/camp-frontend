@@ -34,6 +34,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   events: any[] = [];
   loading = true;
 
+  /** id домика, закреплённого за текущим пользователем (участник — свой
+   *  домик, вожатый/помощник — домик из house_responsible). Нужен, чтобы
+   *  клик по своему домику в рейтинге вёл на /house/my, а не /house/:id. */
+  myHouseId: number | null = null;
+
   campName = '';
   campColor = '#F59E0B';
 
@@ -75,6 +80,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.houses = [...d].sort((a, b) => b.house_points - a.house_points);
       },
       error: () => {},
+    });
+
+    this.api.get('/houses/mine').subscribe({
+      next: (d: any) => (this.myHouseId = d?.id ?? null),
+      error: () => (this.myHouseId = null),
     });
 
     this.api.get('/news').subscribe({
@@ -130,6 +140,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.newEventsCount > 0;
   }
 
+  /**
+   * Непросмотренные события (is_read с бэкенда) — в отличие от
+   * newEventsCount/hasNewEvents (которые смотрят только на "младше суток"),
+   * это именно "прочитано / не прочитано" для текущего пользователя.
+   * Красный значок "!" в шапке карточки «События» должен пропадать
+   * после просмотра — поэтому завязан на это, а не на время создания.
+   */
+  get unreadEventsCount(): number {
+    return this.events.filter((c) => !c.is_read).length;
+  }
+
+  get hasUnreadEvents(): boolean {
+    return this.unreadEventsCount > 0;
+  }
+
   get campColorBg(): string {
     return this.hexToRgba(this.campColor, 0.1);
   }
@@ -149,6 +174,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   getHouseBarWidth(house: any): number {
     if (!this.topHousePoints) return 0;
     return Math.round((house.house_points / this.topHousePoints) * 100);
+  }
+
+  /** Свой домик — ведём на /house/my, а не /house/:id (чужие — как обычно). */
+  housePath(house: any): any[] {
+    if (this.myHouseId != null && house.id === this.myHouseId) {
+      return ['/house', 'my'];
+    }
+    return ['/house', house.id];
   }
 
   get activeScheduleIndex(): number {

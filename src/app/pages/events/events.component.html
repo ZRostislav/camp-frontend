@@ -48,52 +48,6 @@
     </button>
   </div>
 
-  <!-- ── STATS SUMMARY ── -->
-  <div
-    *ngIf="events.length"
-    class="grid grid-cols-3 gap-3 sm:gap-4 animate-fade-in-up"
-  >
-    <div
-      class="bg-white rounded-2xl border border-camp-border shadow-sm p-4 flex flex-col items-center gap-1 text-center"
-    >
-      <span
-        class="w-9 h-9 rounded-full bg-green-50 border border-green-200 flex items-center justify-center text-green-600"
-      >
-        <app-icon name="check" [size]="18"></app-icon>
-      </span>
-      <span class="font-display text-2xl font-extrabold text-camp-stone">{{
-        completedCount
-      }}</span>
-      <span class="text-xs font-semibold text-camp-gray">Завершено</span>
-    </div>
-    <div
-      class="bg-white rounded-2xl border border-camp-border shadow-sm p-4 flex flex-col items-center gap-1 text-center"
-    >
-      <span
-        class="w-9 h-9 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600"
-      >
-        <app-icon name="zap" [size]="18"></app-icon>
-      </span>
-      <span class="font-display text-2xl font-extrabold text-camp-stone">{{
-        inProgressCount
-      }}</span>
-      <span class="text-xs font-semibold text-camp-gray">В процессе</span>
-    </div>
-    <div
-      class="bg-white rounded-2xl border border-camp-border shadow-sm p-4 flex flex-col items-center gap-1 text-center"
-    >
-      <span
-        class="w-9 h-9 rounded-full bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600"
-      >
-        <app-icon name="calendar-clock" [size]="18"></app-icon>
-      </span>
-      <span class="font-display text-2xl font-extrabold text-camp-stone">{{
-        upcomingCount
-      }}</span>
-      <span class="text-xs font-semibold text-camp-gray">Предстоит</span>
-    </div>
-  </div>
-
   <!-- ── CREATE FORM ── -->
   <div
     *ngIf="auth.isAdmin() && showCreateForm"
@@ -262,12 +216,10 @@
   </div>
 
   <!-- ── EVENTS LIST ── -->
-  <div
-    class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 animate-fade-in-up"
-  >
+  <div class="flex flex-col gap-5 animate-fade-in-up">
     <div
       *ngFor="let c of events"
-      class="bg-white rounded-[22px] border-[1.5px] overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+      class="bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
       [class.border-camp-border]="c.is_read"
       [style.borderColor]="!c.is_read ? campColor : null"
       [style.boxShadow]="!c.is_read ? '0 2px 12px ' + campColorBg : null"
@@ -340,22 +292,24 @@
           >
             <button
               (click)="startEdit(c)"
-              class="p-1.5 rounded-lg bg-camp-muted border border-camp-border text-camp-gray hover:bg-camp-border hover:text-camp-stone transition-all flex items-center justify-center"
+              class="w-8 h-8 flex items-center justify-center rounded-lg bg-camp-muted hover:bg-camp-border text-camp-gray transition-colors"
+              title="Редактировать"
             >
-              <app-icon name="pencil" [size]="15"></app-icon>
+              <app-icon name="pencil" [size]="14"></app-icon>
             </button>
             <button
               (click)="remove(c.id)"
-              class="p-1.5 rounded-lg bg-camp-muted border border-camp-border text-camp-gray hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all flex items-center justify-center"
+              class="w-8 h-8 flex items-center justify-center rounded-lg bg-camp-errorSoft hover:bg-camp-errorSoft text-camp-error transition-colors"
+              title="Удалить"
             >
-              <app-icon name="trash-2" [size]="15"></app-icon>
+              <app-icon name="trash-2" [size]="14"></app-icon>
             </button>
           </div>
         </div>
 
         <!-- Winners strip -->
         <div
-          *ngIf="c.winners?.length"
+          *ngIf="c.winners.length"
           class="flex flex-col gap-2 pt-2 border-t border-camp-border"
         >
           <span
@@ -367,15 +321,15 @@
           <div class="flex flex-wrap gap-2" (click)="$event.stopPropagation()">
             <div
               *ngFor="let w of c.winners"
-              class="inline-flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold"
+              class="inline-flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-full bg-camp-warningSoft text-camp-warning text-xs font-bold"
             >
               <span>{{ w.house_emoji || "🏠" }}</span>
               <span>{{ w.house_name }}</span>
-              <span class="text-amber-600 font-semibold">+{{ w.points }}</span>
+              <span class="font-semibold">+{{ w.points }}</span>
               <button
                 *ngIf="auth.isAdmin()"
                 (click)="removeWinner(c, w.house_id)"
-                class="p-0.5 rounded-full text-amber-500 hover:text-red-600 hover:bg-white transition-colors"
+                class="p-0.5 rounded-full hover:text-camp-error hover:bg-white transition-colors"
               >
                 <app-icon name="x" [size]="12"></app-icon>
               </button>
@@ -392,19 +346,19 @@
           <ng-container *ngIf="!isWinnerPickerOpen(c)">
             <button
               (click)="openWinnerPicker(c)"
-              class="self-start inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.72rem] font-bold bg-camp-muted text-camp-gray border border-camp-border hover:bg-camp-border transition-colors"
+              class="self-start inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[0.72rem] font-bold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
             >
               <app-icon name="trophy" [size]="13"></app-icon>
               {{
-                c.winners?.length
+                c.winners.length
                   ? "Изменить победителей"
                   : "Подтвердить победителей"
               }}
             </button>
             <button
-              *ngIf="c.winners?.length"
+              *ngIf="c.winners.length"
               (click)="clearAllWinners(c)"
-              class="self-start inline-flex items-center gap-1.5 text-[0.7rem] font-semibold text-red-500 hover:text-red-700 transition-colors"
+              class="self-start inline-flex items-center gap-1.5 text-[0.7rem] font-semibold text-camp-error transition-colors"
             >
               <app-icon name="rotate-ccw" [size]="12"></app-icon>
               Снять всех победителей
@@ -413,7 +367,7 @@
 
           <div
             *ngIf="isWinnerPickerOpen(c)"
-            class="flex flex-col gap-2.5 p-3 rounded-xl bg-camp-muted border border-camp-border"
+            class="flex flex-col gap-2.5 p-3 rounded-xl bg-camp-muted"
           >
             <span
               class="text-[0.7rem] font-bold uppercase tracking-widest text-camp-gray"
@@ -423,14 +377,10 @@
               <button
                 *ngFor="let h of houses"
                 (click)="toggleHouseSelection(c, h.id)"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors"
                 [class.bg-white]="!isHouseSelected(c, h.id)"
-                [class.border-camp-border]="!isHouseSelected(c, h.id)"
                 [class.text-camp-gray]="!isHouseSelected(c, h.id)"
                 [style.backgroundColor]="
-                  isHouseSelected(c, h.id) ? campColor : null
-                "
-                [style.borderColor]="
                   isHouseSelected(c, h.id) ? campColor : null
                 "
                 [style.color]="isHouseSelected(c, h.id) ? '#fff' : null"
@@ -445,7 +395,7 @@
             <div class="flex gap-2 pt-1">
               <button
                 (click)="confirmWinners(c)"
-                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white shadow-camp-btn hover:opacity-90 active:scale-95 transition-all"
+                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:-translate-y-px"
                 [style.backgroundColor]="campColor"
               >
                 <app-icon name="check" [size]="14"></app-icon>
@@ -453,7 +403,7 @@
               </button>
               <button
                 (click)="closeWinnerPicker(c)"
-                class="px-4 py-2 rounded-full text-xs font-semibold bg-white text-camp-gray border border-camp-border hover:bg-camp-border transition-colors"
+                class="px-4 py-2 rounded-xl text-xs font-bold bg-white text-camp-gray hover:bg-camp-border transition-colors"
               >
                 Отмена
               </button>
@@ -468,11 +418,9 @@
           <span class="text-[0.72rem] text-camp-subtle font-medium">
             Создано {{ c.created_at | date: "d MMMM yyyy" : "" : "ru" }}
           </span>
-          <div class="flex items-center gap-1.5">
-            <span *ngIf="c.is_read" class="text-green-500 flex items-center">
-              <app-icon name="check-check" [size]="15"></app-icon>
-            </span>
-          </div>
+          <span *ngIf="c.is_read" class="text-camp-success flex items-center">
+            <app-icon name="check-check" [size]="15"></app-icon>
+          </span>
         </div>
       </div>
     </div>
@@ -482,61 +430,86 @@
 <!-- ── EDIT MODAL (вне контейнера — перекрывает всё) ── -->
 <div
   *ngIf="editItem"
-  class="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4 animate-fade-in-up"
+  class="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center p-4 z-[9999]"
+  style="background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(2px)"
   (click)="editItem = null"
 >
   <div
-    class="bg-white rounded-[22px] shadow-2xl w-full max-w-[540px] max-h-[90vh] overflow-y-auto p-5 sm:p-6 flex flex-col gap-4"
+    class="bg-white rounded-2xl shadow-camp w-full max-w-[540px] animate-pop-in overflow-y-auto p-5 sm:p-6 flex flex-col gap-4"
+    style="max-height: calc(100dvh - 2rem)"
     (click)="$event.stopPropagation()"
   >
     <div class="flex items-center justify-between">
       <h2
-        class="font-display text-[1.05rem] font-bold flex items-center gap-2 text-camp-stone"
+        class="font-display text-base font-bold flex items-center gap-2 text-camp-stone"
       >
         <app-icon
           name="pencil"
-          [size]="18"
+          [size]="16"
           [style.color]="campColor"
         ></app-icon>
         Редактирование события
       </h2>
       <button
         (click)="editItem = null"
-        class="p-1.5 rounded-lg text-camp-gray hover:text-camp-stone hover:bg-camp-muted transition-all"
+        class="w-8 h-8 flex items-center justify-center rounded-xl bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
       >
-        <app-icon name="x" [size]="20"></app-icon>
+        <app-icon name="x" [size]="14"></app-icon>
       </button>
     </div>
 
     <!-- Emoji + Title -->
     <div class="flex items-center gap-3">
-      <div class="relative shrink-0">
+      <div class="relative emoji-field shrink-0">
         <button
+          type="button"
+          class="w-16 h-16 rounded-2xl border-2 overflow-hidden flex items-center justify-center shrink-0 transition-all hover:scale-105 active:scale-95"
+          [style.borderColor]="
+            editItem.emoji ? campColor : 'var(--border-color)'
+          "
+          [style.backgroundColor]="campColorBg"
           (click)="toggleEditEmojiPicker($event)"
-          class="w-[52px] h-[52px] rounded-xl text-[1.6rem] flex items-center justify-center border-2 border-camp-border hover:border-camp-orange bg-camp-muted transition-colors"
+          title="Нажмите для выбора эмодзи"
         >
-          {{ editItem.emoji || "🎉" }}
-        </button>
-        <div
-          *ngIf="showEditEmojiPicker"
-          class="emoji-picker-wrap absolute top-full left-0 z-50 mt-1.5 shadow-xl rounded-xl overflow-hidden"
-          (click)="$event.stopPropagation()"
-        >
-          <emoji-mart
-            (emojiSelect)="onEditEmojiSelect($event)"
-            [showPreview]="false"
-            [i18n]="{
-              search: 'Поиск',
-              categories: { search: 'Результаты', recent: 'Частые' },
-            }"
+          <span *ngIf="editItem.emoji" class="text-3xl leading-none">{{
+            editItem.emoji
+          }}</span>
+          <div
+            *ngIf="!editItem.emoji"
+            class="flex flex-col items-center gap-0.5"
           >
-          </emoji-mart>
-        </div>
+            <app-icon
+              name="smile"
+              [size]="20"
+              class="text-camp-subtle"
+            ></app-icon>
+            <span
+              class="text-[0.55rem] font-bold text-camp-subtle uppercase tracking-wide"
+              >эмодзи</span
+            >
+          </div>
+        </button>
+        <button
+          *ngIf="editItem.emoji"
+          type="button"
+          class="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-camp-errorSoft text-camp-error hover:bg-camp-errorSoft transition-colors shadow-sm z-10"
+          (click)="editItem.emoji = ''; $event.stopPropagation()"
+        >
+          <app-icon name="x" [size]="10"></app-icon>
+        </button>
       </div>
       <input
         [(ngModel)]="editItem.title"
         placeholder="Название"
-        class="flex-1 px-4 py-3 rounded-xl border border-camp-border bg-camp-muted text-camp-stone text-base font-bold placeholder-camp-subtle focus:outline-none focus:border-camp-orange transition-colors"
+        class="flex-1 px-4 py-3 bg-camp-input border-2 border-transparent rounded-xl text-camp-stone text-base font-bold placeholder-camp-subtle outline-none transition-colors"
+        (focus)="
+          $any($event.target).style.borderColor = campColor;
+          $any($event.target).style.backgroundColor = 'var(--bg-card)'
+        "
+        (blur)="
+          $any($event.target).style.borderColor = 'transparent';
+          $any($event.target).style.backgroundColor = ''
+        "
       />
     </div>
 
@@ -544,7 +517,15 @@
       [(ngModel)]="editItem.description"
       placeholder="Описание"
       rows="3"
-      class="w-full px-4 py-3 rounded-xl border border-camp-border bg-camp-muted text-camp-stone text-sm placeholder-camp-subtle focus:outline-none focus:border-camp-orange transition-colors resize-none leading-relaxed"
+      class="w-full px-4 py-3 bg-camp-input border-2 border-transparent rounded-xl text-camp-stone text-sm placeholder-camp-subtle outline-none transition-colors resize-none leading-relaxed"
+      (focus)="
+        $any($event.target).style.borderColor = campColor;
+        $any($event.target).style.backgroundColor = 'var(--bg-card)'
+      "
+      (blur)="
+        $any($event.target).style.borderColor = 'transparent';
+        $any($event.target).style.backgroundColor = ''
+      "
     >
     </textarea>
 
@@ -560,7 +541,15 @@
         <input
           type="datetime-local"
           [(ngModel)]="editItem.event_time"
-          class="px-4 py-2.5 rounded-xl border border-camp-border bg-camp-muted text-camp-stone text-sm focus:outline-none focus:border-camp-orange transition-colors"
+          class="px-4 py-2.5 bg-camp-input border-2 border-transparent rounded-xl text-camp-stone text-sm outline-none transition-colors"
+          (focus)="
+            $any($event.target).style.borderColor = campColor;
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
+          "
+          (blur)="
+            $any($event.target).style.borderColor = 'transparent';
+            $any($event.target).style.backgroundColor = ''
+          "
         />
       </label>
       <label class="w-full sm:w-40 flex flex-col gap-1.5">
@@ -574,25 +563,147 @@
           type="number"
           min="0"
           [(ngModel)]="editItem.points"
-          class="px-4 py-2.5 rounded-xl border border-camp-border bg-camp-muted text-camp-stone text-sm font-bold focus:outline-none focus:border-camp-orange transition-colors"
+          class="px-4 py-2.5 bg-camp-input border-2 border-transparent rounded-xl text-camp-stone text-sm font-bold outline-none transition-colors"
+          (focus)="
+            $any($event.target).style.borderColor = campColor;
+            $any($event.target).style.backgroundColor = 'var(--bg-card)'
+          "
+          (blur)="
+            $any($event.target).style.borderColor = 'transparent';
+            $any($event.target).style.backgroundColor = ''
+          "
         />
       </label>
     </div>
 
-    <div class="flex gap-2 flex-wrap pt-1">
+    <div class="flex gap-2 mt-1">
       <button
         (click)="saveEdit()"
-        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold text-white shadow-camp-btn hover:opacity-90 active:scale-95 transition-all"
+        class="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px"
         [style.backgroundColor]="campColor"
       >
-        <app-icon name="check" [size]="16"></app-icon> Сохранить
+        <app-icon name="check" [size]="15"></app-icon> Сохранить
       </button>
       <button
         (click)="editItem = null"
-        class="px-5 py-2.5 rounded-full text-sm font-semibold bg-camp-muted text-camp-gray border border-camp-border hover:bg-camp-border transition-colors"
+        class="px-4 py-2 rounded-xl text-sm font-bold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
       >
         Отмена
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ EMOJI PICKER MODAL ═══════════════ -->
+<div
+  *ngIf="showFormEmojiPicker || showEditEmojiPicker"
+  class="fixed inset-0 flex items-end sm:items-center justify-center z-[10000]"
+  style="background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(2px)"
+  (click)="showFormEmojiPicker = false; showEditEmojiPicker = false"
+>
+  <div
+    class="bg-white w-full sm:w-auto rounded-t-2xl sm:rounded-2xl shadow-camp animate-pop-in flex flex-col overflow-hidden"
+    style="max-height: 75dvh; max-height: 75vh"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Шапка -->
+    <div
+      class="flex items-center justify-between px-4 py-3 border-b border-camp-border shrink-0 rounded-t-2xl"
+      [style.background]="campColorBg"
+    >
+      <div class="flex items-center gap-2">
+        <app-icon name="smile" [size]="16" [style.color]="campColor"></app-icon>
+        <span class="font-display text-sm font-bold text-camp-stone"
+          >Выберите эмодзи</span
+        >
+      </div>
+      <button
+        type="button"
+        class="w-7 h-7 flex items-center justify-center rounded-xl bg-white/70 text-camp-gray hover:bg-camp-border transition-colors"
+        (click)="showFormEmojiPicker = false; showEditEmojiPicker = false"
+      >
+        <app-icon name="x" [size]="14"></app-icon>
+      </button>
+    </div>
+    <!-- Пикер -->
+    <div class="flex-1 min-h-0 overflow-hidden">
+      <emoji-mart
+        *ngIf="showFormEmojiPicker"
+        (emojiSelect)="onFormEmojiSelect($event)"
+        [darkMode]="false"
+        [showPreview]="false"
+        [enableSearch]="false"
+        [recent]="[]"
+        [totalFrequentLines]="0"
+        [exclude]="['recent']"
+        [color]="campColor"
+        [perLine]="8"
+      ></emoji-mart>
+      <emoji-mart
+        *ngIf="showEditEmojiPicker"
+        (emojiSelect)="onEditEmojiSelect($event)"
+        [darkMode]="false"
+        [showPreview]="false"
+        [enableSearch]="false"
+        [recent]="[]"
+        [totalFrequentLines]="0"
+        [exclude]="['recent']"
+        [color]="campColor"
+        [perLine]="8"
+      ></emoji-mart>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ CONFIRM MODAL ═══════════════ -->
+<div
+  *ngIf="confirmState"
+  class="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center p-4 z-[9999]"
+  style="background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(2px)"
+  (click)="confirmNo()"
+>
+  <div
+    class="bg-white rounded-2xl shadow-camp w-full max-w-sm animate-pop-in overflow-hidden"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="p-6">
+      <div class="flex items-start gap-3 mb-2">
+        <div
+          class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+          [style.backgroundColor]="
+            confirmState.danger ? 'var(--bg-error-soft)' : campColorBg
+          "
+          [style.color]="confirmState.danger ? 'var(--color-error)' : campColor"
+        >
+          <app-icon name="trash-2" [size]="18"></app-icon>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h2 class="font-display text-base font-bold text-camp-stone">
+            {{ confirmState.title }}
+          </h2>
+          <p class="text-sm text-camp-gray mt-1">
+            {{ confirmState.message }}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex gap-2 mt-5">
+        <button
+          class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px"
+          [style.backgroundColor]="
+            confirmState.danger ? 'var(--color-error)' : campColor
+          "
+          (click)="confirmYes()"
+        >
+          {{ confirmState.confirmLabel }}
+        </button>
+        <button
+          class="px-4 py-2.5 rounded-xl text-sm font-bold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+          (click)="confirmNo()"
+        >
+          Отмена
+        </button>
+      </div>
     </div>
   </div>
 </div>

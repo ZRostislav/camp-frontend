@@ -67,19 +67,22 @@ export const routes: Routes = [
             (m) => m.HousesComponent,
           ),
       },
+      // "Мой домик" — тот же компонент, что и для house/:id, но с
+      // data.mine=true, чтобы он резолвил домик текущего пользователя
+      // через GET /houses/mine вместо GET /houses/:id.
+      // Обязательно ДО 'house/:id' — иначе роутер примет "my" за :id.
       {
-        path: 'my-house',
+        path: 'house/my',
+        data: { mine: true },
         loadComponent: () =>
-          import('./pages/my-house/my-house.component').then(
-            (m) => m.MyHouseComponent,
-          ),
+          import('./pages/house/house.component').then((m) => m.HouseComponent),
       },
+      // Домик по id — доступно любому авторизованному пользователю
+      // (как profile для participants/:id и users/:id).
       {
-        path: 'my-houses',
+        path: 'house/:id',
         loadComponent: () =>
-          import('./pages/my-house/my-house.component').then(
-            (m) => m.MyHouseComponent,
-          ),
+          import('./pages/house/house.component').then((m) => m.HouseComponent),
       },
       {
         path: 'points',
