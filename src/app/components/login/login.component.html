@@ -157,13 +157,13 @@
             [size]="13"
             [style.color]="campColor"
           ></app-icon>
-          Имя и фамилия
+          Фамилию и Имя
         </label>
         <input
           class="w-full px-3 sm:px-[14px] py-[9px] sm:py-[11px] bg-camp-input border-2 rounded-xl text-[0.85rem] sm:text-[0.9rem] font-medium text-camp-stone outline-none transition-colors duration-200 placeholder:text-[#c7bfb8]"
           style="border-color: transparent"
           [(ngModel)]="fullName"
-          placeholder="Введите имя и фамилию"
+          placeholder="Введите фамилию и имя"
           autocomplete="name"
           (focus)="
             $any($event.target).style.borderColor = campColor;

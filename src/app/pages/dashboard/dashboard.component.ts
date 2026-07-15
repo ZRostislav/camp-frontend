@@ -177,12 +177,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   get userFirstName(): string {
     const u = this.auth.currentUser();
     if (!u) return '';
-    if (u.lastName) return u.lastName;
+    if (u.firstName) return u.firstName;
     const full = u.fullName ?? u.full_name;
-    if (full) {
-      const parts = full.trim().split(/\s+/);
-      return parts.length > 1 ? parts[1] : parts[0];
-    }
+    if (full) return full.trim().split(/\s+/)[0];
     return u.username ?? '';
   }
 
