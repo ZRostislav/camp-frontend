@@ -678,6 +678,81 @@
         </button>
       </div>
     </div>
+
+    <!-- Push notifications card (only for self) -->
+    <div
+      *ngIf="isSelf"
+      class="rounded-3xl p-6 shadow-sm profile-enter card-delay-2 border border-camp-border bg-[var(--bg-card)] mt-6"
+    >
+      <h2
+        class="font-display text-sm font-bold uppercase tracking-wider text-camp-subtle mb-5"
+      >
+        Push-уведомления
+      </h2>
+
+      <div *ngIf="!pushSupported" class="text-sm text-camp-subtle">
+        Этот браузер не поддерживает push-уведомления. На iPhone: добавьте
+        сайт на экран «Домой» через Safari — после этого уведомления
+        заработают.
+      </div>
+
+      <div *ngIf="pushSupported" class="flex flex-col gap-4">
+        <div class="flex items-center justify-between gap-4">
+          <span class="text-sm text-camp-stone">
+            {{ pushSubscribed ? 'Уведомления включены на этом устройстве' : 'Уведомления выключены на этом устройстве' }}
+          </span>
+
+          <button
+            *ngIf="!pushSubscribed"
+            (click)="onEnablePush()"
+            [disabled]="pushLoading"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 shadow-camp-btn disabled:opacity-60"
+            [style.backgroundColor]="campColor"
+          >
+            <app-icon name="bell" [size]="14" />
+            {{ pushLoading ? 'Включаем…' : 'Включить' }}
+          </button>
+
+          <button
+            *ngIf="pushSubscribed"
+            (click)="onDisablePush()"
+            [disabled]="pushLoading"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-camp-border text-camp-stone transition-all hover:opacity-80 disabled:opacity-60"
+          >
+            {{ pushLoading ? 'Отключаем…' : 'Отключить' }}
+          </button>
+        </div>
+
+        <div *ngIf="pushError" class="text-xs font-medium text-camp-error">
+          {{ pushError }}
+        </div>
+
+        <div
+          *ngIf="pushSubscribed"
+          class="flex items-center gap-3 pt-4 border-t border-camp-border"
+        >
+          <button
+            (click)="onSendTestPush()"
+            [disabled]="testSending"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-camp-border text-camp-stone transition-all hover:opacity-80 disabled:opacity-60"
+          >
+            {{ testSending ? 'Отправляем…' : 'Отправить тестовое уведомление' }}
+          </button>
+          <span
+            *ngIf="testSent"
+            class="status-badge flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-camp-successBg text-camp-success"
+          >
+            <app-icon name="circle-check" [size]="13" /> Отправлено
+          </span>
+          <span
+            *ngIf="testError"
+            class="status-badge text-xs font-semibold text-camp-error"
+          >
+            {{ testError }}
+          </span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 

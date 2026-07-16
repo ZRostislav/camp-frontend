@@ -6,6 +6,7 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { SettingsService } from '../../services/settings.service';
 import { ThemeService, Theme } from '../../services/theme.service';
+import { PushService } from '../../services/push.service';
 import { IconComponent } from '../../shared/icon.component';
 import { MediaUrlPipe } from '../../pipes/media-url.pipe';
 
@@ -69,6 +70,15 @@ export class UserProfileComponent implements OnInit {
   themeSuccess = false;
   themeError = false;
 
+  // ─── Push-уведомления ───
+  pushSupported = true;
+  pushSubscribed = false;
+  pushLoading = false;
+  pushError = '';
+  testSending = false;
+  testSent = false;
+  testError = '';
+
   campColor = '#1a5c38';
 
   // ─── Модалка редактирования (staff) ───
@@ -114,6 +124,7 @@ export class UserProfileComponent implements OnInit {
   constructor(
     public auth: AuthService,
     public themeService: ThemeService,
+    private push: PushService,
     private api: ApiService,
     private settings: SettingsService,
     private route: ActivatedRoute,
@@ -122,6 +133,13 @@ export class UserProfileComponent implements OnInit {
 
   ngOnInit() {
     this.returnUrl = (history.state as any)?.returnUrl ?? null;
+
+    this.pushSupported = this.push.isSupported();
+    if (this.pushSupported) {
+      this.push.getExistingSubscription().then((sub) => {
+        this.pushSubscribed = !!sub;
+      });
+    }
 
     this.settings.get().subscribe({
       next: (d) => {
@@ -219,6 +237,55 @@ export class UserProfileComponent implements OnInit {
 
   getHouseAvatar(houseId: any): string | null {
     return this.getHouse(houseId)?.avatar_path ?? null;
+  }
+
+  // ─── Push-уведомления ────────────────────────────────────────────────
+
+  async onEnablePush(): Promise<void> {
+    if (this.pushLoading) return;
+    this.pushLoading = true;
+    this.pushError = '';
+    try {
+      await this.push.subscribeUser();
+      this.pushSubscribed = true;
+    } catch (err: any) {
+      this.pushError = err?.message || 'Не удалось включить уведомления';
+    } finally {
+      this.pushLoading = false;
+    }
+  }
+
+  async onDisablePush(): Promise<void> {
+    if (this.pushLoading) return;
+    this.pushLoading = true;
+    this.pushError = '';
+    try {
+      await this.push.unsubscribeUser();
+      this.pushSubscribed = false;
+    } catch {
+      this.pushError = 'Не удалось отключить уведомления';
+    } finally {
+      this.pushLoading = false;
+    }
+  }
+
+  onSendTestPush(): void {
+    if (this.testSending) return;
+    this.testSending = true;
+    this.testSent = false;
+    this.testError = '';
+    this.push.sendTest('Проверка push-уведомлений 🎉').subscribe({
+      next: () => {
+        this.testSending = false;
+        this.testSent = true;
+        setTimeout(() => (this.testSent = false), 3000);
+      },
+      error: (e) => {
+        this.testSending = false;
+        this.testError = e.error?.error || 'Не удалось отправить уведомление';
+        setTimeout(() => (this.testError = ''), 3000);
+      },
+    });
   }
 
   async setTheme(theme: Theme) {
