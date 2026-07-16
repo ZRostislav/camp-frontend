@@ -75,9 +75,6 @@ export class UserProfileComponent implements OnInit {
   pushSubscribed = false;
   pushLoading = false;
   pushError = '';
-  testSending = false;
-  testSent = false;
-  testError = '';
 
   campColor = '#1a5c38';
 
@@ -267,25 +264,6 @@ export class UserProfileComponent implements OnInit {
     } finally {
       this.pushLoading = false;
     }
-  }
-
-  onSendTestPush(): void {
-    if (this.testSending) return;
-    this.testSending = true;
-    this.testSent = false;
-    this.testError = '';
-    this.push.sendTest('Проверка push-уведомлений 🎉').subscribe({
-      next: () => {
-        this.testSending = false;
-        this.testSent = true;
-        setTimeout(() => (this.testSent = false), 3000);
-      },
-      error: (e) => {
-        this.testSending = false;
-        this.testError = e.error?.error || 'Не удалось отправить уведомление';
-        setTimeout(() => (this.testError = ''), 3000);
-      },
-    });
   }
 
   async setTheme(theme: Theme) {

@@ -15,6 +15,7 @@ import { AuthService } from '../../services/auth.service';
 import { SettingsService, CampSettings } from '../../services/settings.service';
 import { ThemeService } from '../../services/theme.service';
 import { NewsStatusService } from '../../services/news-status.service';
+import { PushService } from '../../services/push.service';
 import { MediaUrlPipe } from '../../pipes/media-url.pipe';
 import { IconComponent } from '../../shared/icon.component';
 import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
@@ -51,6 +52,17 @@ export class LayoutComponent implements OnInit, OnDestroy {
   /** Непрочитанные новости — бейджик рядом с пунктом «Новости» в меню */
   unreadNewsCount = 0;
 
+  // ─── Баннер «включите push-уведомления» ──────────────────────────────────
+  // Показывается при каждом заходе, пока пользователь не подпишется —
+  // уведомления обязательны для лагеря (важные объявления, старт событий и т.д.)
+  showPushBanner = false;
+  pushLoading = false;
+  pushError = '';
+  /** true — браузер в принципе не поддерживает push (не iOS, а просто старый/несовместимый) */
+  pushUnsupported = false;
+  /** true — iPhone/Safari, но сайт открыт обычной вкладкой, а не с экрана «Домой» */
+  pushNeedsIosInstall = false;
+
   private liveSub?: Subscription;
   private routerEventsSub?: Subscription;
   private newsStatusSub?: Subscription;
@@ -61,9 +73,12 @@ export class LayoutComponent implements OnInit, OnDestroy {
     private settingsService: SettingsService,
     private router: Router,
     private newsStatus: NewsStatusService,
+    private push: PushService,
   ) {}
 
   ngOnInit() {
+    this.checkPushStatus();
+
     this.newsStatusSub = this.newsStatus.unreadCount$.subscribe(
       (c) => (this.unreadNewsCount = c),
     );
@@ -150,6 +165,51 @@ export class LayoutComponent implements OnInit, OnDestroy {
   toggleTheme() {
     const next = this.themeService.current === 'dark' ? 'light' : 'dark';
     this.themeService.setTheme(next, this.auth.token);
+  }
+
+  // ─── Баннер «включите push-уведомления» ──────────────────────────────────
+
+  private async checkPushStatus(): Promise<void> {
+    if (!this.push.isSupported()) {
+      this.pushNeedsIosInstall = this.isIosSafariNotInstalled();
+      this.pushUnsupported = !this.pushNeedsIosInstall;
+      // На обычном (не iOS) неподдерживаемом браузере показывать баннер
+      // смысла нет — включить всё равно нечем.
+      this.showPushBanner = this.pushNeedsIosInstall;
+      return;
+    }
+
+    const subscription = await this.push.getExistingSubscription();
+    this.showPushBanner = !subscription;
+  }
+
+  /** iPhone/iPad в обычной вкладке Safari (не установлено на экран «Домой») —
+   *  единственный случай неподдержки, который пользователь может исправить сам. */
+  private isIosSafariNotInstalled(): boolean {
+    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isStandalone =
+      (navigator as any).standalone === true ||
+      window.matchMedia('(display-mode: standalone)').matches;
+    return isIos && !isStandalone;
+  }
+
+  async onEnablePush(): Promise<void> {
+    if (this.pushLoading) return;
+    this.pushLoading = true;
+    this.pushError = '';
+    try {
+      await this.push.subscribeUser();
+      this.showPushBanner = false;
+    } catch (err: any) {
+      this.pushError = err?.message || 'Не удалось включить уведомления';
+    } finally {
+      this.pushLoading = false;
+    }
+  }
+
+  /** Скрывает баннер до следующего захода на сайт (не навсегда — уведомления обязательны). */
+  dismissPushBanner(): void {
+    this.showPushBanner = false;
   }
 
   get isDark(): boolean {

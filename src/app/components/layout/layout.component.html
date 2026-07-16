@@ -5,7 +5,52 @@
     font-family: var(--font-body, &quot;Nunito&quot;, sans-serif);
   "
   [style.--camp-color]="campColor"
+  [style.paddingTop.px]="showPushBanner ? 56 : 0"
 >
+  <!-- ===== Баннер «включите push-уведомления» ===== -->
+  <!-- Показывается при каждом заходе, пока не подписан — обязательно для лагеря -->
+  <div
+    *ngIf="showPushBanner"
+    class="fixed top-0 inset-x-0 z-[9999] px-4 py-3 flex flex-wrap items-center justify-center gap-3 text-sm shadow-md"
+    [style.backgroundColor]="campColor"
+  >
+    <app-icon name="bell" [size]="16" class="text-white shrink-0" />
+
+    <span class="text-white font-medium text-center">
+      <ng-container *ngIf="!pushNeedsIosInstall">
+        Включите push-уведомления для аккаунта — это обязательно для лагеря
+      </ng-container>
+      <ng-container *ngIf="pushNeedsIosInstall">
+        Чтобы получать уведомления на iPhone: нажмите «Поделиться» → «На экран
+        «Домой»» в Safari, затем откройте сайт с этой иконки
+      </ng-container>
+    </span>
+
+    <button
+      *ngIf="!pushNeedsIosInstall"
+      (click)="onEnablePush()"
+      [disabled]="pushLoading"
+      class="px-4 py-1.5 rounded-lg text-sm font-semibold bg-white transition-all hover:opacity-90 disabled:opacity-60 shrink-0"
+      [style.color]="campColor"
+    >
+      {{ pushLoading ? "Включаем…" : "Включить" }}
+    </button>
+
+    <button
+      (click)="dismissPushBanner()"
+      class="text-white/80 text-xs underline hover:text-white shrink-0"
+    >
+      Напомнить позже
+    </button>
+
+    <span
+      *ngIf="pushError"
+      class="w-full text-center text-xs font-medium text-white/90"
+    >
+      {{ pushError }}
+    </span>
+  </div>
+
   <!-- ===== DESKTOP SIDEBAR (персонал) ===== -->
   <aside
     *ngIf="!isParticipant"
