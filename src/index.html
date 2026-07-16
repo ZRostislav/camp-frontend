@@ -6,6 +6,20 @@
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+
+    <!-- PWA: manifest для Android/десктопа -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#1a5c38" />
+
+    <!-- PWA: iOS игнорирует manifest.json почти полностью, поэтому нужны
+         отдельные apple-теги — без них "Добавить на экран Домой" даст
+         просто скриншот страницы вместо иконки и обычную вкладку Safari
+         вместо полноэкранного режима без адресной строки. -->
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Camp" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
