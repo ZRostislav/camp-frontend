@@ -7,8 +7,10 @@ import { AuthService } from '../../services/auth.service';
 import { SettingsService } from '../../services/settings.service';
 import { ThemeService, Theme } from '../../services/theme.service';
 import { PushService } from '../../services/push.service';
+import { QrCodeService } from '../../services/qr-code.service';
 import { IconComponent } from '../../shared/icon.component';
 import { MediaUrlPipe } from '../../pipes/media-url.pipe';
+import { QrDisplayModalComponent } from '../../shared/qr-display-modal/qr-display-modal.component';
 
 interface UserData {
   id: number;
@@ -39,7 +41,7 @@ interface UserData {
 @Component({
   selector: 'app-user-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent, MediaUrlPipe],
+  imports: [CommonModule, FormsModule, IconComponent, MediaUrlPipe, QrDisplayModalComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
 })
@@ -98,6 +100,9 @@ export class UserProfileComponent implements OnInit {
   savingParticipant = false;
   saveParticipantError = '';
 
+  // ─── Модалка QR-кода для входа участника ───
+  qrModalOpen = false;
+
   // ─── Модалка подтверждения (сброс кода / удаление) ───
   confirmState: {
     title: string;
@@ -126,6 +131,7 @@ export class UserProfileComponent implements OnInit {
     private settings: SettingsService,
     private route: ActivatedRoute,
     private router: Router,
+    private qrCode: QrCodeService,
   ) {}
 
   ngOnInit() {
@@ -565,6 +571,24 @@ export class UserProfileComponent implements OnInit {
 
   get isSuperAdmin(): boolean {
     return this.auth.currentUser()?.role === 'superadmin';
+  }
+
+  /** Ссылка для QR-входа участника (без кода доступа — только фамилия/имя/id) */
+  get participantQrLink(): string {
+    if (!this.user) return '';
+    return this.qrCode.buildParticipantLoginLink({
+      id: this.user.id,
+      last_name: this.user.last_name,
+      first_name: this.user.first_name,
+    });
+  }
+
+  openQrModal(): void {
+    this.qrModalOpen = true;
+  }
+
+  closeQrModal(): void {
+    this.qrModalOpen = false;
   }
 
   get canChangeOwnPassword(): boolean {

@@ -1,0 +1,85 @@
+<div
+  *ngIf="open"
+  class="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center p-4 z-[9999]"
+  style="background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(2px)"
+  (click)="close()"
+>
+  <div
+    class="bg-white rounded-2xl shadow-camp w-full max-w-sm animate-pop-in overflow-hidden"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="p-6">
+      <div class="flex items-start gap-3 mb-4">
+        <div
+          class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+          [style.backgroundColor]="campColor + '15'"
+          [style.color]="campColor"
+        >
+          <app-icon name="qr-code" [size]="18"></app-icon>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h2 class="font-display text-base font-bold text-camp-stone">
+            QR для входа
+          </h2>
+          <p class="text-sm text-camp-gray mt-1">
+            {{ displayName || "Участник" }} сканирует его своим телефоном —
+            фамилия и имя подставятся сами, останется ввести код доступа.
+          </p>
+        </div>
+        <button
+          class="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-camp-subtle hover:bg-camp-muted transition-colors"
+          (click)="close()"
+        >
+          <app-icon name="x" [size]="16"></app-icon>
+        </button>
+      </div>
+
+      <div
+        class="flex items-center justify-center rounded-2xl border-2 border-camp-border p-4 mb-4 bg-white"
+        style="min-height: 220px"
+      >
+        <img
+          *ngIf="dataUrl && !generating"
+          [src]="dataUrl"
+          alt="QR-код для входа"
+          class="w-full max-w-[220px] aspect-square"
+        />
+        <div
+          *ngIf="generating"
+          class="w-8 h-8 border-[3px] rounded-full animate-spin-btn"
+          [style.borderColor]="campColor + '30'"
+          [style.borderTopColor]="campColor"
+        ></div>
+      </div>
+
+      <div
+        class="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-camp-muted text-xs text-camp-gray font-medium mb-3 break-all"
+      >
+        <app-icon name="key-round" [size]="14" class="shrink-0"></app-icon>
+        <span class="truncate">{{ link }}</span>
+      </div>
+
+      <div class="flex gap-2">
+        <button
+          class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px"
+          [style.backgroundColor]="campColor"
+          (click)="copyLink()"
+        >
+          <app-icon name="paperclip" [size]="14"></app-icon>
+          {{ copyLabel }}
+        </button>
+        <button
+          class="px-4 py-2.5 rounded-xl text-sm font-bold bg-camp-muted text-camp-gray hover:bg-camp-border transition-colors"
+          (click)="close()"
+        >
+          Закрыть
+        </button>
+      </div>
+
+      <p class="text-[11px] text-camp-subtle mt-3 text-center">
+        Ссылка не содержит код доступа — она безопасна, даже если её
+        увидит кто-то ещё.
+      </p>
+    </div>
+  </div>
+</div>

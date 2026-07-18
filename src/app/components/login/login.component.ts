@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { IconComponent } from '../../shared/icon.component';
 import { AuthService } from '../../services/auth.service';
 import { SettingsService } from '../../services/settings.service';
@@ -30,6 +30,9 @@ export class LoginComponent implements OnInit {
   campOrganization = '';
   campColor = '#F59E0B';
 
+  /** true — форма заполнена данными из QR-кода участника (см. QrCodeService) */
+  qrPrefilled = false;
+
   @ViewChildren('codeCell') codeCells!: QueryList<ElementRef<HTMLInputElement>>;
 
   error = '';
@@ -39,9 +42,40 @@ export class LoginComponent implements OnInit {
   constructor(
     private auth: AuthService,
     private router: Router,
+    private route: ActivatedRoute,
     private settings: SettingsService,
   ) {
-    if (auth.isLoggedIn) this.router.navigate(['/']);
+    const qp = this.route.snapshot.queryParamMap;
+    const pid = qp.get('pid');
+
+    if (auth.isLoggedIn) {
+      // На устройстве уже открыта сессия (например, это телефон самого
+      // ребёнка) — сразу переходим на нужную страницу, минуя форму входа.
+      this.router.navigateByUrl(this.resolveLoggedInTarget(pid));
+      return;
+    }
+
+    if (qp.get('mode') === 'participant') {
+      this.mode = 'participant';
+      const lastName = qp.get('ln') || '';
+      const firstName = qp.get('fn') || '';
+      this.fullName = [lastName, firstName].filter(Boolean).join(' ');
+      this.qrPrefilled = !!this.fullName;
+    }
+  }
+
+  /**
+   * Куда перейти, если на этом устройстве уже есть активная сессия.
+   * Если это сам участник (совпадает id) — на его собственный профиль,
+   * иначе (персонал сканирует QR другого участника) — на страницу участника.
+   */
+  private resolveLoggedInTarget(pid: string | null): string {
+    if (!pid) return '/';
+    const me = this.auth.currentUser();
+    if (me?.role === 'participant' && String(me.id) === pid) {
+      return '/profile/me';
+    }
+    return `/participants/${pid}`;
   }
 
   ngOnInit() {
@@ -53,6 +87,11 @@ export class LoginComponent implements OnInit {
       },
       error: () => {},
     });
+
+    if (this.qrPrefilled) {
+      // Фамилия/имя уже подставлены из QR — сразу ставим фокус на код доступа.
+      setTimeout(() => this.codeCells?.first?.nativeElement.focus(), 0);
+    }
   }
 
   /** Returns a hex color slightly darker than campColor for hover states */

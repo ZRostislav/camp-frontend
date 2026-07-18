@@ -1,0 +1,129 @@
+<div
+  *ngIf="open"
+  class="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center p-4 z-[9999]"
+  style="background: rgba(28, 25, 23, 0.8)"
+  (click)="close()"
+>
+  <div
+    class="bg-white rounded-2xl shadow-camp w-full max-w-sm animate-pop-in overflow-hidden"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="flex items-center justify-between px-5 pt-5 pb-3">
+      <div class="flex items-center gap-2.5">
+        <div
+          class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+          [style.backgroundColor]="campColor + '15'"
+          [style.color]="campColor"
+        >
+          <app-icon name="scan-line" [size]="17"></app-icon>
+        </div>
+        <h2 class="font-display text-base font-bold text-camp-stone">
+          Сканер QR
+        </h2>
+      </div>
+      <button
+        class="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-camp-subtle hover:bg-camp-muted transition-colors"
+        (click)="close()"
+      >
+        <app-icon name="x" [size]="16"></app-icon>
+      </button>
+    </div>
+
+    <div class="px-5 pb-5">
+      <!-- Камера -->
+      <div
+        *ngIf="!manualMode"
+        class="relative rounded-2xl overflow-hidden bg-black aspect-square flex items-center justify-center"
+      >
+        <video
+          #video
+          class="w-full h-full object-cover"
+          [class.opacity-0]="status !== 'scanning'"
+          muted
+          autoplay
+          playsinline
+          webkit-playsinline
+        ></video>
+        <canvas #canvas class="hidden"></canvas>
+
+        <div
+          *ngIf="status === 'scanning'"
+          class="pointer-events-none absolute inset-6 rounded-xl border-2"
+          style="border-color: rgba(255, 255, 255, 0.85)"
+        ></div>
+
+        <div
+          *ngIf="status === 'starting'"
+          class="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/80"
+        >
+          <span
+            class="w-8 h-8 border-[3px] border-white/30 border-t-white rounded-full inline-block animate-spin-btn"
+          ></span>
+          <span class="text-xs font-semibold">Включаем камеру…</span>
+        </div>
+      </div>
+
+      <p
+        *ngIf="status === 'scanning'"
+        class="text-xs text-camp-subtle text-center mt-3"
+      >
+        Наведите камеру на QR-код
+      </p>
+
+      <div
+        *ngIf="errorMessage"
+        class="flex items-start gap-[7px] bg-camp-errorBg text-camp-error rounded-[10px] px-3 py-[10px] text-[0.8rem] font-bold mt-3"
+      >
+        <app-icon
+          name="circle-alert"
+          [size]="14"
+          class="shrink-0 mt-0.5"
+        ></app-icon>
+        {{ errorMessage }}
+      </div>
+
+      <!-- Ручной ввод (запасной вариант) -->
+      <div *ngIf="manualMode" class="mt-1">
+        <label
+          class="flex items-center gap-1.5 text-[0.72rem] font-bold text-camp-gray mb-1.5 uppercase tracking-wide"
+        >
+          <app-icon
+            name="paperclip"
+            [size]="13"
+            [style.color]="campColor"
+          ></app-icon>
+          Ссылка из QR-кода
+        </label>
+        <input
+          class="w-full px-3 py-[10px] bg-camp-input border-2 rounded-xl text-[0.85rem] font-medium text-camp-stone outline-none placeholder:text-[#c7bfb8]"
+          style="border-color: transparent"
+          [(ngModel)]="manualValue"
+          placeholder="https://..."
+          (keydown.enter)="submitManual()"
+        />
+        <button
+          class="w-full mt-3 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-px"
+          [style.backgroundColor]="campColor"
+          (click)="submitManual()"
+        >
+          Перейти
+        </button>
+      </div>
+
+      <button
+        *ngIf="!manualMode"
+        class="w-full mt-3 py-2 rounded-xl text-xs font-bold text-camp-subtle hover:bg-camp-muted transition-colors"
+        (click)="manualMode = true"
+      >
+        Камера не работает? Ввести ссылку вручную
+      </button>
+      <button
+        *ngIf="manualMode"
+        class="w-full mt-2 py-2 rounded-xl text-xs font-bold text-camp-subtle hover:bg-camp-muted transition-colors"
+        (click)="retryCamera()"
+      >
+        Попробовать камеру снова
+      </button>
+    </div>
+  </div>
+</div>

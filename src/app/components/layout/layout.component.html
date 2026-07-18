@@ -275,6 +275,22 @@
         />
       </a>
       <button
+        (click)="openScanner()"
+        class="mt-2 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+        style="color: rgba(255, 255, 255, 0.6)"
+        onmouseenter="
+          this.style.backgroundColor = 'rgba(255,255,255,0.1)';
+          this.style.color = 'rgba(255,255,255,0.9)';
+        "
+        onmouseleave="
+          this.style.backgroundColor = 'transparent';
+          this.style.color = 'rgba(255,255,255,0.6)';
+        "
+      >
+        <app-icon name="scan-line" [size]="16" />
+        Сканировать QR
+      </button>
+      <button
         (click)="toggleTheme()"
         class="mt-2 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
         style="color: rgba(255, 255, 255, 0.6)"
@@ -342,6 +358,12 @@
 
     <!-- Участнику вместо гамбургера — быстрые действия (тема / выход) -->
     <div *ngIf="isParticipant" class="flex items-center gap-1">
+      <button
+        class="text-white p-2 rounded-lg opacity-80 hover:opacity-100 transition-opacity"
+        (click)="openScanner()"
+      >
+        <app-icon name="scan-line" [size]="19" />
+      </button>
       <button
         class="text-white p-2 rounded-lg opacity-80 hover:opacity-100 transition-opacity"
         (click)="toggleTheme()"
@@ -791,6 +813,22 @@
           />
         </a>
         <button
+          (click)="openScanner()"
+          class="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all mb-1"
+          style="color: rgba(255, 255, 255, 0.6)"
+          onmouseenter="
+            this.style.backgroundColor = 'rgba(255,255,255,0.1)';
+            this.style.color = 'rgba(255,255,255,0.9)';
+          "
+          onmouseleave="
+            this.style.backgroundColor = 'transparent';
+            this.style.color = 'rgba(255,255,255,0.6)';
+          "
+        >
+          <app-icon name="scan-line" [size]="16" />
+          Сканировать QR
+        </button>
+        <button
           (click)="toggleTheme()"
           class="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all mb-1"
           style="color: rgba(255, 255, 255, 0.6)"
@@ -835,4 +873,21 @@
     <app-loading-spinner *ngIf="routeLoading"></app-loading-spinner>
     <router-outlet *ngIf="!routeLoading" />
   </main>
+
+  <!-- ===== СКАНЕР QR («на всякий случай», доступен из меню выше) ===== -->
+  <app-qr-scanner
+    [open]="scannerOpen"
+    [campColor]="campColor"
+    (closed)="closeScanner()"
+    (scanned)="handleScanned($event)"
+  ></app-qr-scanner>
+
+  <!-- Короткое уведомление, если отсканированный QR не относится к сайту -->
+  <div
+    *ngIf="scannerFeedback"
+    class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[9999] px-4 py-2.5 rounded-xl text-sm font-semibold text-white shadow-lg"
+    style="background-color: #1c1917"
+  >
+    {{ scannerFeedback }}
+  </div>
 </div>

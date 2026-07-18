@@ -39,6 +39,17 @@
   <div
     class="bg-white rounded-[22px] sm:rounded-[28px] p-5 sm:p-7 sm:px-6 w-full max-w-[400px] shadow-camp relative z-10 animate-fade-in-up"
   >
+    <!-- QR hint -->
+    <div
+      *ngIf="qrPrefilled"
+      class="flex items-center gap-2 rounded-xl px-3 py-2.5 mb-4 text-[0.78rem] font-bold"
+      [style.backgroundColor]="campColorBg"
+      [style.color]="campColor"
+    >
+      <app-icon name="qr-code" [size]="15"></app-icon>
+      Данные подставлены из QR-кода — введите код доступа
+    </div>
+
     <!-- Mode tabs -->
     <div
       class="flex bg-camp-muted rounded-xl sm:rounded-[14px] p-1 mb-4 sm:mb-[22px] gap-1"

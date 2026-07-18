@@ -420,6 +420,20 @@
             Удалить
           </button>
         </div>
+
+        <!-- QR для входа участника (любой персонал, просматривающий профиль) -->
+        <div
+          *ngIf="isParticipant && auth.isStaff()"
+          class="mt-4 pt-4 border-t border-camp-border"
+        >
+          <button
+            (click)="openQrModal()"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors text-camp-gray bg-camp-muted hover:bg-camp-border"
+          >
+            <app-icon name="qr-code" [size]="14" />
+            Показать QR для входа
+          </button>
+        </div>
       </div>
     </div>
 
@@ -1160,6 +1174,15 @@
     </div>
   </div>
 </div>
+
+<!-- ═══════════════ QR ДЛЯ ВХОДА УЧАСТНИКА ═══════════════ -->
+<app-qr-display-modal
+  [open]="qrModalOpen"
+  [link]="participantQrLink"
+  [displayName]="displayName"
+  [campColor]="campColor"
+  [onClose]="closeQrModal.bind(this)"
+></app-qr-display-modal>
 
 <!-- ═══════════════ CONFIRM MODAL ═══════════════ -->
 <div

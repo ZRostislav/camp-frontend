@@ -19,6 +19,7 @@ import { PushService } from '../../services/push.service';
 import { MediaUrlPipe } from '../../pipes/media-url.pipe';
 import { IconComponent } from '../../shared/icon.component';
 import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
+import { QrScannerComponent } from '../../shared/qr-scanner/qr-scanner.component';
 
 @Component({
   selector: 'app-layout',
@@ -31,6 +32,7 @@ import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-sp
     MediaUrlPipe,
     IconComponent,
     LoadingSpinnerComponent,
+    QrScannerComponent,
   ],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css',
@@ -45,6 +47,10 @@ export class LayoutComponent implements OnInit, OnDestroy {
   campDateEnd = '';
 
   mobileMenuOpen = false;
+
+  /** Модалка сканера QR — доступна из бокового меню / топбара «на всякий случай» */
+  scannerOpen = false;
+  scannerFeedback = '';
 
   /** true между NavigationStart и завершением навигации — показывает спиннер вместо router-outlet */
   routeLoading = false;
@@ -219,5 +225,43 @@ export class LayoutComponent implements OnInit, OnDestroy {
   /** Участник получает упрощённую навигацию — нижнюю панель вкладок вместо бокового меню персонала. */
   get isParticipant(): boolean {
     return this.auth.role === 'participant';
+  }
+
+  // ─── Сканер QR ────────────────────────────────────────────────────────
+
+  openScanner(): void {
+    this.mobileMenuOpen = false;
+    this.scannerFeedback = '';
+    this.scannerOpen = true;
+  }
+
+  closeScanner(): void {
+    this.scannerOpen = false;
+  }
+
+  /**
+   * Обрабатывает результат сканирования. Ожидаем ссылку на этот же сайт
+   * (например, QR входа участника со страницы профиля) — переходим по
+   * ней внутри приложения. Если распознанный текст — не наша ссылка,
+   * просто закрываем сканер, ничего не открывая (безопаснее, чем
+   * пытаться навигировать на произвольный текст).
+   */
+  handleScanned(raw: string): void {
+    this.scannerOpen = false;
+
+    let url: URL | null = null;
+    try {
+      url = new URL(raw, window.location.origin);
+    } catch {
+      url = null;
+    }
+
+    if (url && url.origin === window.location.origin) {
+      this.router.navigateByUrl(url.pathname + url.search);
+      return;
+    }
+
+    this.scannerFeedback = 'QR-код не относится к этому приложению.';
+    setTimeout(() => (this.scannerFeedback = ''), 3500);
   }
 }
